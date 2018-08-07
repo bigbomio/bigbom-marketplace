@@ -1,0 +1,47 @@
+$green: #4cc763;
+$thinShadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+$normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+
+#bigbomMarketplace {
+    .container-wrp {
+        float: left;
+        width: 100%;
+    }
+    .container {
+        width: 1110px;
+        margin: 0 auto;
+    }
+    .wrapper {
+        padding: 40px 0;
+    }
+    .line-full-width {
+        display: block;
+        height: 1px;
+        border: 0;
+        border-top: 1px solid #ddd;
+        margin: 1em 0;
+        padding: 0;
+        width: 100%;
+        float: left;
+    }
+    .btn {
+        border-radius: 25px;
+    }
+    .btn-normal {
+        font-size: 16px;
+        padding: 6px 25px;
+    }
+    .btn-medium {
+        font-size: 20px;
+        padding: 10px 35px;
+    }
+    .btn-green {
+        background-color: $green;
+        color: #fff;
+    }
+    .btn-white {
+        background-color: #fff;
+        color: $green;
+        box-shadow: $thinShadow;
+    }
+}

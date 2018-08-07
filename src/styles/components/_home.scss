@@ -1,0 +1,56 @@
+#home {
+    .home-wrp {
+        background: #fff url('/images/homebg.png') no-repeat center center;
+        background-size: cover;
+        .home-intro {
+            h1 {
+                font-size: 40px;
+                font-weight: bold;
+                padding: 80px 80px 0 80px;
+                text-shadow: $thinShadow;
+                line-height: 45px;
+                color: #fff;
+            }
+            .buttons {
+                padding: 20px 0 0 80px;
+                .left {
+                    margin-right: 20px;
+                }
+            }
+        }
+    }
+    .home-content {
+        h2 {
+            font-size: 30px;
+            color: #444;
+            text-align: center;
+            width: 100%;
+            padding: 40px 0;
+        }
+        .home-content-item {
+            color: #444;
+            .home-content-img {
+                border: 1px solid #ccc;
+                border-radius: 50%;
+                width: 160px;
+                height: 160px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 auto 20px auto;
+                &.view-all {
+                    font-weight: bold;
+                    color: #7bccc8;
+                }
+                &:hover {
+                    border-color: $green;
+                    box-shadow: $normalShadow;
+                }
+            }
+            p {
+                font-size: 18px;
+                text-align: center;
+            }
+        }
+    }
+}
