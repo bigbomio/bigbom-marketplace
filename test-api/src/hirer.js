@@ -13,24 +13,29 @@ class Hirer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isLoading: false
+            isLoading: false,
         };
     }
 
-    async getListJob() {
+    async getPastEvents(type, event, category) {
         this.setState({ isLoading: true });
-        const jobInstance = await this.contractInstanceGenerator('BBFreelancerJob');
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.getPastEvents)('JobCreated', {
-            filter: { owner: jobInstance.defaultAccount, category: ['banner', 'it'] }, // filter by owner, category
-            fromBlock: 0, // should use recent number
-            toBlock: 'latest'
-        });
-        if (err) {
-            this.setState({ isLoading: false, status: 'something went wrong! can not get list job :(' });
-            return console.log(err);
-        }
-        this.setState({ isLoading: false, status: 'Get list job success!' });
-        console.log('jobLog get list job: ', jobLog);
+        let contractInstance = await this.contractInstanceGenerator(type);
+        contractInstance.instance[event](
+            {},
+            {
+                filter: { owner: contractInstance.defaultAccount, category: category }, // filter by owner, category
+                fromBlock: 0, // should use recent number
+                toBlock: 'latest',
+            },
+            (error, events) => {
+                if (error) {
+                    this.setState({ isLoading: false, status: 'something went wrong! can not get events log :(' });
+                    console.log(error);
+                }
+                this.setState({ isLoading: true, status: 'get events log success!' });
+                console.log('events: ', events);
+            }
+        );
     }
 
     async getJob(jobHash) {
@@ -38,7 +43,7 @@ class Hirer extends Component {
         const jobInstance = await this.contractInstanceGenerator('BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
             from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10)
+            gasPrice: +jobInstance.gasPrice.toString(10),
         });
         if (err) {
             this.setState({ isLoading: false, status: 'something went wrong! can not get job :(' });
@@ -46,6 +51,19 @@ class Hirer extends Component {
         }
         this.setState({ isLoading: false, status: 'Get job success!' });
         console.log('jobLog get job: ', jobLog);
+    }
+
+    async getAllowance() {
+        const BBOinstance = await this.contractInstanceGenerator('BigbomTokenExtended');
+        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(
+            BBOinstance.defaultAccount,
+            BBOinstance.address
+        );
+        if (err) {
+            this.setState({ isLoading: false, status: 'something went wrong! Can not check allowance! :(' });
+            return console.log('err allowance: ', err);
+        }
+        return result;
     }
 
     async contractInstanceGenerator(type) {
@@ -58,7 +76,7 @@ class Hirer extends Component {
             defaultAccount,
             instance,
             gasPrice,
-            address
+            address,
         };
     }
 
@@ -73,7 +91,7 @@ class Hirer extends Component {
             'banner',
             {
                 from: jobInstance.defaultAccount,
-                gasPrice: +jobInstance.gasPrice.toString(10)
+                gasPrice: +jobInstance.gasPrice.toString(10),
             }
         );
         if (err) {
@@ -108,7 +126,7 @@ class Hirer extends Component {
         const jobInstance = await this.contractInstanceGenerator('BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelJob)(jobHash, {
             from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10)
+            gasPrice: +jobInstance.gasPrice.toString(10),
         });
         if (err) {
             this.setState({ isLoading: false, status: 'something went wrong! can not cancel job :(' });
@@ -118,34 +136,53 @@ class Hirer extends Component {
         console.log('jobLog cancel: ', jobLog);
     }
 
-    async acceptBid(jobHash) {
-        this.setState({ isLoading: true });
-        const { bidAddress } = this.state;
+    async approve(value) {
         const BBOinstance = await this.contractInstanceGenerator('BigbomTokenExtended');
         const BidInstance = await this.contractInstanceGenerator('BBFreelancerBid');
-        const [errApprove, approve] = await Utils.callMethod2(BBOinstance.instance.approve)(
-            BidInstance.address,
-            400e18,
-            {
-                from: BBOinstance.defaultAccount,
-                gasPrice: +BBOinstance.gasPrice.toString(10)
-            }
-        );
+        const [errApprove, approve] = await Utils.callMethod(BBOinstance.instance.approve)(BidInstance.address, value, {
+            from: BBOinstance.defaultAccount,
+            gasPrice: +BBOinstance.gasPrice.toString(10),
+        });
         if (errApprove) {
             this.setState({ isLoading: false, status: 'something went wrong! Can not approve bid! :(' });
             return console.log('errApprove: ', errApprove);
         }
         console.log('approve: ', approve);
+    }
+
+    async acceptBid() {
+        const { bidAddress, jobHash } = this.state;
+        const BidInstance = await this.contractInstanceGenerator('BBFreelancerBid');
         const [errAccept, jobLogAccept] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobHash, bidAddress, {
             from: BidInstance.defaultAccount,
-            gasPrice: +BidInstance.gasPrice.toString(10)
+            gasPrice: +BidInstance.gasPrice.toString(10),
         });
         if (errAccept) {
             this.setState({ isLoading: false, status: 'something went wrong! Can not accept bid! :(' });
-            return console.log('errAccept', errAccept);
+            console.log('errAccept', errAccept);
+            return;
+        }
+        console.log('jobLogAccept: ', jobLogAccept);
+    }
+
+    async acceptBidInit() {
+        const bidValue = 400e18;
+        this.setState({ isLoading: true });
+        const allowance = await this.getAllowance();
+        if (allowance === 0) {
+            console.log('case 1');
+            await this.approve(Math.pow(2, 255));
+            await this.acceptBid();
+        } else if (allowance > bidValue) {
+            console.log('case 2');
+            await this.acceptBid();
+        } else {
+            console.log('case 3');
+            await this.approve(0);
+            await this.approve(Math.pow(2, 255));
+            await this.acceptBid();
         }
         this.setState({ isLoading: false, status: 'Accepted!' });
-        console.log('jobLogAccept: ', jobLogAccept);
     }
 
     async rejectPayment(jobHash) {
@@ -153,7 +190,7 @@ class Hirer extends Component {
         const jobInstance = await this.contractInstanceGenerator('BBFreelancerPayment');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.rejectPayment)(jobHash, {
             from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10)
+            gasPrice: +jobInstance.gasPrice.toString(10),
         });
         if (err) {
             this.setState({ isLoading: false, status: 'something went wrong! can not reject payment :(' });
@@ -166,16 +203,16 @@ class Hirer extends Component {
     async acceptPayment(jobHash) {
         this.setState({ isLoading: true });
         const jobInstance = await this.contractInstanceGenerator('BBFreelancerPayment');
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.acceptPayment)(jobHash, {
+        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.acceptPayment)(jobHash, {
             from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10)
+            gasPrice: +jobInstance.gasPrice.toString(10),
         });
         if (err) {
             this.setState({ isLoading: false, status: 'something went wrong! can not accept payment :(' });
             return console.log(err);
         }
         this.setState({ isLoading: false, status: 'Accepted!' });
-        console.log('jobLog accept payment: ', jobLog);
+        console.log('payment log: ', paymentLog);
     }
 
     dataOnChange(e) {
@@ -194,7 +231,7 @@ class Hirer extends Component {
     }
 
     render() {
-        const { isLoading, jobHash, bidAddress, status } = this.state;
+        const { isLoading, jobHash, status } = this.state;
         const Loading = () => {
             if (!isLoading) {
                 return null;
@@ -226,7 +263,7 @@ class Hirer extends Component {
                 <p>
                     <input placeholder="address bid" onChange={e => this.bidAddressOnChange(e)} />
                     <input placeholder="Job hash" onChange={e => this.jobHashOnChange(e)} />
-                    <button onClick={() => this.acceptBid(jobHash, bidAddress)}>Accept Bid</button>
+                    <button onClick={() => this.acceptBidInit(jobHash)}>Accept Bid</button>
                 </p>
                 <p>
                     <input placeholder="Job hash" onChange={e => this.jobHashOnChange(e)} />
@@ -241,8 +278,54 @@ class Hirer extends Component {
                     <button onClick={() => this.getJob(jobHash)}>Get job detail</button>
                 </p>
                 <p>
-                    <input placeholder="Job hash" onChange={e => this.jobHashOnChange(e)} />
-                    <button onClick={() => this.getListJob()}>Get my list job</button>
+                    <button onClick={() => this.getPastEvents('BBFreelancerJob', 'JobCreated', ['banner'])}>
+                        Get my list job
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerJob', 'JobCanceled', ['banner'])}>
+                        Get canceled jobs
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerJob', 'JobStarted', ['banner'])}>
+                        Get Started jobs
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerJob', 'JobFinished', ['banner'])}>
+                        Get Finished jobs
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerBid', 'BidCreated', ['banner'])}>
+                        Get Bids
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerBid', 'BidCanceled', ['banner'])}>
+                        Get Canceled bids
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerBid', 'BidAccepted', ['banner'])}>
+                        Get Accepted bids
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerPayment', 'PaymentClaimed', ['banner'])}>
+                        Get Payment Claimed
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerPayment', 'PaymentAccepted', ['banner'])}>
+                        Get Payment Accepted
+                    </button>
+                </p>
+                <p>
+                    <button onClick={() => this.getPastEvents('BBFreelancerPayment', 'PaymentRejected', ['banner'])}>
+                        Get Payment Rejected
+                    </button>
                 </p>
             </div>
         );

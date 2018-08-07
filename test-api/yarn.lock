@@ -35,7 +35,7 @@
     normalize-scroll-left "^0.1.2"
     popper.js "^1.14.1"
     prop-types "^15.6.0"
-    react-event-listener "^0.6.0"
+    react--listener "^0.6.0"
     react-jss "^8.1.0"
     react-transition-group "^2.2.1"
     recompose "^0.27.0"
@@ -1549,7 +1549,7 @@ chokidar@^1.6.0:
     path-is-absolute "^1.0.0"
     readdirp "^2.0.0"
   optionalDependencies:
-    fsevents "^1.0.0"
+    fss "^1.0.0"
 
 chokidar@^2.0.2:
   version "2.0.4"
@@ -1568,7 +1568,7 @@ chokidar@^2.0.2:
     readdirp "^2.0.0"
     upath "^1.0.5"
   optionalDependencies:
-    fsevents "^1.2.2"
+    fss "^1.2.2"
 
 chownr@^1.0.1:
   version "1.0.1"
@@ -2516,7 +2516,7 @@ es6-map@^0.1.3:
     es6-iterator "~2.0.1"
     es6-set "~0.1.5"
     es6-symbol "~3.1.1"
-    event-emitter "~0.3.5"
+    -emitter "~0.3.5"
 
 es6-promise@^4.0.5:
   version "4.2.4"
@@ -2530,7 +2530,7 @@ es6-set@~0.1.5:
     es5-ext "~0.10.14"
     es6-iterator "~2.0.1"
     es6-symbol "3.1.1"
-    event-emitter "~0.3.5"
+    -emitter "~0.3.5"
 
 es6-symbol@3.1.1, es6-symbol@^3.1.1, es6-symbol@~3.1.1:
   version "3.1.1"
@@ -2888,28 +2888,28 @@ ethjs-unit@0.1.6:
     bn.js "4.11.6"
     number-to-bn "1.7.0"
 
-event-emitter@~0.3.5:
+-emitter@~0.3.5:
   version "0.3.5"
-  resolved "https://registry.yarnpkg.com/event-emitter/-/event-emitter-0.3.5.tgz#df8c69eef1647923c7157b9ce83840610b02cc39"
+  resolved "https://registry.yarnpkg.com/-emitter/-/-emitter-0.3.5.tgz#df8c69eef1647923c7157b9ce83840610b02cc39"
   dependencies:
     d "1"
     es5-ext "~0.10.14"
 
-eventemitter3@1.1.1:
+emitter3@1.1.1:
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-1.1.1.tgz#47786bdaa087caf7b1b75e73abc5c7d540158cd0"
+  resolved "https://registry.yarnpkg.com/emitter3/-/emitter3-1.1.1.tgz#47786bdaa087caf7b1b75e73abc5c7d540158cd0"
 
-eventemitter3@^3.0.0:
+emitter3@^3.0.0:
   version "3.1.0"
-  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.0.tgz#090b4d6cdbd645ed10bf750d4b5407942d7ba163"
+  resolved "https://registry.yarnpkg.com/emitter3/-/emitter3-3.1.0.tgz#090b4d6cdbd645ed10bf750d4b5407942d7ba163"
 
-events@^1.0.0:
+s@^1.0.0:
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/events/-/events-1.1.1.tgz#9ebdb7635ad099c70dcc4c2a1f5004288e8bd924"
+  resolved "https://registry.yarnpkg.com/s/-/s-1.1.1.tgz#9ebdb7635ad099c70dcc4c2a1f5004288e8bd924"
 
-eventsource@0.1.6:
+source@0.1.6:
   version "0.1.6"
-  resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-0.1.6.tgz#0acede849ed7dd1ccc32c811bb11b944d4f29232"
+  resolved "https://registry.yarnpkg.com/source/-/source-0.1.6.tgz#0acede849ed7dd1ccc32c811bb11b944d4f29232"
   dependencies:
     original ">=0.0.5"
 
@@ -3346,9 +3346,9 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
 
-fsevents@^1.0.0, fsevents@^1.1.3, fsevents@^1.2.2:
+fss@^1.0.0, fss@^1.1.3, fss@^1.2.2:
   version "1.2.4"
-  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-1.2.4.tgz#f41dcb1af2582af3692da36fc55cbd8e1041c426"
+  resolved "https://registry.yarnpkg.com/fss/-/fss-1.2.4.tgz#f41dcb1af2582af3692da36fc55cbd8e1041c426"
   dependencies:
     nan "^2.9.2"
     node-pre-gyp "^0.10.0"
@@ -3795,7 +3795,7 @@ http-proxy@^1.16.2:
   version "1.17.0"
   resolved "https://registry.yarnpkg.com/http-proxy/-/http-proxy-1.17.0.tgz#7ad38494658f84605e2f6db4436df410f4e5be9a"
   dependencies:
-    eventemitter3 "^3.0.0"
+    emitter3 "^3.0.0"
     follow-redirects "^1.0.0"
     requires-port "^1.0.0"
 
@@ -5348,7 +5348,7 @@ node-libs-browser@^2.0.0:
     constants-browserify "^1.0.0"
     crypto-browserify "^3.11.0"
     domain-browser "^1.1.1"
-    events "^1.0.0"
+    s "^1.0.0"
     https-browserify "^1.0.0"
     os-browserify "^0.3.0"
     path-browserify "0.0.0"
@@ -6398,9 +6398,9 @@ react-error-overlay@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-4.0.0.tgz#d198408a85b4070937a98667f500c832f86bd5d4"
 
-react-event-listener@^0.6.0:
+react--listener@^0.6.0:
   version "0.6.1"
-  resolved "https://registry.yarnpkg.com/react-event-listener/-/react-event-listener-0.6.1.tgz#41c7a80a66b398c27dd511e22712b02f3d4eccca"
+  resolved "https://registry.yarnpkg.com/react--listener/-/react--listener-0.6.1.tgz#41c7a80a66b398c27dd511e22712b02f3d4eccca"
   dependencies:
     "@babel/runtime" "^7.0.0-beta.42"
     prop-types "^15.6.0"
@@ -6463,7 +6463,7 @@ react-scripts@1.1.4:
     webpack-manifest-plugin "1.3.2"
     whatwg-fetch "2.0.3"
   optionalDependencies:
-    fsevents "^1.1.3"
+    fss "^1.1.3"
 
 react-transition-group@^2.2.1:
   version "2.4.0"
@@ -7106,7 +7106,7 @@ sockjs-client@1.1.4:
   resolved "https://registry.yarnpkg.com/sockjs-client/-/sockjs-client-1.1.4.tgz#5babe386b775e4cf14e7520911452654016c8b12"
   dependencies:
     debug "^2.6.6"
-    eventsource "0.1.6"
+    source "0.1.6"
     faye-websocket "~0.11.0"
     inherits "^2.0.1"
     json3 "^3.3.2"
@@ -7998,16 +7998,16 @@ web3-core-method@1.0.0-beta.35:
   dependencies:
     underscore "1.8.3"
     web3-core-helpers "1.0.0-beta.35"
-    web3-core-promievent "1.0.0-beta.35"
+    web3-core-promi "1.0.0-beta.35"
     web3-core-subscriptions "1.0.0-beta.35"
     web3-utils "1.0.0-beta.35"
 
-web3-core-promievent@1.0.0-beta.35:
+web3-core-promi@1.0.0-beta.35:
   version "1.0.0-beta.35"
-  resolved "https://registry.yarnpkg.com/web3-core-promievent/-/web3-core-promievent-1.0.0-beta.35.tgz#4f1b24737520fa423fee3afee110fbe82bcb8691"
+  resolved "https://registry.yarnpkg.com/web3-core-promi/-/web3-core-promi-1.0.0-beta.35.tgz#4f1b24737520fa423fee3afee110fbe82bcb8691"
   dependencies:
     any-promise "1.3.0"
-    eventemitter3 "1.1.1"
+    emitter3 "1.1.1"
 
 web3-core-requestmanager@1.0.0-beta.35:
   version "1.0.0-beta.35"
@@ -8023,7 +8023,7 @@ web3-core-subscriptions@1.0.0-beta.35:
   version "1.0.0-beta.35"
   resolved "https://registry.yarnpkg.com/web3-core-subscriptions/-/web3-core-subscriptions-1.0.0-beta.35.tgz#c1b76a2ad3c6e80f5d40b8ba560f01e0f4628758"
   dependencies:
-    eventemitter3 "1.1.1"
+    emitter3 "1.1.1"
     underscore "1.8.3"
     web3-core-helpers "1.0.0-beta.35"
 
@@ -8068,7 +8068,7 @@ web3-eth-contract@1.0.0-beta.35:
     web3-core "1.0.0-beta.35"
     web3-core-helpers "1.0.0-beta.35"
     web3-core-method "1.0.0-beta.35"
-    web3-core-promievent "1.0.0-beta.35"
+    web3-core-promi "1.0.0-beta.35"
     web3-core-subscriptions "1.0.0-beta.35"
     web3-eth-abi "1.0.0-beta.35"
     web3-utils "1.0.0-beta.35"

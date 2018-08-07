@@ -40,7 +40,7 @@ module.exports = {
         'react/require-default-props': 0,
         'react/jsx-wrap-multilines': 0,
 
-        'jsx-a11y/click-events-have-key-events': 0,
+        'jsx-a11y/click-s-have-key-s': 0,
         'jsx-a11y/no-static-element-interactions': 0,
         'jsx-a11y/anchor-is-valid': 0
     }

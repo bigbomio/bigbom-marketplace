@@ -42,7 +42,7 @@ class Freelancer extends Component {
             this.setState({ isLoading: false, status: 'something went wrong! Can not create bid! :(' });
             return console.log(err);
         }
-        // check event logs
+        // check  logs
         this.setState({ isLoading: false, bidAddress: BBFreelancerBid.defaultAccount, status: 'Created!' });
         console.log('joblog bid: ', jobLog);
     }
@@ -58,7 +58,7 @@ class Freelancer extends Component {
             this.setState({ isLoading: false, status: 'something went wrong! Can not cancel bid! :(' });
             return console.log(err);
         }
-        // check event logs
+        // check  logs
         this.setState({ isLoading: false, status: 'Canceled!' });
         console.log('joblog cancel bid: ', jobLog);
     }
@@ -74,7 +74,7 @@ class Freelancer extends Component {
             this.setState({ isLoading: false, status: 'something went wrong! Can not start job! :(' });
             return console.log(err);
         }
-        // check event logs
+        // check  logs
         this.setState({ isLoading: false, status: 'Started!' });
         console.log('joblog start: ', jobLog);
     }
@@ -90,7 +90,7 @@ class Freelancer extends Component {
             this.setState({ isLoading: false, status: 'something went wrong! Can not finish job! :(' });
             return console.log(err);
         }
-        // check event logs
+        // check  logs
         this.setState({ isLoading: false, status: 'Finished!' });
         console.log('joblog finish: ', jobLog);
     }
