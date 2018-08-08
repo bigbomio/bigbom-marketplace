@@ -6,7 +6,7 @@ class Home extends PureComponent {
     render() {
         return (
             <div id="home" className="container-wrp">
-                <div className="container-wrp home-wrp">
+                <div className="container-wrp home-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="home-intro">
                             <Grid item xs={6}>

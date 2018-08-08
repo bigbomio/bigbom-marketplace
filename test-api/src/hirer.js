@@ -6,7 +6,10 @@ import Config from './config';
 
 import './App.css';
 
-const web3 = global.web3;
+const web3 = window.web3;
+
+console.log(web3);
+
 const ipfs = new IPFS({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
 
 class Hirer extends Component {
@@ -19,7 +22,19 @@ class Hirer extends Component {
 
     async getPastEvents(type, event, category) {
         this.setState({ isLoading: true });
-        let contractInstance = await this.contractInstanceGenerator(type);
+        const contractInstance = await this.contractInstanceGenerator(type);
+
+        // const events = contractInstance.instance.allEvents({ fromBlock: 0, toBlock: 'latest' });
+        // events.watch(function(error, result) {
+        //     console.log(error, result);
+        // });
+        // // would get all past logs again.
+        // events.get(function(error, logs) {
+        //     console.log(error, logs);
+        // });
+        // // would stop and uninstall the filter
+        // events.stopWatching();
+
         contractInstance.instance[event](
             {},
             {

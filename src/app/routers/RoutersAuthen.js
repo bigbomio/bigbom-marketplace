@@ -5,10 +5,9 @@ import asyncComponent from '../components/_asynComponent';
 // import AsyncCatagories from '../components/Catagories';
 // import AsyncProducts from '../components/Products';
 // import AsyncMyComApi from '../components/myComApi';
-
-const AsyncHome = asyncComponent(() => import('../components/home'));
+const Home = asyncComponent(() => import('../components/home'));
 const AsyncAbout = asyncComponent(() => import('../components/About'));
-const AsyncCatagories = asyncComponent(() => import('../components/Categories'));
+const HirerCategories = asyncComponent(() => import('../components/HirerCategories'));
 const AsyncProducts = asyncComponent(() => import('../components/Products'));
 const AsyncMyComApi = asyncComponent(() => import('../components/myComApi'));
 
@@ -16,18 +15,18 @@ const routersAuthen = [
     {
         title: 'Home',
         path: '/',
-        component: AsyncHome,
+        component: Home,
         exact: true,
     },
     {
-        title: 'About',
-        path: '/about',
-        component: AsyncAbout,
+        title: 'Hire a Freelancer',
+        path: '/hirer',
+        component: HirerCategories,
     },
     {
-        title: 'Categories',
-        path: '/categories',
-        component: AsyncCatagories,
+        title: 'Find a Job',
+        path: '/about',
+        component: AsyncAbout,
     },
     {
         title: 'Products',

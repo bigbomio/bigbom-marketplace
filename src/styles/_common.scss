@@ -14,15 +14,68 @@ $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
     .wrapper {
         padding: 40px 0;
     }
-    .line-full-width {
-        display: block;
-        height: 1px;
-        border: 0;
-        border-top: 1px solid #ddd;
-        margin: 1em 0;
-        padding: 0;
-        width: 100%;
-        float: left;
+    .full-top-wrp {
+        background: #fff url('/images/homebg.png') no-repeat center center;
+        background-size: cover;
+        .main-intro {
+            padding-bottom: 60px;
+            h1 {
+                font-size: 30px;
+                color: #fff;
+                padding: 0 0 10px 0;
+                text-shadow: $thinShadow;
+                width: 100%;
+                font-weight: bold;
+            }
+            .description {
+                color: #c8f5dc;
+                font-size: 18px;
+                max-width: 800px;
+                text-shadow: $thinShadow;
+                line-height: 1.3;
+            }
+        }
+    }
+    .main-ct {
+        .wrapper {
+            background: #fff;
+            box-shadow: $thinShadow;
+            margin-top: -40px;
+            border-radius: 5px;
+        }
+        .main-ct-left {
+            padding: 0 30px;
+        }
+    }
+    .mkp-form-row {
+        padding-bottom: 20px;
+        .mkp-form-row-label {
+            font-size: 20px;
+            width: 100%;
+            color: #444;
+            display: inline-block;
+            font-weight: bold;
+            padding: 0 0 10px 0;
+        }
+        .mkp-form-row-description {
+            font-size: 16px;
+            color: #777;
+            padding: 0 0 10px 0;
+            display: inline-block;
+        }
+        input[type='text'],
+        textarea {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            &:focus {
+                border: 1px solid $green;
+            }
+        }
+        .creatable-select {
+            padding: 0 0 10px 0;
+        }
     }
     .btn {
         border-radius: 25px;

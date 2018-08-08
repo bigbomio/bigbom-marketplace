@@ -4,6 +4,7 @@
 @import 'footer';
 
 @import './components/home';
+@import './components/hirer';
 
 body {
     padding: 0;
@@ -34,42 +35,6 @@ body {
     to {
         transform: rotate(360deg);
     }
-}
-
-ul {
-    list-style: none;
-    -webkit-padding-start: 0;
-}
-
-.list-catagories {
-    li {
-        display: inline-block;
-        padding: 0 10px;
-
-        &.curr {
-            a {
-                color: #555;
-            }
-        }
-
-        a {
-            display: inline-block;
-            padding: 5px 10px;
-            font-size: 20px;
-            color: #999;
-            text-decoration: none;
-            text-transform: capitalize;
-
-            &:hover {
-                color: #555;
-            }
-        }
-    }
-}
-
-.cataDetail {
-    font-size: 20px;
-    margin-top: 50px;
 }
 
 .productsWrap {
@@ -146,5 +111,30 @@ ul {
     &.enable {
         cursor: pointer;
         opacity: 1;
+    }
+}
+
+.main-nav {
+    background: #252525;
+    li {
+        float: left;
+        &.actived {
+            a {
+                border-bottom: 2px solid $green;
+                padding: 15px 25px 13px 25px;
+                color: $green;
+                background: #353535;
+            }
+        }
+        a {
+            padding: 15px 25px;
+            display: inline-block;
+            color: #fff;
+            font-size: 18px;
+            transition: all 0.3s ease-in;
+            &:hover {
+                color: $green;
+            }
+        }
     }
 }

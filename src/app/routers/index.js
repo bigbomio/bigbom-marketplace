@@ -43,7 +43,6 @@ class Routers extends PureComponent {
                             {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
                             <Route component={NotFound} />
                         </Switch>
-                        <hr className="line-full-width" />
                         <Footer />
                     </div>
                 </ScrollToTop>
