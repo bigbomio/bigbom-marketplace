@@ -5,8 +5,8 @@ import { withStyles } from '@material-ui/core/styles';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+
+import Utils from '../../_utils/utils';
 
 const styles = () => ({
     lightTooltip: {
@@ -19,6 +19,7 @@ const jobs = [
     {
         id: 'wwkrjhfs',
         title: 'Design some banner ad',
+        freelancer: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551',
         awardedBid: '200',
         currency: 'USD',
         time: '10 days',
@@ -26,7 +27,8 @@ const jobs = [
     },
     {
         id: 'wwkjh3fs',
-        title: 'Write program to scrap data from webpage (javascript)',
+        title: 'Design some banner ad 2',
+        freelancer: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551',
         awardedBid: '200',
         currency: 'USD',
         time: '10 days',
@@ -34,7 +36,8 @@ const jobs = [
     },
     {
         id: 'wwkjhfs3',
-        title: 'Reactjs website development with AWS amplify, API integration',
+        title: 'Design some banner ad 3',
+        freelancer: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551',
         awardedBid: '200',
         currency: 'USD',
         time: '10 days',
@@ -42,7 +45,8 @@ const jobs = [
     },
     {
         id: 'wwkjhfsh3',
-        title: 'Build me a push notification software',
+        title: 'Design some banner ad 5',
+        freelancer: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551',
         awardedBid: '200',
         currency: 'USD',
         time: '10 days',
@@ -51,19 +55,10 @@ const jobs = [
 ];
 
 class HirerDashboard extends Component {
-    state = {
-        checkedStarted: true,
-        checkedCompleted: true,
-        checkedBidding: true,
-        checkedExpired: false,
-    };
-    handleChange = name => event => {
-        this.setState({ [name]: event.target.checked });
-    };
     render() {
         const { classes } = this.props;
         return (
-            <div id="hirer" className="container-wrp">
+            <div className="container-wrp">
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
@@ -71,9 +66,7 @@ class HirerDashboard extends Component {
                                 <h1>Your Jobs</h1>
                             </Grid>
                             <Grid item xs={4} className="main-intro-right">
-                                <ButtonBase className="btn btn-normal btn-white btn-create">
-                                    <FontAwesomeIcon icon="plus" /> Create A New Job
-                                </ButtonBase>
+                                <ButtonBase className="btn btn-normal btn-white">+ Create A New Job</ButtonBase>
                             </Grid>
                         </Grid>
                     </div>
@@ -81,63 +74,16 @@ class HirerDashboard extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid container className="single-body">
-                            <fieldset className="list-filter">
-                                <legend>Filter:</legend>
-                                <Grid container className="list-filter-body">
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedStarted}
-                                                    onChange={this.handleChange('checkedStarted')}
-                                                    value="checkedStarted"
-                                                />
-                                            }
-                                            label="Started"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedCompleted}
-                                                    onChange={this.handleChange('checkedCompleted')}
-                                                    value="checkedCompleted"
-                                                />
-                                            }
-                                            label="Completed"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedBidding}
-                                                    onChange={this.handleChange('checkedBidding')}
-                                                    value="checkedBidding"
-                                                />
-                                            }
-                                            label="Bidding"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedExpired}
-                                                    onChange={this.handleChange('checkedExpired')}
-                                                    value="checkedExpired"
-                                                />
-                                            }
-                                            label="Expired"
-                                        />
-                                    </Grid>
-                                </Grid>
-                            </fieldset>
+                            <Grid container className="list-filter">
+                                Filter
+                            </Grid>
                             <Grid container className="list-container">
                                 <Grid container className="list-header">
-                                    <Grid item xs={5}>
+                                    <Grid item xs={3}>
                                         Job name
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        Freelancer
                                     </Grid>
                                     <Grid item xs={2}>
                                         Awarded Bid
@@ -156,8 +102,21 @@ class HirerDashboard extends Component {
                                     {jobs.map(job => {
                                         return (
                                             <Grid key={job.id} container className="list-body-row">
-                                                <Grid item xs={5} className="title">
+                                                <Grid item xs={3} className="title">
                                                     <a href="/">{job.title}</a>
+                                                </Grid>
+                                                <Grid item xs={2}>
+                                                    <Tooltip
+                                                        title={job.freelancer}
+                                                        classes={{
+                                                            tooltip: classes.lightTooltip,
+                                                            popper: classes.arrowPopper,
+                                                        }}
+                                                    >
+                                                        <span aria-label={job.freelancer}>
+                                                            {Utils.truncate(job.freelancer, 19)}
+                                                        </span>
+                                                    </Tooltip>
                                                 </Grid>
                                                 <Grid item xs={2}>
                                                     {job.awardedBid} {job.currency}

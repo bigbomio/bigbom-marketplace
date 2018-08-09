@@ -1,14 +1,28 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
+import Grid from '@material-ui/core/Grid';
+import Tooltip from '@material-ui/core/Tooltip';
+
+import Utils from '../_utils/utils';
 
 import HirerDashboard from '../components/hirer/HirerDashboard';
 import HirerPostJob from '../components/hirer//HirerPostJob';
 import NotFound from '../components/NotFound';
 
-class HirerCatagories extends PureComponent {
+const styles = theme => ({
+    lightTooltip: {
+        background: theme.palette.common.white,
+        color: '#555',
+        boxShadow: theme.shadows[1],
+        fontSize: 15,
+        maxWidth: 'inherit',
+    },
+});
+class HirerCatagories extends Component {
     render() {
-        const { match } = this.props;
+        const { match, classes } = this.props;
         const listSubLink = [
             {
                 title: 'Post a Job',
@@ -38,6 +52,27 @@ class HirerCatagories extends PureComponent {
                                 </Route>
                             ))}
                         </ul>
+                        <Grid container className="account-info">
+                            <Tooltip
+                                title="0xb10ca39DFa4903AE057E8C26E39377cfb4989551"
+                                classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}
+                            >
+                                <Grid
+                                    item
+                                    xs={7}
+                                    className="account-info-item"
+                                    aria-label="0xb10ca39DFa4903AE057E8C26E39377cfb4989551"
+                                >
+                                    <div>Your Wallet Address</div>
+
+                                    {Utils.truncate('0xb10ca39DFa4903AE057E8C26E39377cfb4989551', 24)}
+                                </Grid>
+                            </Tooltip>
+                            <Grid item xs={5} className="account-info-item right">
+                                <div>Balance</div>
+                                <span>10.000</span> USD
+                            </Grid>
+                        </Grid>
                     </div>
                 </div>
                 <Switch>
@@ -51,6 +86,7 @@ class HirerCatagories extends PureComponent {
 
 HirerCatagories.propTypes = {
     match: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
 };
 
-export default HirerCatagories;
+export default withStyles(styles)(HirerCatagories);

@@ -1,7 +1,12 @@
-$green: #4cc763;
+$green: #40bd56;
+$darkGreen: #4aa05a;
+$blue: #0ca1f9;
+$darkBlue: hsl(212, 81%, 49%);
+$dark: #252525;
+$softDark: #353535;
 $thinShadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
-
+$red: red;
 #bigbomMarketplace {
     .container-wrp {
         float: left;
@@ -18,7 +23,8 @@ $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
         background: #fff url('/images/homebg.png') no-repeat center center;
         background-size: cover;
         .main-intro {
-            padding-bottom: 60px;
+            padding-bottom: 30px;
+            height: fit-content;
             h1 {
                 font-size: 30px;
                 color: #fff;
@@ -34,6 +40,11 @@ $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
                 text-shadow: $thinShadow;
                 line-height: 1.3;
             }
+            .main-intro-right {
+                button {
+                    float: right;
+                }
+            }
         }
     }
     .main-ct {
@@ -46,9 +57,12 @@ $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
         .main-ct-left {
             padding: 0 30px;
         }
+        .single-body {
+            padding: 30px;
+        }
     }
     .mkp-form-row {
-        padding-bottom: 20px;
+        padding-bottom: 40px;
         .mkp-form-row-label {
             font-size: 20px;
             width: 100%;
@@ -76,13 +90,41 @@ $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
         .creatable-select {
             padding: 0 0 10px 0;
         }
+        .left {
+            padding-right: 20px;
+        }
+    }
+    .account-info {
+        padding: 4px 10px;
+        width: 30%;
+        float: right;
+        border-right: 1px solid rgba(0, 0, 0, 0.3);
+        border-left: 1px solid rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.2);
+        box-sizing: border-box;
+        height: fit-content;
+        .account-info-item {
+            color: #fff;
+            font-size: 14px;
+            line-height: 19px;
+            &.right {
+                padding-left: 10px;
+            }
+            div {
+                color: #999;
+                font-size: 12px;
+            }
+            span {
+                font-weight: bold;
+            }
+        }
     }
     .btn {
         border-radius: 25px;
     }
     .btn-normal {
-        font-size: 16px;
-        padding: 6px 25px;
+        font-size: 14px;
+        padding: 6px 25px 7px 25px;
     }
     .btn-medium {
         font-size: 20px;
@@ -92,9 +134,73 @@ $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
         background-color: $green;
         color: #fff;
     }
+    .btn-blue {
+        background-color: $blue;
+        color: #fff;
+    }
     .btn-white {
         background-color: #fff;
         color: $green;
         box-shadow: $thinShadow;
+    }
+    .list-container {
+        padding: 0;
+        .list-header {
+            background: #daeeda;
+            color: $darkGreen;
+            text-transform: uppercase;
+            font-size: 14px;
+            div {
+                border-right: 1px solid rgb(184, 231, 184);
+                padding: 15px;
+            }
+        }
+        .list-body {
+            box-shadow: $thinShadow;
+            color: #555;
+            font-size: 14px;
+            .list-body-row {
+                border-bottom: 1px dotted #ddd;
+                div {
+                    border-right: 1px solid #ccc;
+                    padding: 15px;
+                    &.title {
+                        a {
+                            font-weight: bold;
+                            font-size: 16px;
+                            color: $softDark;
+                            &:hover {
+                                color: $darkBlue;
+                            }
+                        }
+                    }
+                }
+            }
+            .action {
+                text-align: center;
+                button {
+                    &.cancel {
+                        color: $red;
+                    }
+                    svg {
+                        height: 22px;
+                        width: 22px;
+                    }
+                }
+            }
+        }
+    }
+    .list-filter {
+        border: 1px solid #ccc;
+        margin-bottom: 30px;
+        width: 100%;
+        box-sizing: border-box;
+        .list-filter-body {
+            padding: 20px;
+        }
+        legend {
+            font-size: 18px;
+            padding: 0 5px;
+        }
     }
 }

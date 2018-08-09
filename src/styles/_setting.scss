@@ -143,7 +143,9 @@ img {
 
 a {
     text-decoration: none;
+    transition: color 0.3s ease-out;
 }
 body {
     background: #f9f9f9;
+    font-family: 'Open Sans', sans-serif;
 }
