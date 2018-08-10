@@ -7,7 +7,7 @@ import asyncComponent from '../components/_asynComponent';
 // import AsyncMyComApi from '../components/myComApi';
 const Home = asyncComponent(() => import('../components/home'));
 const AsyncAbout = asyncComponent(() => import('../components/About'));
-const HirerCategories = asyncComponent(() => import('../components/HirerCategories'));
+const Hirer = asyncComponent(() => import('../components/hirer'));
 const AsyncProducts = asyncComponent(() => import('../components/Products'));
 const AsyncMyComApi = asyncComponent(() => import('../components/myComApi'));
 
@@ -21,7 +21,7 @@ const routersAuthen = [
     {
         title: 'Hire a Freelancer',
         path: '/hirer',
-        component: HirerCategories,
+        component: Hirer,
     },
     {
         title: 'Find a Job',

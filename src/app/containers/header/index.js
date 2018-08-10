@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Route, Link } from 'react-router-dom';
-// import PropTypes from 'prop-types';
+//import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import ButtonBase from '@material-ui/core/ButtonBase';
@@ -17,7 +17,6 @@ class Header extends PureComponent {
 
     render() {
         const { routes } = this.state;
-
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
@@ -29,15 +28,19 @@ class Header extends PureComponent {
                         </div>
                         {routes.length && (
                             <ul className="nav">
-                                {routes.map((route, key) => (
-                                    <Route key={key} path={route.path} exact={route.exact}>
-                                        {({ match }) => (
-                                            <li className={match ? 'active' : null}>
-                                                <Link to={route.path}>{route.title}</Link>
-                                            </li>
-                                        )}
-                                    </Route>
-                                ))}
+                                {routes.map((route, key) => {
+                                    return (
+                                        <Route key={key} path={route.path} exact={route.exact}>
+                                            {({ match }) => {
+                                                return (
+                                                    <li className={match ? 'active' : null}>
+                                                        <Link to={route.path}>{route.title}</Link>
+                                                    </li>
+                                                );
+                                            }}
+                                        </Route>
+                                    );
+                                })}
                                 <li>
                                     <ButtonBase variant="contained" className="btn btn-normal btn-green">
                                         Login

@@ -6,4 +6,35 @@
             margin-right: 10px;
         }
     }
+    .freelancer-bidding {
+        padding: 40px 0;
+        .list-container {
+            .list-header {
+                background: #2070b5;
+                color: #fff;
+                div {
+                    border-right: 0;
+                }
+            }
+            .list-body {
+                .list-body-row {
+                    .title {
+                        align-items: center;
+                        display: flex;
+                        .avatar {
+                            padding-right: 5px;
+                            svg {
+                                width: 30px;
+                                height: 30px;
+                            }
+                        }
+                    }
+                    border-bottom: 1px solid #eee;
+                    div {
+                        border-right: none;
+                    }
+                }
+            }
+        }
+    }
 }

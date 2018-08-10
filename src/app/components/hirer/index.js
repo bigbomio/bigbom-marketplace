@@ -5,11 +5,13 @@ import { Link, Route, Switch } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 
-import Utils from '../_utils/utils';
+import Utils from '../../_utils/utils';
 
-import HirerDashboard from '../components/hirer/HirerDashboard';
-import HirerPostJob from '../components/hirer//HirerPostJob';
-import NotFound from '../components/NotFound';
+import HirerDashboard from '../../components/hirer/HirerDashboard';
+import JobDetail from '../../components/hirer/JobDetail';
+import HirerPostJob from '../../components/hirer//HirerPostJob';
+import Jobs from '../../_services/jobData';
+import NotFound from '../../components/NotFound';
 
 const styles = theme => ({
     lightTooltip: {
@@ -76,6 +78,7 @@ class HirerCatagories extends Component {
                     </div>
                 </div>
                 <Switch>
+                    <Route path={`${match.url}/dashboard/:jobId`} component={JobDetail} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>

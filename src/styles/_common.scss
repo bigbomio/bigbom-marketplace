@@ -122,6 +122,10 @@ $red: red;
     .btn {
         border-radius: 25px;
     }
+    .btn-small {
+        font-size: 12px;
+        padding: 3px 15px 4px 12px;
+    }
     .btn-normal {
         font-size: 14px;
         padding: 6px 25px 7px 25px;
@@ -168,6 +172,7 @@ $red: red;
                         a {
                             font-weight: bold;
                             font-size: 16px;
+                            line-height: 1.5;
                             color: $softDark;
                             &:hover {
                                 color: $darkBlue;
@@ -177,7 +182,6 @@ $red: red;
                 }
             }
             .action {
-                text-align: center;
                 button {
                     &.cancel {
                         color: $red;
@@ -201,6 +205,80 @@ $red: red;
         legend {
             font-size: 18px;
             padding: 0 5px;
+        }
+    }
+    .bold {
+        font-weight: bold;
+    }
+    .job-detail {
+        margin-bottom: 40px;
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .job-detail-row {
+            padding: 20px;
+            border: 1px solid $green;
+            box-shadow: $thinShadow;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            .job-detail-col {
+                border-right: 1px solid #ccc;
+                padding-left: 20px;
+                padding-right: 20px;
+                &.status {
+                    align-items: center;
+                    display: flex;
+                    flex-direction: column;
+                }
+                &:last-child {
+                    border: none;
+                }
+                .name {
+                    font-size: 14px;
+                    color: #777;
+                    padding-bottom: 10px;
+                }
+                .ct {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: $darkGreen;
+                }
+            }
+        }
+        .job-detail-description {
+            .name {
+                font-size: 16px;
+                font-weight: bold;
+                border-bottom: 1px dotted #ccc;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+                margin-top: 20px;
+            }
+            .ct {
+                line-height: 1.6;
+                .skill {
+                    width: 100%;
+                    padding-top: 20px;
+                    span {
+                        background: #f9f9f9;
+                        border-radius: 15px;
+                        padding: 5px 10px;
+                        font-size: 14px;
+                        margin-right: 5px;
+                        box-shadow: $thinShadow;
+                        &.bold {
+                            background: none;
+                            border-radius: 0;
+                            padding: 0 10px 0 0;
+                            font-size: inherit;
+                            box-shadow: none;
+                        }
+                    }
+                }
+            }
         }
     }
 }

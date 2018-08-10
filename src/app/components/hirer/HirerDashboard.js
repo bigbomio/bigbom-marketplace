@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
+import { Link, Route } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -8,47 +9,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 
+import Jobs from '../../_services/jobData';
+import JobDetail from './JobDetail';
+
 const styles = () => ({
     lightTooltip: {
         fontSize: 15,
         maxWidth: 'inherit',
     },
 });
-
-const jobs = [
-    {
-        id: 'wwkrjhfs',
-        title: 'Design some banner ad',
-        awardedBid: '200',
-        currency: 'USD',
-        time: '10 days',
-        status: 'started',
-    },
-    {
-        id: 'wwkjh3fs',
-        title: 'Write program to scrap data from webpage (javascript)',
-        awardedBid: '200',
-        currency: 'USD',
-        time: '10 days',
-        status: 'completed',
-    },
-    {
-        id: 'wwkjhfs3',
-        title: 'Reactjs website development with AWS amplify, API integration',
-        awardedBid: '200',
-        currency: 'USD',
-        time: '10 days',
-        status: 'bidding',
-    },
-    {
-        id: 'wwkjhfsh3',
-        title: 'Build me a push notification software',
-        awardedBid: '200',
-        currency: 'USD',
-        time: '10 days',
-        status: 'bidding',
-    },
-];
 
 class HirerDashboard extends Component {
     state = {
@@ -61,7 +30,7 @@ class HirerDashboard extends Component {
         this.setState({ [name]: event.target.checked });
     };
     render() {
-        const { classes } = this.props;
+        const { classes, match } = this.props;
         return (
             <div id="hirer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
@@ -81,6 +50,10 @@ class HirerDashboard extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid container className="single-body">
+                            {/* <Route
+                                path={`${match.url}/:jobId`}
+                                render={props => <JobDetail data={Jobs} {...props} />}
+                            /> */}
                             <fieldset className="list-filter">
                                 <legend>Filter:</legend>
                                 <Grid container className="list-filter-body">
@@ -136,14 +109,14 @@ class HirerDashboard extends Component {
                             </fieldset>
                             <Grid container className="list-container">
                                 <Grid container className="list-header">
-                                    <Grid item xs={5}>
+                                    <Grid item xs={6}>
                                         Job name
                                     </Grid>
                                     <Grid item xs={2}>
-                                        Awarded Bid
+                                        Budget
                                     </Grid>
-                                    <Grid item xs={2}>
-                                        Time
+                                    <Grid item xs={1}>
+                                        Bid
                                     </Grid>
                                     <Grid item xs={2}>
                                         Status
@@ -152,39 +125,43 @@ class HirerDashboard extends Component {
                                         Action
                                     </Grid>
                                 </Grid>
-                                <Grid container className="list-body">
-                                    {jobs.map(job => {
-                                        return (
-                                            <Grid key={job.id} container className="list-body-row">
-                                                <Grid item xs={5} className="title">
-                                                    <a href="/">{job.title}</a>
+
+                                {Jobs.length && (
+                                    <Grid container className="list-body">
+                                        {Jobs.map(job => {
+                                            return (
+                                                <Grid key={job.id} container className="list-body-row">
+                                                    <Grid item xs={6} className="title">
+                                                        <Link to={`${match.url}/${job.id}`}>{job.title}</Link>
+                                                    </Grid>
+                                                    <Grid item xs={2}>
+                                                        <span className="bold">{job.budget}</span>
+                                                        {' ' + job.currency}
+                                                    </Grid>
+                                                    <Grid item xs={1}>
+                                                        {job.bid.length}
+                                                    </Grid>
+                                                    <Grid item xs={2}>
+                                                        {job.status}
+                                                    </Grid>
+                                                    <Grid item xs={1} className="action">
+                                                        <Tooltip
+                                                            title="Cancel"
+                                                            classes={{
+                                                                tooltip: classes.lightTooltip,
+                                                                popper: classes.arrowPopper,
+                                                            }}
+                                                        >
+                                                            <ButtonBase aria-label="Cancel" className="cancel">
+                                                                <FontAwesomeIcon icon="minus-circle" />
+                                                            </ButtonBase>
+                                                        </Tooltip>
+                                                    </Grid>
                                                 </Grid>
-                                                <Grid item xs={2}>
-                                                    {job.awardedBid} {job.currency}
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                    {job.time}
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                    {job.status}
-                                                </Grid>
-                                                <Grid item xs={1} className="action">
-                                                    <Tooltip
-                                                        title="Cancel"
-                                                        classes={{
-                                                            tooltip: classes.lightTooltip,
-                                                            popper: classes.arrowPopper,
-                                                        }}
-                                                    >
-                                                        <ButtonBase aria-label="Cancel" className="cancel">
-                                                            <FontAwesomeIcon icon="minus-circle" />
-                                                        </ButtonBase>
-                                                    </Tooltip>
-                                                </Grid>
-                                            </Grid>
-                                        );
-                                    })}
-                                </Grid>
+                                            );
+                                        })}
+                                    </Grid>
+                                )}
                             </Grid>
                         </Grid>
                     </div>
@@ -195,6 +172,7 @@ class HirerDashboard extends Component {
 }
 HirerDashboard.propTypes = {
     classes: PropTypes.object.isRequired,
+    match: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(HirerDashboard);
