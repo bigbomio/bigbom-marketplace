@@ -1,23 +1,15 @@
 import React, { Component } from 'react';
 import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
-import { Link, Route } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import Tooltip from '@material-ui/core/Tooltip';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
+import Select from 'react-select';
 
 import Jobs from '../../_services/jobData';
-import JobDetail from './JobDetail';
-
-const styles = () => ({
-    lightTooltip: {
-        fontSize: 15,
-        maxWidth: 'inherit',
-    },
-});
+import Categories from '../../_services/categories';
 
 class HirerDashboard extends Component {
     state = {
@@ -26,11 +18,19 @@ class HirerDashboard extends Component {
         checkedBidding: true,
         checkedExpired: false,
     };
+    createAction = () => {
+        const { history } = this.props;
+        history.push('/hirer');
+    };
     handleChange = name => event => {
         this.setState({ [name]: event.target.checked });
     };
+    handleChangeCategory = selectedOption => {
+        this.setState({ selectedCategory: selectedOption });
+    };
     render() {
-        const { classes, match } = this.props;
+        const { match } = this.props;
+        const { selectedCategory } = this.state;
         return (
             <div id="hirer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
@@ -40,7 +40,7 @@ class HirerDashboard extends Component {
                                 <h1>Your Jobs</h1>
                             </Grid>
                             <Grid item xs={4} className="main-intro-right">
-                                <ButtonBase className="btn btn-normal btn-white btn-create">
+                                <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
                                     <FontAwesomeIcon icon="plus" /> Create A New Job
                                 </ButtonBase>
                             </Grid>
@@ -50,10 +50,6 @@ class HirerDashboard extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid container className="single-body">
-                            {/* <Route
-                                path={`${match.url}/:jobId`}
-                                render={props => <JobDetail data={Jobs} {...props} />}
-                            /> */}
                             <fieldset className="list-filter">
                                 <legend>Filter:</legend>
                                 <Grid container className="list-filter-body">
@@ -105,11 +101,20 @@ class HirerDashboard extends Component {
                                             label="Expired"
                                         />
                                     </Grid>
+                                    <Grid item xs={4}>
+                                        <Select
+                                            value={selectedCategory}
+                                            onChange={this.handleChangeCategory}
+                                            options={Categories}
+                                            isMulti
+                                            placeholder="Select category..."
+                                        />
+                                    </Grid>
                                 </Grid>
                             </fieldset>
                             <Grid container className="list-container">
                                 <Grid container className="list-header">
-                                    <Grid item xs={6}>
+                                    <Grid item xs={5}>
                                         Job name
                                     </Grid>
                                     <Grid item xs={2}>
@@ -121,7 +126,7 @@ class HirerDashboard extends Component {
                                     <Grid item xs={2}>
                                         Status
                                     </Grid>
-                                    <Grid item xs={1}>
+                                    <Grid item xs={2}>
                                         Action
                                     </Grid>
                                 </Grid>
@@ -131,7 +136,7 @@ class HirerDashboard extends Component {
                                         {Jobs.map(job => {
                                             return (
                                                 <Grid key={job.id} container className="list-body-row">
-                                                    <Grid item xs={6} className="title">
+                                                    <Grid item xs={5} className="title">
                                                         <Link to={`${match.url}/${job.id}`}>{job.title}</Link>
                                                     </Grid>
                                                     <Grid item xs={2}>
@@ -144,18 +149,14 @@ class HirerDashboard extends Component {
                                                     <Grid item xs={2}>
                                                         {job.status}
                                                     </Grid>
-                                                    <Grid item xs={1} className="action">
-                                                        <Tooltip
-                                                            title="Cancel"
-                                                            classes={{
-                                                                tooltip: classes.lightTooltip,
-                                                                popper: classes.arrowPopper,
-                                                            }}
+                                                    <Grid item xs={2} className="action">
+                                                        <ButtonBase
+                                                            aria-label="Cancel"
+                                                            className="btn btn-small btn-red"
                                                         >
-                                                            <ButtonBase aria-label="Cancel" className="cancel">
-                                                                <FontAwesomeIcon icon="minus-circle" />
-                                                            </ButtonBase>
-                                                        </Tooltip>
+                                                            <FontAwesomeIcon icon="minus-circle" />
+                                                            Cancel
+                                                        </ButtonBase>
                                                     </Grid>
                                                 </Grid>
                                             );
@@ -171,8 +172,8 @@ class HirerDashboard extends Component {
     }
 }
 HirerDashboard.propTypes = {
-    classes: PropTypes.object.isRequired,
     match: PropTypes.object.isRequired,
+    history: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(HirerDashboard);
+export default HirerDashboard;

@@ -67,7 +67,7 @@ class HirerCatagories extends Component {
                                 >
                                     <div>Your Wallet Address</div>
 
-                                    {Utils.truncate('0xb10ca39DFa4903AE057E8C26E39377cfb4989551', 24)}
+                                    {Utils.truncate('0xb10ca39DFa4903AE057E8C26E39377cfb4989551', 22)}
                                 </Grid>
                             </Tooltip>
                             <Grid item xs={5} className="account-info-item right">
@@ -78,8 +78,12 @@ class HirerCatagories extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/dashboard/:jobId`} component={JobDetail} />
+                    <Route
+                        path={`${match.url}/dashboard/:jobId`}
+                        render={props => <JobDetail data={Jobs} {...props} />}
+                    />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
+
                     <Route component={NotFound} />
                 </Switch>
             </div>

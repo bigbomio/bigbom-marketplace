@@ -233,10 +233,17 @@ body {
 
 #bigbomMarketplace .btn {
   border-radius: 25px; }
+  #bigbomMarketplace .btn svg {
+    margin-right: 5px;
+    width: 18px;
+    height: 18px; }
 
 #bigbomMarketplace .btn-small {
   font-size: 12px;
   padding: 3px 15px 4px 12px; }
+  #bigbomMarketplace .btn-small svg {
+    width: 12px;
+    height: 12px; }
 
 #bigbomMarketplace .btn-normal {
   font-size: 14px;
@@ -250,6 +257,10 @@ body {
   background-color: #40bd56;
   color: #fff; }
 
+#bigbomMarketplace .btn-red {
+  background-color: red;
+  color: #fff; }
+
 #bigbomMarketplace .btn-blue {
   background-color: #0ca1f9;
   color: #fff; }
@@ -257,6 +268,11 @@ body {
 #bigbomMarketplace .btn-white {
   background-color: #fff;
   color: #40bd56;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+#bigbomMarketplace .btn-default {
+  background-color: #f9f9f9;
+  color: #252525;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
 
 #bigbomMarketplace .list-container {
@@ -285,11 +301,6 @@ body {
           color: #353535; }
           #bigbomMarketplace .list-container .list-body .list-body-row div.title a:hover {
             color: #1876e2; }
-    #bigbomMarketplace .list-container .list-body .action button.cancel {
-      color: red; }
-    #bigbomMarketplace .list-container .list-body .action button svg {
-      height: 22px;
-      width: 22px; }
 
 #bigbomMarketplace .list-filter {
   border: 1px solid #ccc;
@@ -523,6 +534,14 @@ body {
           height: 30px; }
     #hirer .freelancer-bidding .list-container .list-body .list-body-row div {
       border-right: none; }
+
+#bigbomMarketplace .job-detail .btn-back {
+  margin-top: -30px;
+  margin-bottom: 30px; }
+
+#bigbomMarketplace .job-detail .full-top-wrp .main-intro h1 {
+  font-size: 25px;
+  line-height: 1.4; }
 
 body {
   padding: 0;

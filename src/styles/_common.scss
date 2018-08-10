@@ -121,10 +121,19 @@ $red: red;
     }
     .btn {
         border-radius: 25px;
+        svg {
+            margin-right: 5px;
+            width: 18px;
+            height: 18px;
+        }
     }
     .btn-small {
         font-size: 12px;
         padding: 3px 15px 4px 12px;
+        svg {
+            width: 12px;
+            height: 12px;
+        }
     }
     .btn-normal {
         font-size: 14px;
@@ -138,6 +147,10 @@ $red: red;
         background-color: $green;
         color: #fff;
     }
+    .btn-red {
+        background-color: $red;
+        color: #fff;
+    }
     .btn-blue {
         background-color: $blue;
         color: #fff;
@@ -145,6 +158,11 @@ $red: red;
     .btn-white {
         background-color: #fff;
         color: $green;
+        box-shadow: $thinShadow;
+    }
+    .btn-default {
+        background-color: #f9f9f9;
+        color: $dark;
         box-shadow: $thinShadow;
     }
     .list-container {
@@ -178,17 +196,6 @@ $red: red;
                                 color: $darkBlue;
                             }
                         }
-                    }
-                }
-            }
-            .action {
-                button {
-                    &.cancel {
-                        color: $red;
-                    }
-                    svg {
-                        height: 22px;
-                        width: 22px;
                     }
                 }
             }
