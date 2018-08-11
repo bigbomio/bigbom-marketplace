@@ -3,12 +3,15 @@ import PropTypes from 'prop-types';
 import { Router, Route, Switch } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 
+import asyncComponent from '../components/_asynComponent';
 import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
 import RoutersUnAuthen from './RoutersUnAuthen';
 import RoutersAuthen from './RoutersAuthen';
+
+const Home = asyncComponent(() => import('../components/home'));
 
 class Routers extends PureComponent {
     constructor(props) {
@@ -40,6 +43,7 @@ class Routers extends PureComponent {
                         </Helmet>
                         <Header />
                         <Switch>
+                            <Route exact path="/" component={Home} />
                             {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
                             <Route component={NotFound} />
                         </Switch>

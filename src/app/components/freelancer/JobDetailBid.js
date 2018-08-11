@@ -27,7 +27,7 @@ const skillShow = job => {
     );
 };
 
-class JobDetail extends Component {
+class JobDetailBid extends Component {
     back = () => {
         const { history } = this.props;
         history.goBack();
@@ -43,7 +43,7 @@ class JobDetail extends Component {
 
         if (job)
             jobData = (
-                <div id="hirer" className="container-wrp">
+                <div id="freelancer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
                         <div className="container wrapper">
                             <Grid container className="main-intro">
@@ -55,7 +55,7 @@ class JobDetail extends Component {
                                         onClick={this.createAction}
                                         className="btn btn-normal btn-white btn-create"
                                     >
-                                        <FontAwesomeIcon icon="plus" /> Create A New Job
+                                        <FontAwesomeIcon icon="plus" /> Create A Job Like This
                                     </ButtonBase>
                                 </Grid>
                             </Grid>
@@ -65,10 +65,16 @@ class JobDetail extends Component {
                         <div className="container wrapper">
                             <Grid container className="single-body">
                                 <Grid container>
-                                    <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back">
-                                        <FontAwesomeIcon icon="angle-left" />
-                                        View all Job
-                                    </ButtonBase>
+                                    <div className="top-action">
+                                        <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back">
+                                            <FontAwesomeIcon icon="angle-left" />
+                                            View all Job
+                                        </ButtonBase>
+                                        <ButtonBase className="btn btn-normal btn-green btn-back btn-bid">
+                                            Bid On This Job
+                                        </ButtonBase>
+                                    </div>
+
                                     <Grid container className="job-detail-row">
                                         <Grid item xs={11}>
                                             <Grid container>
@@ -106,7 +112,7 @@ class JobDetail extends Component {
                                         <h2>Freelancer bidding</h2>
                                         <Grid container className="list-container">
                                             <Grid container className="list-header">
-                                                <Grid item xs={6}>
+                                                <Grid item xs={8}>
                                                     Bid Address
                                                 </Grid>
                                                 <Grid item xs={2}>
@@ -114,9 +120,6 @@ class JobDetail extends Component {
                                                 </Grid>
                                                 <Grid item xs={2}>
                                                     Time
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                    Action
                                                 </Grid>
                                             </Grid>
                                             {job.bid.length && (
@@ -128,7 +131,7 @@ class JobDetail extends Component {
                                                                 container
                                                                 className="list-body-row"
                                                             >
-                                                                <Grid item xs={6} className="title">
+                                                                <Grid item xs={8} className="title">
                                                                     <span className="avatar">
                                                                         <FontAwesomeIcon icon="user-circle" />
                                                                     </span>
@@ -143,14 +146,6 @@ class JobDetail extends Component {
 
                                                                 <Grid item xs={2}>
                                                                     {freelancer.time}
-                                                                </Grid>
-                                                                <Grid item xs={2} className="action">
-                                                                    <ButtonBase
-                                                                        aria-label="Cancel"
-                                                                        className="btn btn-small btn-green"
-                                                                    >
-                                                                        Accept Bid
-                                                                    </ButtonBase>
                                                                 </Grid>
                                                             </Grid>
                                                         );
@@ -174,10 +169,10 @@ class JobDetail extends Component {
     }
 }
 
-JobDetail.propTypes = {
+JobDetailBid.propTypes = {
     match: PropTypes.object.isRequired,
     data: PropTypes.array.isRequired,
     history: PropTypes.object.isRequired,
 };
 
-export default JobDetail;
+export default JobDetailBid;

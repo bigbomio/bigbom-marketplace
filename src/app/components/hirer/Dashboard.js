@@ -8,8 +8,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
 
+import settingsApi from '../../_services/settingsApi';
 import Jobs from '../../_services/jobData';
-import Categories from '../../_services/categories';
 
 class HirerDashboard extends Component {
     state = {
@@ -31,6 +31,7 @@ class HirerDashboard extends Component {
     render() {
         const { match } = this.props;
         const { selectedCategory } = this.state;
+        const categories = settingsApi.getCategories();
         return (
             <div id="hirer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
@@ -105,7 +106,7 @@ class HirerDashboard extends Component {
                                         <Select
                                             value={selectedCategory}
                                             onChange={this.handleChangeCategory}
-                                            options={Categories}
+                                            options={categories}
                                             isMulti
                                             placeholder="Select category..."
                                         />

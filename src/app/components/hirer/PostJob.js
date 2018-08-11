@@ -3,110 +3,7 @@ import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
-const skillsRequired = [
-    { value: 'chocolate', label: 'CSS' },
-    { value: 'strawberry', label: 'HTML' },
-    { value: 'vanilla', label: 'SEO' },
-];
-const currencies = [
-    { value: 'chocolate', label: 'USD' },
-    { value: 'strawberry', label: 'VND' },
-    { value: 'vanilla', label: 'JPY' },
-];
-
-const budgets = [
-    {
-        value: 'chocolate1',
-        id: '193',
-        min_sum: '12',
-        max_sum: '30',
-        label: 'Micro Project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate2',
-        id: '31',
-        min_sum: '30',
-        max_sum: '250',
-        label: 'Simple project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate3',
-        id: '32',
-        min_sum: '250',
-        max_sum: '750',
-        label: 'Very small project',
-        currency: '6',
-        budget_period: 'fixed',
-        selected: true,
-    },
-    {
-        value: 'chocolat4',
-        id: '33',
-        min_sum: '750',
-        max_sum: '1500',
-        label: 'Small project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate5',
-        id: '34',
-        min_sum: '1500',
-        max_sum: '3000',
-        label: 'Medium project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate6',
-        id: '35',
-        min_sum: '3000',
-        max_sum: '5000',
-        label: 'Large project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate7',
-        id: '36',
-        min_sum: '5000',
-        max_sum: '10000',
-        label: 'Larger project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate8',
-        id: '234',
-        min_sum: '10000',
-        max_sum: '20000',
-        label: 'Very Large project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate9',
-        id: '253',
-        min_sum: '20000',
-        max_sum: '50000',
-        label: 'Huge project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-    {
-        value: 'chocolate10',
-        id: '272',
-        min_sum: '50000',
-        max_sum: null,
-        label: 'Major project',
-        currency: '6',
-        budget_period: 'fixed',
-    },
-];
+import settingsApi from '../../_services/settingsApi';
 
 class HirerPostJob extends Component {
     constructor(props) {
@@ -126,6 +23,9 @@ class HirerPostJob extends Component {
     };
     render() {
         const { selectedSkill, selectedCurrency, selectedBudget } = this.state;
+        const categories = settingsApi.getCategories();
+        const budgets = settingsApi.getBudgets();
+        const currencies = settingsApi.getCurrencies();
         return (
             <div className="container-wrp">
                 <div className="container-wrp full-top-wrp">
@@ -164,7 +64,7 @@ class HirerPostJob extends Component {
                                 <Select
                                     value={selectedSkill}
                                     onChange={this.handleChangeSkills}
-                                    options={skillsRequired}
+                                    options={categories}
                                     isMulti
                                 />
                             </Grid>

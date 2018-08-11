@@ -7,11 +7,11 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 import Utils from '../../_utils/utils';
 
-import HirerDashboard from '../../components/hirer/Dashboard';
-import JobDetail from '../../components/hirer/JobDetail';
-import HirerPostJob from '../../components/hirer//PostJob';
+import Dashboard from './Dashboard';
+import JobDetailBid from './JobDetailBid';
+import JobBrowser from './JobBrowser';
 import Jobs from '../../_services/jobData';
-import NotFound from '../../components/NotFound';
+import NotFound from '../NotFound';
 
 const styles = theme => ({
     lightTooltip: {
@@ -22,20 +22,20 @@ const styles = theme => ({
         maxWidth: 'inherit',
     },
 });
-class HirerCatagories extends Component {
+class FreelancerContainer extends Component {
     render() {
         const { match, classes } = this.props;
         const listSubLink = [
             {
-                title: 'Post a Job',
+                title: 'Find a Job',
                 path: `${match.url}`,
                 exact: true,
-                component: HirerPostJob,
+                component: JobBrowser,
             },
             {
-                title: 'Dashboard',
-                path: `${match.url}/dashboard`,
-                component: HirerDashboard,
+                title: 'My Bid',
+                path: `${match.url}/my-bid`,
+                component: Dashboard,
             },
         ];
 
@@ -79,8 +79,8 @@ class HirerCatagories extends Component {
                 </div>
                 <Switch>
                     <Route
-                        path={`${match.url}/dashboard/:jobId`}
-                        render={props => <JobDetail data={Jobs} {...props} />}
+                        path={`${match.url}/find-job/:jobId`}
+                        render={props => <JobDetailBid data={Jobs} {...props} />}
                     />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
 
@@ -91,9 +91,9 @@ class HirerCatagories extends Component {
     }
 }
 
-HirerCatagories.propTypes = {
+FreelancerContainer.propTypes = {
     match: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(HirerCatagories);
+export default withStyles(styles)(FreelancerContainer);

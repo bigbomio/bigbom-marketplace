@@ -6,6 +6,7 @@ $dark: #252525;
 $softDark: #353535;
 $thinShadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+$transition: all 0.3s ease-in;
 $red: red;
 #bigbomMarketplace {
     .container-wrp {
@@ -165,6 +166,9 @@ $red: red;
         color: $dark;
         box-shadow: $thinShadow;
     }
+    .green {
+        color: $green;
+    }
     .list-container {
         padding: 0;
         .list-header {
@@ -270,21 +274,52 @@ $red: red;
                     width: 100%;
                     padding-top: 20px;
                     span {
-                        background: #f9f9f9;
-                        border-radius: 15px;
-                        padding: 5px 10px;
-                        font-size: 14px;
-                        margin-right: 5px;
-                        box-shadow: $thinShadow;
                         &.bold {
-                            background: none;
-                            border-radius: 0;
                             padding: 0 10px 0 0;
-                            font-size: inherit;
-                            box-shadow: none;
                         }
                     }
                 }
+            }
+        }
+    }
+    .tag {
+        background: #f9f9f9;
+        border-radius: 15px;
+        padding: 5px 10px;
+        font-size: 14px;
+        margin-right: 5px;
+        box-shadow: $thinShadow;
+    }
+    .search-input {
+        padding: 2px 10px;
+        position: relative;
+        border: 1px solid #ccc;
+        margin: 0 20px 0 0;
+        border-radius: 5px;
+        &:before {
+            content: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAQJJREFUKBWVkr2uQUEUhf3ET6GRaC5aFRoJKrf1BKpb8SwqovYGXkCj00k0QnRKEYkILYobvpUYmeMMyVnJl7P3mjN7Zu9zwiGv2qRFyMMSRrAFp6JPN8XzBj+wgDkUYAg7WINTYdwpDECxrRLJHeq2accdkgm8bzTvNAg2EDOGeUYI1KNO1gkuzTA1g8T7ojbn4ONQWPuHPWgeHmnzCqoe15tkSNPgPEAn68oVcOmA2XMtGK9FoE/VhOTTVNExqLCGZnxCv2pYauEC6lF0oQxX6IOvb7yX9NPEQafan+aPXDdQC18LsO6Tip5BBY6gIQaSbnMCFRCBZRcIvFkbsvCr4AFGOCxQy+JdGQAAAABJRU5ErkJggg==');
+            display: block;
+            position: absolute;
+            width: 15px;
+            z-index: 3;
+            height: 15px;
+            font-size: 20px;
+            top: 4px;
+            left: 16px;
+            line-height: 32px;
+            opacity: 0.6;
+        }
+        input {
+            width: 100%;
+            font-size: 16px;
+            border: none;
+            line-height: 22px;
+            padding: 5px 10px 5px 25px;
+            height: 32px;
+            position: relative;
+            outline: none;
+            :focus {
+                outline: none;
             }
         }
     }
