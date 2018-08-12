@@ -7,9 +7,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 import Utils from '../../_utils/utils';
 
-import HirerDashboard from '../../components/hirer/Dashboard';
+import Manage from '../../components/hirer/Manage';
 import JobDetail from '../../components/hirer/JobDetail';
-import HirerPostJob from '../../components/hirer//PostJob';
+import PostJob from '../../components/hirer//PostJob';
 import Jobs from '../../_services/jobData';
 import NotFound from '../../components/NotFound';
 
@@ -30,12 +30,12 @@ class HirerCatagories extends Component {
                 title: 'Post a Job',
                 path: `${match.url}`,
                 exact: true,
-                component: HirerPostJob,
+                component: PostJob,
             },
             {
-                title: 'Dashboard',
-                path: `${match.url}/dashboard`,
-                component: HirerDashboard,
+                title: 'Manage',
+                path: `${match.url}/manage`,
+                component: Manage,
             },
         ];
 
@@ -78,10 +78,7 @@ class HirerCatagories extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route
-                        path={`${match.url}/dashboard/:jobId`}
-                        render={props => <JobDetail data={Jobs} {...props} />}
-                    />
+                    <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail data={Jobs} {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
 
                     <Route component={NotFound} />

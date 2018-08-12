@@ -41,7 +41,10 @@ class JobBrowser extends Component {
                                             {job.title}
                                         </Grid>
                                         <Grid item xs={3} className="budget">
-                                            <span className="bold">{job.budget}</span> ({job.currency})
+                                            <span className="bold">
+                                                {job.budget.min_sum} - {job.budget.max_sum}
+                                                {' ( ' + job.currency + ' ) '}
+                                            </span>
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={12} className="content">

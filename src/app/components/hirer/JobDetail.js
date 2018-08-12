@@ -84,7 +84,9 @@ class JobDetail extends Component {
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Job budget ({job.currency})</div>
-                                                    <div className="ct">${job.budget}</div>
+                                                    <div className="ct">
+                                                        ${job.budget.min_sum} - ${job.budget.max_sum}
+                                                    </div>
                                                 </Grid>
                                             </Grid>
                                         </Grid>

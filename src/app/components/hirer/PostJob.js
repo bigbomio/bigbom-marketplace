@@ -10,13 +10,19 @@ class HirerPostJob extends Component {
         super(props);
         this.state = {
             selectedSkill: null,
+            selectedCurrency: 'USD',
+            budgets: settingsApi.getBudgets(),
         };
     }
     handleChangeSkills = selectedOption => {
         this.setState({ selectedSkill: selectedOption });
     };
     handleChangeCurrency = selectedOption => {
-        this.setState({ selectedCurrency: selectedOption });
+        const { budgets } = this.state;
+        for (let budget of budgets) {
+            budget.currency = selectedOption.label;
+        }
+        this.setState({ selectedCurrency: selectedOption, budgets: budgets });
     };
     handleChangeBudget = selectedOption => {
         this.setState({ selectedBudget: selectedOption });
@@ -24,7 +30,7 @@ class HirerPostJob extends Component {
     render() {
         const { selectedSkill, selectedCurrency, selectedBudget } = this.state;
         const categories = settingsApi.getCategories();
-        const budgets = settingsApi.getBudgets();
+        const { budgets } = this.state;
         const currencies = settingsApi.getCurrencies();
         return (
             <div className="container-wrp">

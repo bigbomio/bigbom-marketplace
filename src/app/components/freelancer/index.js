@@ -83,7 +83,6 @@ class FreelancerContainer extends Component {
                         render={props => <JobDetailBid data={Jobs} {...props} />}
                     />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
-
                     <Route component={NotFound} />
                 </Switch>
             </div>

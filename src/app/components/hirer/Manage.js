@@ -143,8 +143,10 @@ class HirerDashboard extends Component {
                                                         <Link to={`${match.url}/${job.id}`}>{job.title}</Link>
                                                     </Grid>
                                                     <Grid item xs={2}>
-                                                        <span className="bold">{job.budget}</span>
-                                                        {' ' + job.currency}
+                                                        <span className="bold">
+                                                            {job.budget.min_sum} - {job.budget.max_sum}
+                                                            {' ( ' + job.currency + ' ) '}
+                                                        </span>
                                                     </Grid>
                                                     <Grid item xs={1}>
                                                         {job.bid.length}

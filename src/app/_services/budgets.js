@@ -1,93 +1,102 @@
 export default [
     {
-        value: 'chocolate1',
-        id: '193',
+        value: '1',
+        id: '1',
         min_sum: '12',
         max_sum: '30',
-        label: 'Micro Project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Micro Project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate2',
-        id: '31',
+        value: '2',
+        id: '2',
         min_sum: '30',
         max_sum: '250',
-        label: 'Simple project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Simple project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate3',
-        id: '32',
+        value: '3',
+        id: '3',
         min_sum: '250',
         max_sum: '750',
-        label: 'Very small project',
-        currency: '6',
-        budget_period: 'fixed',
-        selected: true,
+        currency: 'USD',
+        get label() {
+            return 'Very small project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolat4',
-        id: '33',
+        value: '4',
+        id: '4',
         min_sum: '750',
         max_sum: '1500',
-        label: 'Small project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Small project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate5',
-        id: '34',
+        value: '5',
+        id: '5',
         min_sum: '1500',
         max_sum: '3000',
-        label: 'Medium project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Medium project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate6',
-        id: '35',
+        value: '6',
+        id: '6',
         min_sum: '3000',
         max_sum: '5000',
-        label: 'Large project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Large project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate7',
-        id: '36',
+        value: '7',
+        id: '7',
         min_sum: '5000',
         max_sum: '10000',
-        label: 'Larger project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Larger project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate8',
-        id: '234',
+        value: '8',
+        id: '8',
         min_sum: '10000',
         max_sum: '20000',
-        label: 'Very Large project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Very Large project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate9',
-        id: '253',
+        value: '9',
+        id: '9',
         min_sum: '20000',
         max_sum: '50000',
-        label: 'Huge project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Huge project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
     {
-        value: 'chocolate10',
-        id: '272',
+        value: '10',
+        id: '10',
         min_sum: '50000',
         max_sum: null,
-        label: 'Major project',
-        currency: '6',
-        budget_period: 'fixed',
+        currency: 'USD',
+        get label() {
+            return 'Major project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+        },
     },
 ];

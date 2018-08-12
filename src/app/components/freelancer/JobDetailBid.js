@@ -62,6 +62,7 @@ class JobDetailBid extends Component {
     }
     getMyBid() {
         const { job } = this.state;
+        console.log(job);
         for (let user of job.bid) {
             if (user.address === myAddress) {
                 return (
@@ -70,10 +71,9 @@ class JobDetailBid extends Component {
                         <div className="ct">{user.award}</div>
                     </Grid>
                 );
-            } else {
-                return null;
             }
         }
+        return null;
     }
     actions() {
         const { bidAccepted, bidStt } = this.state;
@@ -86,8 +86,8 @@ class JobDetailBid extends Component {
                             View all Bid
                         </ButtonBase>
                         <span className="note">
-                            <FontAwesomeIcon icon="check-circle" /> You have bid this job, please waiting for job owner
-                            accept
+                            <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>,
+                            please waiting acceptance from job owner.
                         </span>
                     </div>
                 );
@@ -167,7 +167,9 @@ class JobDetailBid extends Component {
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Job budget ({job.currency})</div>
-                                                    <div className="ct">${job.budget}</div>
+                                                    <div className="ct">
+                                                        ${job.budget.min_sum} - ${job.budget.max_sum}
+                                                    </div>
                                                 </Grid>
                                             </Grid>
                                         </Grid>
@@ -246,7 +248,36 @@ class JobDetailBid extends Component {
                 </div>
             );
         } else {
-            jobData = <h2> Sorry. Job does not exist </h2>;
+            jobData = (
+                <div id="freelancer" className="container-wrp">
+                    <div className="container-wrp full-top-wrp">
+                        <div className="container wrapper">
+                            <Grid container className="main-intro">
+                                <Grid item xs={8}>
+                                    <h1>Sorry. Job does not exist</h1>
+                                </Grid>
+                                <Grid item xs={4} className="main-intro-right">
+                                    <ButtonBase
+                                        onClick={this.createAction}
+                                        className="btn btn-normal btn-white btn-create"
+                                    >
+                                        <FontAwesomeIcon icon="plus" /> Create A Job Like This
+                                    </ButtonBase>
+                                </Grid>
+                            </Grid>
+                        </div>
+                    </div>
+                    <div className="container-wrp main-ct">
+                        <div className="container wrapper">
+                            <Grid container className="single-body">
+                                <Grid container>
+                                    <span> Job not found :( </span>
+                                </Grid>
+                            </Grid>
+                        </div>
+                    </div>
+                </div>
+            );
         }
         return (
             <Grid container className="job-detail">
