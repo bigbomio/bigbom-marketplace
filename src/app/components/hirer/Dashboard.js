@@ -8,6 +8,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
 
+import Utils from '../../_utils/utils';
+
 import settingsApi from '../../_services/settingsApi';
 import Jobs from '../../_services/jobData';
 
@@ -148,7 +150,9 @@ class HirerDashboard extends Component {
                                                         {job.bid.length}
                                                     </Grid>
                                                     <Grid item xs={2}>
-                                                        {job.status}
+                                                        {Utils.getStatusJobOpen(job.bid)
+                                                            ? 'Bidding'
+                                                            : Utils.getStatusJob(job.status)}
                                                     </Grid>
                                                     <Grid item xs={2} className="action">
                                                         <ButtonBase

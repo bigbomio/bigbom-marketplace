@@ -64,6 +64,23 @@ class Utils {
 
         return fullStr.substr(0, frontChars) + separator + fullStr.substr(fullStr.length - backChars);
     };
+
+    getStatusJobOpen = bid => {
+        for (let b of bid) {
+            if (b.accepted) {
+                return false;
+            }
+        }
+        return true;
+    };
+    getStatusJob = all => {
+        Object.entries(all).forEach(([key, value]) => {
+            if (value) {
+                return key;
+            }
+        });
+        return 'Accepted';
+    };
 }
 
 export default new Utils();

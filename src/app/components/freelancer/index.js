@@ -9,7 +9,7 @@ import Utils from '../../_utils/utils';
 
 import Dashboard from './Dashboard';
 import JobDetailBid from './JobDetailBid';
-import JobBrowser from './JobBrowser';
+import JobBrowse from './JobBrowse';
 import Jobs from '../../_services/jobData';
 import NotFound from '../NotFound';
 
@@ -30,11 +30,11 @@ class FreelancerContainer extends Component {
                 title: 'Find a Job',
                 path: `${match.url}`,
                 exact: true,
-                component: JobBrowser,
+                component: JobBrowse,
             },
             {
                 title: 'My Bid',
-                path: `${match.url}/my-bid`,
+                path: `${match.url}/bid`,
                 component: Dashboard,
             },
         ];
@@ -79,7 +79,7 @@ class FreelancerContainer extends Component {
                 </div>
                 <Switch>
                     <Route
-                        path={`${match.url}/find-job/:jobId`}
+                        path={`${match.url}/jobs/:jobId`}
                         render={props => <JobDetailBid data={Jobs} {...props} />}
                     />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}

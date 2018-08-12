@@ -4,6 +4,8 @@ import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import Utils from '../../_utils/utils';
+
 function avgBid(bids) {
     let total = 0;
     for (let b of bids) {
@@ -89,7 +91,11 @@ class JobDetail extends Component {
                                         <Grid item xs={1}>
                                             <Grid item xs className="job-detail-col status">
                                                 <div className="name">Status</div>
-                                                <div className="ct">{job.status}</div>
+                                                <div className="ct">
+                                                    {Utils.getStatusJobOpen(job.bid)
+                                                        ? 'Bidding'
+                                                        : Utils.getStatusJob(job.status)}
+                                                </div>
                                             </Grid>
                                         </Grid>
                                     </Grid>

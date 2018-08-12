@@ -8,6 +8,7 @@ $thinShadow: 0 1px 1px rgba(0, 0, 0, 0.3);
 $normalShadow: 0 2px 2px rgba(0, 0, 0, 0.3);
 $transition: all 0.3s ease-in;
 $red: red;
+$orange: #f99a0c;
 #bigbomMarketplace {
     .container-wrp {
         float: left;
@@ -166,6 +167,10 @@ $red: red;
         color: $dark;
         box-shadow: $thinShadow;
     }
+    .btn-orange {
+        background-color: $orange;
+        color: #fff;
+    }
     .green {
         color: $green;
     }
@@ -187,10 +192,20 @@ $red: red;
             font-size: 14px;
             .list-body-row {
                 border-bottom: 1px dotted #ddd;
+
                 div {
                     border-right: 1px solid #ccc;
                     padding: 15px;
+                    align-items: center;
+                    display: flex;
                     &.title {
+                        .avatar {
+                            margin-right: 5px;
+                            svg {
+                                width: 30px;
+                                height: 30px;
+                            }
+                        }
                         a {
                             font-weight: bold;
                             font-size: 16px;
@@ -320,6 +335,23 @@ $red: red;
             outline: none;
             :focus {
                 outline: none;
+            }
+        }
+    }
+    .no-content {
+        padding: 50px;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 16px;
+        text-align: center;
+        p {
+            margin-top: 20px;
+        }
+        a {
+            color: $darkBlue;
+            font-weight: bold;
+            &:hover {
+                text-decoration: underline;
             }
         }
     }

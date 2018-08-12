@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
+import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import Jobs from '../../_services/jobData';
 
@@ -33,7 +34,7 @@ class JobBrowser extends Component {
                 {filteredJobs &&
                     filteredJobs.map(job => {
                         return (
-                            <Link to={'freelancer/find-job/' + job.id} key={job.id} className="job-item">
+                            <Link to={'freelancer/jobs/' + job.id} key={job.id} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">
@@ -48,7 +49,11 @@ class JobBrowser extends Component {
                                             {job.description}
                                         </Grid>
                                         <Grid item xs={12} className="status">
-                                            <span className="status green bold">{job.status}</span>
+                                            <span className="status green bold">
+                                                {Utils.getStatusJobOpen(job.bid)
+                                                    ? 'Bidding'
+                                                    : Utils.getStatusJob(job.status)}
+                                            </span>
                                             <span>
                                                 {' - ' + job.bid.length + ' '}
                                                 bids

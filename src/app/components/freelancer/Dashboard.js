@@ -8,8 +8,9 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
 
-import settingsApi from '../../_services/settingsApi';
+import Utils from '../../_utils/utils';
 
+import settingsApi from '../../_services/settingsApi';
 import Jobs from '../../_services/jobData';
 
 class HirerDashboard extends Component {
@@ -30,9 +31,18 @@ class HirerDashboard extends Component {
         this.setState({ selectedCategory: selectedOption });
     };
     render() {
-        const { match } = this.props;
+        const myAddress = '0xb10ca39DFa4903AE057E8C26E39377cfb4989551';
         const { selectedCategory } = this.state;
         const categories = settingsApi.getCategories();
+        let jobs = [];
+        Jobs.map(job => {
+            for (let user of job.bid) {
+                if (user.address === myAddress) {
+                    jobs.push(job);
+                }
+            }
+            return jobs;
+        });
         return (
             <div id="hirer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
@@ -116,14 +126,14 @@ class HirerDashboard extends Component {
                             </fieldset>
                             <Grid container className="list-container">
                                 <Grid container className="list-header">
-                                    <Grid item xs={5}>
+                                    <Grid item xs={4}>
                                         Job name
                                     </Grid>
                                     <Grid item xs={2}>
                                         Budget
                                     </Grid>
-                                    <Grid item xs={1}>
-                                        Bid
+                                    <Grid item xs={2}>
+                                        Award Bid
                                     </Grid>
                                     <Grid item xs={2}>
                                         Status
@@ -133,23 +143,26 @@ class HirerDashboard extends Component {
                                     </Grid>
                                 </Grid>
 
-                                {Jobs.length && (
+                                {jobs.length ? (
                                     <Grid container className="list-body">
-                                        {Jobs.map(job => {
+                                        {jobs.map(job => {
                                             return (
                                                 <Grid key={job.id} container className="list-body-row">
-                                                    <Grid item xs={5} className="title">
-                                                        <Link to={`${match.url}/${job.id}`}>{job.title}</Link>
+                                                    <Grid item xs={4} className="title">
+                                                        <Link to={`jobs/${job.id}`}>{job.title}</Link>
                                                     </Grid>
                                                     <Grid item xs={2}>
                                                         <span className="bold">{job.budget}</span>
                                                         {' ' + job.currency}
                                                     </Grid>
-                                                    <Grid item xs={1}>
-                                                        {job.bid.length}
+                                                    <Grid item xs={2}>
+                                                        {job.awardBid}
+                                                        {' ' + job.currency}
                                                     </Grid>
                                                     <Grid item xs={2}>
-                                                        {job.status}
+                                                        {Utils.getStatusJobOpen(job.bid)
+                                                            ? 'Bidding'
+                                                            : Utils.getStatusJob(job.status)}
                                                     </Grid>
                                                     <Grid item xs={2} className="action">
                                                         <ButtonBase
@@ -164,6 +177,15 @@ class HirerDashboard extends Component {
                                             );
                                         })}
                                     </Grid>
+                                ) : (
+                                    <Grid container className="list-body">
+                                        <div className="no-content">
+                                            You have not bid any job yet :(
+                                            <p>
+                                                <Link to="/freelancer">Find a job</Link>
+                                            </p>
+                                        </div>
+                                    </Grid>
                                 )}
                             </Grid>
                         </Grid>
@@ -174,7 +196,6 @@ class HirerDashboard extends Component {
     }
 }
 HirerDashboard.propTypes = {
-    match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
 };
 

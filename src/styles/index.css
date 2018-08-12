@@ -275,6 +275,10 @@ body {
   color: #252525;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
 
+#bigbomMarketplace .btn-orange {
+  background-color: #f99a0c;
+  color: #fff; }
+
 #bigbomMarketplace .green {
   color: #40bd56; }
 
@@ -296,7 +300,14 @@ body {
       border-bottom: 1px dotted #ddd; }
       #bigbomMarketplace .list-container .list-body .list-body-row div {
         border-right: 1px solid #ccc;
-        padding: 15px; }
+        padding: 15px;
+        align-items: center;
+        display: flex; }
+        #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar {
+          margin-right: 5px; }
+          #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar svg {
+            width: 30px;
+            height: 30px; }
         #bigbomMarketplace .list-container .list-body .list-body-row div.title a {
           font-weight: bold;
           font-size: 16px;
@@ -402,6 +413,20 @@ body {
     outline: none; }
     #bigbomMarketplace .search-input input :focus {
       outline: none; }
+
+#bigbomMarketplace .no-content {
+  padding: 50px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+  text-align: center; }
+  #bigbomMarketplace .no-content p {
+    margin-top: 20px; }
+  #bigbomMarketplace .no-content a {
+    color: #1876e2;
+    font-weight: bold; }
+    #bigbomMarketplace .no-content a:hover {
+      text-decoration: underline; }
 
 #header header {
   padding: 10px 0;
@@ -637,7 +662,18 @@ body {
   #freelancer .top-action .btn-bid {
     float: right;
     text-transform: uppercase;
-    font-weight: bold; }
+    font-weight: bold;
+    margin-left: 15px; }
+  #freelancer .top-action .note {
+    margin-top: -20px;
+    margin-bottom: 30px;
+    display: inline-block;
+    float: right; }
+    #freelancer .top-action .note svg {
+      height: 17px;
+      width: 17px;
+      margin-right: 3px;
+      color: #40bd56; }
 
 #freelancer .job-detail-description {
   padding-bottom: 30px; }
