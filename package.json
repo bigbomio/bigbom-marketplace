@@ -13,6 +13,7 @@
         "axios": "^0.18.0",
         "country-language": "^0.1.7",
         "cross-env": "^5.2.0",
+        "ethjs": "^0.4.0",
         "history": "^4.7.2",
         "immutable": "^3.8.2",
         "lodash": "^4.17.10",

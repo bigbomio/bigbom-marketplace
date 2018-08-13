@@ -3,33 +3,19 @@ import CountryLanguage from 'country-language';
 import _ from 'lodash';
 
 import Utils from '../_utils/utils';
-import apiCROS from '../_services/apiCROS';
 
 import { GET_DEFAULT_LANGUAGE, DEFAULT_LANGUAGE } from './constants';
 import { setLanguage } from './actions';
 
 import { appLocales } from '../../i18n';
 
-const checkLocalLanguage = () => {
-    const path = 'http://ip-api.com/json';
-
-    return apiCROS
-        .get(path)
-        .then(res => {
-            return res.data.countryCode.toLowerCase();
-        })
-        .catch(error => {
-            throw error;
-        });
-};
-
 /**
  * First time enter website, get language follow priority IP, browser, default
  */
-function* getDefaultLanguage() {
+function* getDefaultLanguage(langCode) {
+    console.log(langCode);
     try {
-        const result = yield call(checkLocalLanguage);
-        const languages = yield call(Utils.callMethodWithReject(CountryLanguage.getCountryLanguages), result);
+        const languages = yield call(Utils.callMethodWithReject(CountryLanguage.getCountryLanguages), langCode);
         const languageCodes = languages[0].iso639_1.toLowerCase();
         let ipLang = _.find(appLocales, locale => locale === languageCodes);
 
@@ -48,7 +34,13 @@ const getBrowserLanguage = () => {
         DEFAULT_LANGUAGE
     );
 };
-
-export default function* sagaData() {
-    yield takeLatest(GET_DEFAULT_LANGUAGE, getDefaultLanguage);
+export default function sagaData() {
+    const onSuccess = function*(location) {
+        const code = location.coutry.iso_code.toLowerCase();
+        yield takeLatest(GET_DEFAULT_LANGUAGE, getDefaultLanguage(code));
+    };
+    const onError = function(error) {
+        console.log('Error:\n\n' + JSON.stringify(error, undefined, 4));
+    };
+    window.geoip2.city(onSuccess, onError);
 }
