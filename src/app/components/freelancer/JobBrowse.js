@@ -34,7 +34,7 @@ class JobBrowser extends Component {
                 {filteredJobs &&
                     filteredJobs.map(job => {
                         return (
-                            <Link target="_blank" to={'freelancer/jobs/' + job.id} key={job.id} className="job-item">
+                            <Link to={'freelancer/jobs/' + job.id} key={job.id} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">
