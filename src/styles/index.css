@@ -428,6 +428,9 @@ body {
     #bigbomMarketplace .no-content a:hover {
       text-decoration: underline; }
 
+#bigbomMarketplace .col-6 {
+  width: 50%; }
+
 #header header {
   padding: 10px 0;
   width: 100%;
@@ -515,57 +518,61 @@ body {
       font-size: 14px;
       text-align: center; }
 
-#home .home-wrp .home-intro h1,
-#hirer .home-wrp .home-intro h1 {
-  font-size: 34px;
-  font-weight: bold;
-  padding: 80px 80px 0 80px;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-  line-height: 45px;
-  color: #fff; }
-
-#home .home-wrp .home-intro .buttons,
-#hirer .home-wrp .home-intro .buttons {
-  padding: 20px 0 0 80px; }
-  #home .home-wrp .home-intro .buttons .left,
-  #hirer .home-wrp .home-intro .buttons .left {
-    margin-right: 20px; }
-
-#home .home-wrp .home-intro .connect-item-wrp,
-#hirer .home-wrp .home-intro .connect-item-wrp {
-  padding: 35px; }
-  #home .home-wrp .home-intro .connect-item-wrp:first-child .connect-item,
-  #hirer .home-wrp .home-intro .connect-item-wrp:first-child .connect-item {
-    box-shadow: 5px -5px #2eae3b; }
-  #home .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item,
-  #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item {
-    box-shadow: 0 -5px #2eae3b; }
-  #home .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item,
-  #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item {
-    box-shadow: -5px -5px #2eae3b; }
-  #home .home-wrp .home-intro .connect-item-wrp .connect-item,
-  #hirer .home-wrp .home-intro .connect-item-wrp .connect-item {
-    background: url("/images/bg-connect.png") center center no-repeat;
-    background-size: cover;
-    padding: 100px 70px 70px 70px;
-    border-radius: 10px;
-    align-items: center;
-    display: flex;
-    flex-direction: column; }
-    #home .home-wrp .home-intro .connect-item-wrp .connect-item .logo,
-    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .logo {
-      padding-bottom: 20px; }
-    #home .home-wrp .home-intro .connect-item-wrp .connect-item .name,
-    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .name {
-      color: #fff;
-      font-weight: bold;
-      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-      font-size: 20px; }
-    #home .home-wrp .home-intro .connect-item-wrp .connect-item .btn,
-    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .btn {
-      margin: 100px 0 0 0;
-      font-size: 16px;
-      padding: 8px 35px 9px 35px; }
+#home .home-wrp .home-intro,
+#hirer .home-wrp .home-intro {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box; }
+  #home .home-wrp .home-intro h1,
+  #hirer .home-wrp .home-intro h1 {
+    font-size: 34px;
+    font-weight: bold;
+    padding: 80px 80px 0 80px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    line-height: 45px;
+    color: #fff; }
+  #home .home-wrp .home-intro .buttons,
+  #hirer .home-wrp .home-intro .buttons {
+    padding: 20px 0 0 80px; }
+    #home .home-wrp .home-intro .buttons .left,
+    #hirer .home-wrp .home-intro .buttons .left {
+      margin-right: 20px; }
+  #home .home-wrp .home-intro .connect-item-wrp,
+  #hirer .home-wrp .home-intro .connect-item-wrp {
+    padding: 10px 35px; }
+    #home .home-wrp .home-intro .connect-item-wrp:first-child .connect-item,
+    #hirer .home-wrp .home-intro .connect-item-wrp:first-child .connect-item {
+      box-shadow: 5px -5px #2eae3b; }
+    #home .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item,
+    #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item {
+      box-shadow: 0 -5px #2eae3b; }
+    #home .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item,
+    #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item {
+      box-shadow: -5px -5px #2eae3b; }
+    #home .home-wrp .home-intro .connect-item-wrp .connect-item,
+    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item {
+      background: url("/images/bg-connect.png") center center no-repeat;
+      background-size: cover;
+      padding: 60px 70px 40px 70px;
+      border-radius: 10px;
+      align-items: center;
+      display: flex;
+      flex-direction: column; }
+      #home .home-wrp .home-intro .connect-item-wrp .connect-item .logo,
+      #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .logo {
+        padding-bottom: 20px; }
+      #home .home-wrp .home-intro .connect-item-wrp .connect-item .name,
+      #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .name {
+        color: #fff;
+        font-weight: bold;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+        font-size: 20px; }
+      #home .home-wrp .home-intro .connect-item-wrp .connect-item .btn,
+      #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .btn {
+        margin: 70px 0 0 0;
+        font-size: 16px;
+        padding: 8px 35px 9px 35px; }
 
 #home .home-content h2,
 #hirer .home-content h2 {
