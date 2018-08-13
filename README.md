@@ -9,8 +9,8 @@ A DApp that allows bidding job using Ethereum smart contracts.
 
 ### Install
 1. Clone the repo
-2. Run `npm install`
-3. Run `npm start`
+2. Install yarn `npm install -g yarn`
+3. Run `yarn install && yarn start:dev`
 4. Access to http://localhost:3000
 
 Current version only support Ropsten testnet. Please make sure you're using latest version of Metamask extension.
