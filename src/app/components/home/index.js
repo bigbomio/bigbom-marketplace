@@ -111,6 +111,7 @@ class Home extends Component {
 
     login = () => {
         this.setState({ isLogout: false });
+        console.log('test');
         setTimeout(() => {
             document.getElementById('intro').style.display = 'none';
             document.getElementById('login').style.display = 'flex';
