@@ -1,0 +1,802 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline; }
+
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block; }
+
+body {
+  line-height: 1; }
+
+ol,
+ul {
+  list-style: none; }
+
+blockquote,
+q {
+  quotes: none; }
+
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: '';
+  content: none; }
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+* {
+  font-family: 'Open Sans', sans-serif; }
+
+img {
+  max-width: 100%; }
+
+a {
+  text-decoration: none;
+  transition: color 0.3s ease-out; }
+
+body {
+  background: #f9f9f9;
+  font-family: 'Open Sans', sans-serif; }
+
+#bigbomMarketplace .container-wrp {
+  float: left;
+  width: 100%; }
+
+#bigbomMarketplace .container {
+  width: 1110px;
+  margin: 0 auto; }
+
+#bigbomMarketplace .wrapper {
+  padding: 40px 0; }
+
+#bigbomMarketplace .full-top-wrp {
+  background: #fff url("/images/homebg.png") no-repeat center center;
+  background-size: cover; }
+  #bigbomMarketplace .full-top-wrp .main-intro {
+    padding-bottom: 30px;
+    height: fit-content; }
+    #bigbomMarketplace .full-top-wrp .main-intro h1 {
+      font-size: 30px;
+      color: #fff;
+      padding: 0 0 10px 0;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      font-weight: bold; }
+    #bigbomMarketplace .full-top-wrp .main-intro .description {
+      color: #c8f5dc;
+      font-size: 18px;
+      max-width: 800px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      line-height: 1.3; }
+    #bigbomMarketplace .full-top-wrp .main-intro .main-intro-right button {
+      float: right; }
+
+#bigbomMarketplace .main-ct .wrapper {
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  margin-top: -40px;
+  border-radius: 5px; }
+
+#bigbomMarketplace .main-ct .main-ct-left {
+  padding: 0 30px; }
+
+#bigbomMarketplace .main-ct .single-body {
+  padding: 30px; }
+
+#bigbomMarketplace .mkp-form-row {
+  padding-bottom: 40px; }
+  #bigbomMarketplace .mkp-form-row .mkp-form-row-label {
+    font-size: 20px;
+    width: 100%;
+    color: #444;
+    display: inline-block;
+    font-weight: bold;
+    padding: 0 0 10px 0; }
+  #bigbomMarketplace .mkp-form-row .mkp-form-row-description {
+    font-size: 16px;
+    color: #777;
+    padding: 0 0 10px 0;
+    display: inline-block; }
+  #bigbomMarketplace .mkp-form-row input[type='text'],
+  #bigbomMarketplace .mkp-form-row textarea {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ccc;
+    font-size: 16px; }
+    #bigbomMarketplace .mkp-form-row input[type='text']:focus,
+    #bigbomMarketplace .mkp-form-row textarea:focus {
+      border: 1px solid #40bd56; }
+  #bigbomMarketplace .mkp-form-row .creatable-select {
+    padding: 0 0 10px 0; }
+  #bigbomMarketplace .mkp-form-row .left {
+    padding-right: 20px; }
+
+#bigbomMarketplace .account-info {
+  padding: 4px 10px;
+  width: 30%;
+  float: right;
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+  border-left: 1px solid rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  height: fit-content; }
+  #bigbomMarketplace .account-info .account-info-item {
+    color: #fff;
+    font-size: 14px;
+    line-height: 19px; }
+    #bigbomMarketplace .account-info .account-info-item.right {
+      padding-left: 10px; }
+    #bigbomMarketplace .account-info .account-info-item div {
+      color: #999;
+      font-size: 12px; }
+    #bigbomMarketplace .account-info .account-info-item span {
+      font-weight: bold; }
+
+#bigbomMarketplace .btn {
+  border-radius: 25px; }
+  #bigbomMarketplace .btn svg {
+    margin-right: 5px;
+    width: 18px;
+    height: 18px; }
+
+#bigbomMarketplace .btn-small {
+  font-size: 12px;
+  padding: 3px 15px 4px 12px; }
+  #bigbomMarketplace .btn-small svg {
+    width: 12px;
+    height: 12px; }
+
+#bigbomMarketplace .btn-normal {
+  font-size: 14px;
+  padding: 6px 25px 7px 25px; }
+
+#bigbomMarketplace .btn-medium {
+  font-size: 20px;
+  padding: 10px 35px; }
+
+#bigbomMarketplace .btn-green {
+  background-color: #40bd56;
+  color: #fff; }
+
+#bigbomMarketplace .btn-red {
+  background-color: red;
+  color: #fff; }
+
+#bigbomMarketplace .btn-blue {
+  background-color: #0ca1f9;
+  color: #fff; }
+
+#bigbomMarketplace .btn-white {
+  background-color: #fff;
+  color: #40bd56;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+#bigbomMarketplace .btn-default {
+  background-color: #f9f9f9;
+  color: #252525;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+#bigbomMarketplace .btn-orange {
+  background-color: #f99a0c;
+  color: #fff; }
+
+#bigbomMarketplace .green {
+  color: #40bd56; }
+
+#bigbomMarketplace .list-container {
+  padding: 0; }
+  #bigbomMarketplace .list-container .list-header {
+    background: #daeeda;
+    color: #4aa05a;
+    text-transform: uppercase;
+    font-size: 14px; }
+    #bigbomMarketplace .list-container .list-header div {
+      border-right: 1px solid #b8e7b8;
+      padding: 15px; }
+  #bigbomMarketplace .list-container .list-body {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    color: #555;
+    font-size: 14px; }
+    #bigbomMarketplace .list-container .list-body .list-body-row {
+      border-bottom: 1px dotted #ddd; }
+      #bigbomMarketplace .list-container .list-body .list-body-row div {
+        border-right: 1px solid #ccc;
+        padding: 15px;
+        align-items: center;
+        display: flex; }
+        #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar {
+          margin-right: 5px; }
+          #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar svg {
+            width: 30px;
+            height: 30px; }
+        #bigbomMarketplace .list-container .list-body .list-body-row div.title a {
+          font-weight: bold;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #353535; }
+          #bigbomMarketplace .list-container .list-body .list-body-row div.title a:hover {
+            color: #1876e2; }
+
+#bigbomMarketplace .list-filter {
+  border: 1px solid #ccc;
+  margin-bottom: 30px;
+  width: 100%;
+  box-sizing: border-box; }
+  #bigbomMarketplace .list-filter .list-filter-body {
+    padding: 20px; }
+  #bigbomMarketplace .list-filter legend {
+    font-size: 18px;
+    padding: 0 5px; }
+
+#bigbomMarketplace .bold {
+  font-weight: bold; }
+
+#bigbomMarketplace .job-detail {
+  margin-bottom: 40px; }
+  #bigbomMarketplace .job-detail h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px; }
+  #bigbomMarketplace .job-detail .job-detail-row {
+    padding: 20px;
+    border: 1px solid #40bd56;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    background: #f9f9f9; }
+    #bigbomMarketplace .job-detail .job-detail-row .job-detail-col {
+      border-right: 1px solid #ccc;
+      padding-left: 20px;
+      padding-right: 20px; }
+      #bigbomMarketplace .job-detail .job-detail-row .job-detail-col.status {
+        align-items: center;
+        display: flex;
+        flex-direction: column; }
+      #bigbomMarketplace .job-detail .job-detail-row .job-detail-col:last-child {
+        border: none; }
+      #bigbomMarketplace .job-detail .job-detail-row .job-detail-col .name {
+        font-size: 14px;
+        color: #777;
+        padding-bottom: 10px; }
+      #bigbomMarketplace .job-detail .job-detail-row .job-detail-col .ct {
+        font-size: 20px;
+        font-weight: bold;
+        color: #4aa05a; }
+  #bigbomMarketplace .job-detail .job-detail-description .name {
+    font-size: 16px;
+    font-weight: bold;
+    border-bottom: 1px dotted #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    margin-top: 20px; }
+  #bigbomMarketplace .job-detail .job-detail-description .ct {
+    line-height: 1.6; }
+    #bigbomMarketplace .job-detail .job-detail-description .ct .skill {
+      width: 100%;
+      padding-top: 20px; }
+      #bigbomMarketplace .job-detail .job-detail-description .ct .skill span.bold {
+        padding: 0 10px 0 0; }
+
+#bigbomMarketplace .tag {
+  background: #f9f9f9;
+  border-radius: 15px;
+  padding: 5px 10px;
+  font-size: 14px;
+  margin-right: 5px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+#bigbomMarketplace .search-input {
+  padding: 2px 10px;
+  position: relative;
+  border: 1px solid #ccc;
+  margin: 0 20px 0 0;
+  border-radius: 5px; }
+  #bigbomMarketplace .search-input:before {
+    content: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAQJJREFUKBWVkr2uQUEUhf3ET6GRaC5aFRoJKrf1BKpb8SwqovYGXkCj00k0QnRKEYkILYobvpUYmeMMyVnJl7P3mjN7Zu9zwiGv2qRFyMMSRrAFp6JPN8XzBj+wgDkUYAg7WINTYdwpDECxrRLJHeq2accdkgm8bzTvNAg2EDOGeUYI1KNO1gkuzTA1g8T7ojbn4ONQWPuHPWgeHmnzCqoe15tkSNPgPEAn68oVcOmA2XMtGK9FoE/VhOTTVNExqLCGZnxCv2pYauEC6lF0oQxX6IOvb7yX9NPEQafan+aPXDdQC18LsO6Tip5BBY6gIQaSbnMCFRCBZRcIvFkbsvCr4AFGOCxQy+JdGQAAAABJRU5ErkJggg==");
+    display: block;
+    position: absolute;
+    width: 15px;
+    z-index: 3;
+    height: 15px;
+    font-size: 20px;
+    top: 4px;
+    left: 16px;
+    line-height: 32px;
+    opacity: 0.6; }
+  #bigbomMarketplace .search-input input {
+    width: 100%;
+    font-size: 16px;
+    border: none;
+    line-height: 22px;
+    padding: 5px 10px 5px 25px;
+    height: 32px;
+    position: relative;
+    outline: none; }
+    #bigbomMarketplace .search-input input :focus {
+      outline: none; }
+
+#bigbomMarketplace .no-content {
+  padding: 50px;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+  text-align: center; }
+  #bigbomMarketplace .no-content p {
+    margin-top: 20px; }
+  #bigbomMarketplace .no-content a {
+    color: #1876e2;
+    font-weight: bold; }
+    #bigbomMarketplace .no-content a:hover {
+      text-decoration: underline; }
+
+#header header {
+  padding: 10px 0;
+  width: 100%;
+  float: left; }
+  #header header .logo {
+    float: left; }
+  #header header .nav {
+    float: right;
+    padding-top: 5px; }
+    #header header .nav li {
+      display: inline-block; }
+      #header header .nav li.active a {
+        color: #40bd56; }
+      #header header .nav li a {
+        display: inline-block;
+        padding: 5px 15px;
+        color: #555;
+        text-decoration: none;
+        font-size: 16px; }
+        #header header .nav li a:hover {
+          color: #111; }
+
+#footer {
+  background: #fff;
+  border-top: 1px solid #ccc;
+  margin-top: 40px; }
+  #footer footer {
+    width: 100%;
+    float: left; }
+    #footer footer .logo {
+      float: left; }
+    #footer footer .nav {
+      float: right; }
+    #footer footer .social-list {
+      text-align: center; }
+      #footer footer .social-list .cycle-box {
+        display: inline-block;
+        border-radius: 50%;
+        text-align: center;
+        overflow: hidden;
+        background: #40bd56;
+        width: 50px;
+        height: 50px;
+        line-height: 68px;
+        color: #fff;
+        vertical-align: top;
+        margin: 0 15px; }
+        #footer footer .social-list .cycle-box.tele svg {
+          width: 37px;
+          height: 30px; }
+        #footer footer .social-list .cycle-box.face svg {
+          width: 15px;
+          height: 33px; }
+        #footer footer .social-list .cycle-box.link svg {
+          width: 35px;
+          height: 33px; }
+        #footer footer .social-list .cycle-box.youtu {
+          line-height: 63px; }
+          #footer footer .social-list .cycle-box.youtu svg {
+            width: 35px;
+            height: 25px; }
+        #footer footer .social-list .cycle-box.git {
+          background: none;
+          color: #40bd56; }
+          #footer footer .social-list .cycle-box.git svg {
+            width: 50px;
+            height: 50px; }
+        #footer footer .social-list .cycle-box.twi {
+          line-height: 65px; }
+          #footer footer .social-list .cycle-box.twi svg {
+            width: 31px;
+            height: 25px; }
+    #footer footer .link-interm {
+      margin: 25px 0;
+      text-align: center; }
+      #footer footer .link-interm a {
+        color: #555;
+        margin: 10px;
+        font-size: 15px; }
+      #footer footer .link-interm .line-ver {
+        color: #ccc; }
+    #footer footer .cpyRight {
+      color: #888;
+      margin: 25px 0;
+      font-size: 14px;
+      text-align: center; }
+
+#home .home-wrp .home-intro h1,
+#hirer .home-wrp .home-intro h1 {
+  font-size: 34px;
+  font-weight: bold;
+  padding: 80px 80px 0 80px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  line-height: 45px;
+  color: #fff; }
+
+#home .home-wrp .home-intro .buttons,
+#hirer .home-wrp .home-intro .buttons {
+  padding: 20px 0 0 80px; }
+  #home .home-wrp .home-intro .buttons .left,
+  #hirer .home-wrp .home-intro .buttons .left {
+    margin-right: 20px; }
+
+#home .home-wrp .home-intro .connect-item-wrp,
+#hirer .home-wrp .home-intro .connect-item-wrp {
+  padding: 35px; }
+  #home .home-wrp .home-intro .connect-item-wrp:first-child .connect-item,
+  #hirer .home-wrp .home-intro .connect-item-wrp:first-child .connect-item {
+    box-shadow: 5px -5px #2eae3b; }
+  #home .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item,
+  #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item {
+    box-shadow: 0 -5px #2eae3b; }
+  #home .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item,
+  #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item {
+    box-shadow: -5px -5px #2eae3b; }
+  #home .home-wrp .home-intro .connect-item-wrp .connect-item,
+  #hirer .home-wrp .home-intro .connect-item-wrp .connect-item {
+    background: url("/images/bg-connect.png") center center no-repeat;
+    background-size: cover;
+    padding: 100px 70px 70px 70px;
+    border-radius: 10px;
+    align-items: center;
+    display: flex;
+    flex-direction: column; }
+    #home .home-wrp .home-intro .connect-item-wrp .connect-item .logo,
+    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .logo {
+      padding-bottom: 20px; }
+    #home .home-wrp .home-intro .connect-item-wrp .connect-item .name,
+    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .name {
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      font-size: 20px; }
+    #home .home-wrp .home-intro .connect-item-wrp .connect-item .btn,
+    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .btn {
+      margin: 100px 0 0 0;
+      font-size: 16px;
+      padding: 8px 35px 9px 35px; }
+
+#home .home-content h2,
+#hirer .home-content h2 {
+  font-size: 30px;
+  color: #444;
+  text-align: center;
+  width: 100%;
+  padding: 40px 0; }
+
+#home .home-content .home-content-item,
+#hirer .home-content .home-content-item {
+  color: #444; }
+  #home .home-content .home-content-item .home-content-img,
+  #hirer .home-content .home-content-item .home-content-img {
+    border: 1px solid #40bd56;
+    border-radius: 50%;
+    background: #fff;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px auto; }
+    #home .home-content .home-content-item .home-content-img.view-all,
+    #hirer .home-content .home-content-item .home-content-img.view-all {
+      font-weight: bold;
+      color: #7bccc8; }
+    #home .home-content .home-content-item .home-content-img:hover,
+    #hirer .home-content .home-content-item .home-content-img:hover {
+      box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3); }
+  #home .home-content .home-content-item p,
+  #hirer .home-content .home-content-item p {
+    font-size: 18px;
+    text-align: center; }
+
+#hirer .btn-create svg {
+  height: 25px;
+  width: 25px;
+  margin-right: 10px; }
+
+#hirer .freelancer-bidding {
+  padding: 40px 0; }
+  #hirer .freelancer-bidding .list-container .list-header {
+    background: #2070b5;
+    color: #fff; }
+    #hirer .freelancer-bidding .list-container .list-header div {
+      border-right: 0; }
+  #hirer .freelancer-bidding .list-container .list-body .list-body-row {
+    border-bottom: 1px solid #eee; }
+    #hirer .freelancer-bidding .list-container .list-body .list-body-row .title {
+      align-items: center;
+      display: flex; }
+      #hirer .freelancer-bidding .list-container .list-body .list-body-row .title .avatar {
+        padding-right: 5px; }
+        #hirer .freelancer-bidding .list-container .list-body .list-body-row .title .avatar svg {
+          width: 30px;
+          height: 30px; }
+    #hirer .freelancer-bidding .list-container .list-body .list-body-row div {
+      border-right: none; }
+
+#bigbomMarketplace .job-detail .btn-back {
+  margin-top: -30px;
+  margin-bottom: 30px; }
+
+#bigbomMarketplace .job-detail .full-top-wrp .main-intro h1 {
+  font-size: 25px;
+  line-height: 1.4; }
+
+#freelancer .filter {
+  padding-bottom: 30px; }
+  #freelancer .filter .sort nav {
+    padding: 0;
+    margin-left: 20px; }
+    #freelancer .filter .sort nav .select-item {
+      padding: 5px;
+      border-radius: 3px;
+      border: 1px solid #ddd; }
+      #freelancer .filter .sort nav .select-item .select-item-text span {
+        font-size: 12px;
+        color: #666;
+        line-height: 1; }
+      #freelancer .filter .sort nav .select-item .select-item-text p {
+        color: #444;
+        line-height: 1;
+        padding-top: 1px;
+        font-weight: bold; }
+      #freelancer .filter .sort nav .select-item .icon {
+        color: #999; }
+
+#freelancer .job-item-list a {
+  color: #444; }
+
+#freelancer .job-item-list .job-item {
+  width: 100%;
+  transition: all 0.3s ease-in;
+  display: block; }
+  #freelancer .job-item-list .job-item:first-child {
+    border-top: 1px dotted #ddd; }
+  #freelancer .job-item-list .job-item:last-child > div {
+    border-bottom: none; }
+  #freelancer .job-item-list .job-item > div {
+    padding: 20px;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box; }
+    #freelancer .job-item-list .job-item > div:hover {
+      background: #f9f9f9;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+    #freelancer .job-item-list .job-item > div .header .title {
+      color: #115c8d;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 20px 0; }
+    #freelancer .job-item-list .job-item > div .header .budget {
+      font-size: 20px;
+      display: flex;
+      text-align: right;
+      justify-content: center;
+      align-items: center; }
+    #freelancer .job-item-list .job-item > div .content .description {
+      font-size: 14px;
+      padding-bottom: 20px;
+      line-height: 1.5; }
+    #freelancer .job-item-list .job-item > div .content .status {
+      padding-bottom: 20px; }
+    #freelancer .job-item-list .job-item > div .content .category {
+      padding-bottom: 20px; }
+
+#freelancer .top-action {
+  width: 100%; }
+  #freelancer .top-action .btn-bid {
+    float: right;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-left: 15px; }
+  #freelancer .top-action .note {
+    margin-top: -20px;
+    margin-bottom: 30px;
+    display: inline-block;
+    float: right; }
+    #freelancer .top-action .note svg {
+      height: 17px;
+      width: 17px;
+      margin-right: 3px;
+      color: #40bd56; }
+
+#freelancer .job-detail-description {
+  padding-bottom: 30px; }
+
+body {
+  padding: 0;
+  margin: 0;
+  color: #222; }
+
+* {
+  box-sizing: border-box; }
+
+.main-container {
+  padding: 0;
+  margin: 0;
+  width: 100%; }
+
+.loading {
+  font-size: 50px;
+  margin-top: 50px; }
+
+@keyframes rot {
+  from {
+    transform: rotate(0deg); }
+  to {
+    transform: rotate(360deg); } }
+
+.productsWrap {
+  overflow: hidden;
+  padding-top: 30px; }
+  .productsWrap .siderbar {
+    width: 25%;
+    padding: 10px;
+    display: block;
+    float: left;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    text-align: left;
+    font-size: 18px; }
+    .productsWrap .siderbar h3 {
+      color: #111; }
+    .productsWrap .siderbar li {
+      margin-bottom: 15px; }
+      .productsWrap .siderbar li.curr a {
+        text-decoration: underline; }
+    .productsWrap .siderbar a {
+      color: #333;
+      font-size: 15px;
+      text-decoration: none; }
+      .productsWrap .siderbar a:hover {
+        text-decoration: underline; }
+  .productsWrap .products {
+    width: 70%;
+    float: right; }
+  .productsWrap .productDetail p {
+    font-size: 22px; }
+
+.reddit-api ul {
+  text-align: left; }
+  .reddit-api ul.loaded {
+    opacity: 0.5; }
+  .reddit-api ul li {
+    margin-bottom: 10px; }
+
+.refresh {
+  cursor: default;
+  color: blue;
+  opacity: 0.2;
+  text-decoration: underline; }
+  .refresh.enable {
+    cursor: pointer;
+    opacity: 1; }
+
+.main-nav {
+  background: #252525; }
+  .main-nav li {
+    float: left; }
+    .main-nav li.actived a {
+      border-bottom: 2px solid #40bd56;
+      padding: 15px 25px 13px 25px;
+      color: #40bd56;
+      background: #353535; }
+    .main-nav li a {
+      padding: 15px 25px;
+      display: inline-block;
+      color: #fff;
+      font-size: 16px;
+      transition: all 0.3s ease-in; }
+      .main-nav li a:hover {
+        color: #40bd56; }

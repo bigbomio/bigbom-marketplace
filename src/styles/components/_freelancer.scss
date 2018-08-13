@@ -1,0 +1,112 @@
+#freelancer {
+    .filter {
+        padding-bottom: 30px;
+        .sort {
+            nav {
+                padding: 0;
+                margin-left: 20px;
+                .select-item {
+                    padding: 5px;
+                    border-radius: 3px;
+                    border: 1px solid #ddd;
+                    .select-item-text {
+                        span {
+                            font-size: 12px;
+                            color: #666;
+                            line-height: 1;
+                        }
+                        p {
+                            color: #444;
+                            line-height: 1;
+                            padding-top: 1px;
+                            font-weight: bold;
+                        }
+                    }
+                    .icon {
+                        color: #999;
+                    }
+                }
+            }
+        }
+    }
+    .job-item-list {
+        a {
+            color: #444;
+        }
+        .job-item {
+            width: 100%;
+            transition: $transition;
+            display: block;
+            &:first-child {
+                border-top: 1px dotted #ddd;
+            }
+            &:last-child {
+                & > div {
+                    border-bottom: none;
+                }
+            }
+            & > div {
+                padding: 20px;
+                border-bottom: 1px solid #ccc;
+                box-sizing: border-box;
+
+                &:hover {
+                    background: #f9f9f9;
+                    box-shadow: $thinShadow;
+                }
+                .header {
+                    .title {
+                        color: #115c8d;
+                        font-size: 20px;
+                        font-weight: bold;
+                        padding: 20px 0;
+                    }
+                    .budget {
+                        font-size: 20px;
+                        display: flex;
+                        text-align: right;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                }
+                .content {
+                    .description {
+                        font-size: 14px;
+                        padding-bottom: 20px;
+                        line-height: 1.5;
+                    }
+                    .status {
+                        padding-bottom: 20px;
+                    }
+                    .category {
+                        padding-bottom: 20px;
+                    }
+                }
+            }
+        }
+    }
+    .top-action {
+        width: 100%;
+        .btn-bid {
+            float: right;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+        .note {
+            margin-top: -20px;
+            margin-bottom: 30px;
+            display: inline-block;
+            float: right;
+            svg {
+                height: 17px;
+                width: 17px;
+                margin-right: 3px;
+                color: $green;
+            }
+        }
+    }
+    .job-detail-description {
+        padding-bottom: 30px;
+    }
+}

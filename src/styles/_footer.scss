@@ -1,0 +1,101 @@
+#footer {
+    background: #fff;
+    border-top: 1px solid #ccc;
+    margin-top: 40px;
+    footer {
+        width: 100%;
+        float: left;
+
+        .logo {
+            float: left;
+        }
+        .nav {
+            float: right;
+        }
+        .social-list {
+            text-align: center;
+
+            .cycle-box {
+                display: inline-block;
+                border-radius: 50%;
+                text-align: center;
+                overflow: hidden;
+                background: $green;
+                width: 50px;
+                height: 50px;
+                line-height: 68px;
+                color: #fff;
+                vertical-align: top;
+                margin: 0 15px;
+
+                &.tele {
+                    svg {
+                        width: 37px;
+                        height: 30px;
+                    }
+                }
+
+                &.face {
+                    svg {
+                        width: 15px;
+                        height: 33px;
+                    }
+                }
+
+                &.link {
+                    svg {
+                        width: 35px;
+                        height: 33px;
+                    }
+                }
+
+                &.youtu {
+                    line-height: 63px;
+                    svg {
+                        width: 35px;
+                        height: 25px;
+                    }
+                }
+
+                &.git {
+                    background: none;
+                    color: $green;
+                    svg {
+                        width: 50px;
+                        height: 50px;
+                    }
+                }
+
+                &.twi {
+                    line-height: 65px;
+                    svg {
+                        width: 31px;
+                        height: 25px;
+                    }
+                }
+                &:hover {
+                    //box-shadow: 0px 10px 25px rgba(28, 119, 25, 0.68);
+                }
+            }
+        }
+        .link-interm {
+            margin: 25px 0;
+            text-align: center;
+            a {
+                color: #555;
+                margin: 10px;
+                font-size: 15px;
+            }
+            .line-ver {
+                color: #ccc;
+            }
+        }
+
+        .cpyRight {
+            color: #888;
+            margin: 25px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+    }
+}

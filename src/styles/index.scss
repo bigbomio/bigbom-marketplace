@@ -1,0 +1,141 @@
+@import 'setting';
+@import 'common';
+@import 'header';
+@import 'footer';
+
+@import './components/home';
+@import './components/hirer';
+@import './components/freelancer';
+
+body {
+    padding: 0;
+    margin: 0;
+    color: #222;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.main-container {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.loading {
+    font-size: 50px;
+    margin-top: 50px;
+}
+
+@keyframes rot {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.productsWrap {
+    overflow: hidden;
+    padding-top: 30px;
+
+    .siderbar {
+        width: 25%;
+        padding: 10px;
+        display: block;
+        float: left;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        text-align: left;
+        font-size: 18px;
+
+        h3 {
+            color: #111;
+        }
+
+        li {
+            margin-bottom: 15px;
+
+            &.curr {
+                a {
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        a {
+            color: #333;
+            font-size: 15px;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .products {
+        width: 70%;
+        float: right;
+    }
+
+    .productDetail {
+        p {
+            font-size: 22px;
+        }
+    }
+}
+
+.reddit-api {
+    ul {
+        text-align: left;
+
+        &.loaded {
+            opacity: 0.5;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+    }
+}
+
+.refresh {
+    cursor: default;
+    color: blue;
+    opacity: 0.2;
+    text-decoration: underline;
+
+    &.enable {
+        cursor: pointer;
+        opacity: 1;
+    }
+}
+
+.main-nav {
+    background: #252525;
+    li {
+        float: left;
+        &.actived {
+            a {
+                border-bottom: 2px solid $green;
+                padding: 15px 25px 13px 25px;
+                color: $green;
+                background: #353535;
+            }
+        }
+        a {
+            padding: 15px 25px;
+            display: inline-block;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease-in;
+            &:hover {
+                color: $green;
+            }
+        }
+    }
+}
