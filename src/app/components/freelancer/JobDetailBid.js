@@ -62,13 +62,12 @@ class JobDetailBid extends Component {
     }
     getMyBid() {
         const { job } = this.state;
-        console.log(job);
         for (let user of job.bid) {
             if (user.address === myAddress) {
                 return (
                     <Grid item className="job-detail-col">
                         <div className="name">Your Bid ({job.currency})</div>
-                        <div className="ct">{user.award}</div>
+                        <div className="ct">${user.award}</div>
                     </Grid>
                 );
             }

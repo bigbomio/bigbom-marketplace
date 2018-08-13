@@ -16,6 +16,47 @@
                     margin-right: 20px;
                 }
             }
+            .connect-item-wrp {
+                padding: 35px;
+                &:first-child {
+                    .connect-item {
+                        box-shadow: 5px -5px #2eae3b;
+                    }
+                }
+                &:nth-child(2) {
+                    .connect-item {
+                        box-shadow: 0 -5px #2eae3b;
+                    }
+                }
+                &:nth-child(3) {
+                    .connect-item {
+                        box-shadow: -5px -5px #2eae3b;
+                    }
+                }
+                .connect-item {
+                    background: url('/images/bg-connect.png') center center no-repeat;
+                    background-size: cover;
+                    padding: 100px 70px 70px 70px;
+                    border-radius: 10px;
+                    align-items: center;
+                    display: flex;
+                    flex-direction: column;
+                    .logo {
+                        padding-bottom: 20px;
+                    }
+                    .name {
+                        color: #fff;
+                        font-weight: bold;
+                        text-shadow: $thinShadow;
+                        font-size: 20px;
+                    }
+                    .btn {
+                        margin: 100px 0 0 0;
+                        font-size: 16px;
+                        padding: 8px 35px 9px 35px;
+                    }
+                }
+            }
         }
     }
     .home-content {

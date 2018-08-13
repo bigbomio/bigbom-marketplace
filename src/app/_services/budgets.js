@@ -96,7 +96,7 @@ export default [
         max_sum: null,
         currency: 'USD',
         get label() {
-            return 'Major project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Major project ( $' + this.min_sum + '+ ' + this.currency + ')';
         },
     },
 ];
