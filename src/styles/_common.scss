@@ -366,4 +366,9 @@ $orange: #f99a0c;
     .col-6 {
         width: 50%;
     }
+    .dialog {
+        .loading {
+            min-height: inherit;
+        }
+    }
 }

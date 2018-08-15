@@ -1,9 +1,22 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import settingsApi from '../../_services/settingsApi';
+import abiConfig from '../../_services/abiConfig';
+import Utils from '../../_utils/utils';
+
+const ipfs = abiConfig.getIpfs();
 
 const currencies = settingsApi.getCurrencies();
 const categories = settingsApi.getCategories();
@@ -19,7 +32,52 @@ class HirerPostJob extends Component {
             selectedCurrency: currencies[0],
             budgets: budgetsSource,
             selectedBudget: budgetsSource[2],
+            isLoading: false,
+            open: false,
         };
+    }
+
+    async contractInstanceGenerator(type) {
+        const { defaultAccount, web3 } = this.props;
+        const address = abiConfig.getContract(type).address;
+        const abiInstance = web3.eth.contract(abiConfig.getContract(type).abi);
+        const instance = await abiInstance.at(address);
+        const gasPrice = await Utils.callMethodWithReject(web3.eth.getGasPrice)();
+        return {
+            defaultAccount,
+            instance,
+            gasPrice,
+            address,
+        };
+    }
+
+    async newJobInit(jobHash) {
+        const { selectedSkill } = this.state;
+        const jobInstance = await this.contractInstanceGenerator('BBFreelancerJob');
+        const expiredTime = parseInt(Date.now() / 1000, 10) + 7 * 24 * 3600; // expired after 7 days
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.createJob)(
+            jobHash,
+            expiredTime,
+            500e18,
+            selectedSkill[0].value,
+            {
+                from: jobInstance.defaultAccount,
+                gasPrice: +jobInstance.gasPrice.toString(10),
+            }
+        );
+        if (err) {
+            this.setState({
+                isLoading: false,
+                status: { err: true, text: 'something went wrong! Can not create job :(' },
+            });
+            return console.log(err);
+        }
+        // check event logs
+        this.setState({ isLoading: false, status: { err: false, text: 'Your job has been created!' } });
+        console.log('joblog: ', jobLog);
+        ipfs.catJSON(jobHash, (err, data) => {
+            console.log(err, 'data: ', data);
+        });
     }
 
     creatJob = () => {
@@ -35,6 +93,15 @@ class HirerPostJob extends Component {
                 currency: selectedCurrency,
                 category: selectedSkill,
             };
+            this.setState({ isLoading: true, open: true });
+            ipfs.addJSON(jobPostData, (err, jobHash) => {
+                if (err) {
+                    return console.log(err);
+                }
+                console.log('jobHash: ', jobHash);
+                this.setState({ jobHash });
+                this.newJobInit(jobHash);
+            });
             console.log(jobPostData);
         }
     };
@@ -108,11 +175,71 @@ class HirerPostJob extends Component {
         this.setState({ selectedBudget: selectedOption });
     };
 
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
     render() {
-        const { selectedSkill, selectedCurrency, selectedBudget, nameErr, desErr, skillsErr } = this.state;
-        const { budgets } = this.state;
+        const {
+            selectedSkill,
+            selectedCurrency,
+            selectedBudget,
+            nameErr,
+            desErr,
+            skillsErr,
+            budgets,
+            status,
+            open,
+            isLoading,
+            jobHash,
+        } = this.state;
         return (
             <div className="container-wrp">
+                <Dialog
+                    open={open}
+                    onClose={this.handleClose}
+                    maxWidth="sm"
+                    fullWidth
+                    className="dialog"
+                    disableBackdropClick
+                    disableEscapeKeyDown
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">Create New Job:</DialogTitle>
+                    <DialogContent>
+                        {isLoading ? (
+                            <div className="loading">
+                                <CircularProgress size={50} color="secondary" />
+                                <span>Loading...</span>
+                            </div>
+                        ) : (
+                            <div className="alert-dialog-description">
+                                {status && (
+                                    <div className="dialog-result">
+                                        {status.err ? (
+                                            <div className="err">{status.text}</div>
+                                        ) : (
+                                            <div className="success">
+                                                {status.text}
+                                                <p>
+                                                    <Link to={'/freelancer/jobs/' + jobHash}>View Your Job</Link>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        {!isLoading && (
+                            <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
+                                Close
+                            </ButtonBase>
+                        )}
+                    </DialogActions>
+                </Dialog>
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
@@ -195,4 +322,19 @@ class HirerPostJob extends Component {
     }
 }
 
-export default HirerPostJob;
+HirerPostJob.propTypes = {
+    defaultAccount: PropTypes.string.isRequired,
+};
+const mapStateToProps = state => {
+    return {
+        web3: state.homeReducer.web3,
+        defaultAccount: state.homeReducer.defaultAccount,
+    };
+};
+
+const mapDispatchToProps = {};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(HirerPostJob);

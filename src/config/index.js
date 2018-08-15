@@ -6,8 +6,8 @@ const listConfigs = {
             secure: true,
             hostname: 'http://www.reddit.com',
             port: 443,
-            namespace: 'dev'
-        }
+            namespace: 'dev',
+        },
     },
     uat: {
         API_SERVER: 'https://uat-abc.com',
@@ -15,8 +15,8 @@ const listConfigs = {
             secure: true,
             hostname: 'https://uat-abc',
             port: 443,
-            namespace: 'uat'
-        }
+            namespace: 'uat',
+        },
     },
     production: {
         API_SERVER: 'http://www.reddit.com',
@@ -24,9 +24,9 @@ const listConfigs = {
             secure: true,
             hostname: 'http://www.reddit.com',
             port: 443,
-            namespace: 'production'
-        }
-    }
+            namespace: 'production',
+        },
+    },
 };
 
 export const Config = listConfigs[env];
