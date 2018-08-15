@@ -89,7 +89,7 @@ class Routers extends PureComponent {
                         <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
                             <meta name="description" content="Bigbom Marketplace" />
                         </Helmet>
-                        <Header />
+                        <Header history={history} />
                         <Switch>
                             <Route exact path="/" component={Home} />
                             <Route path="/login" component={Login} />
