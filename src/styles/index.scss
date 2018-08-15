@@ -24,8 +24,16 @@ body {
 }
 
 .loading {
-    font-size: 50px;
-    margin-top: 50px;
+    font-size: 30px;
+    min-height: 600px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    span {
+        padding-top: 20px;
+    }
 }
 
 @keyframes rot {
