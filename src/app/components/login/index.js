@@ -25,7 +25,7 @@ class Login extends Component {
             <div id="home" className="container-wrp">
                 <div className="container-wrp home-wrp full-top-wrp">
                     <div className="container wrapper">
-                        <LoginMethods history={history} isLogin={isLogin} home={false} />
+                        <LoginMethods history={history} isLogin={isLogin} home={false} homeAction="" />
                     </div>
                 </div>
                 <div className="container wrapper">

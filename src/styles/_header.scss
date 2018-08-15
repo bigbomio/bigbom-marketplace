@@ -12,13 +12,11 @@
             padding-top: 5px;
             li {
                 display: inline-block;
-
                 &.active {
                     a {
                         color: $green;
                     }
                 }
-
                 a {
                     display: inline-block;
                     padding: 5px 15px;

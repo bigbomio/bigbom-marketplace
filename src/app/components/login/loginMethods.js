@@ -95,10 +95,12 @@ class LoginMethods extends Component {
                     if (!home) {
                         history.goBack();
                     } else {
-                        if (homeAction === 'postJobAction') {
-                            history.push('/hirer');
-                        } else {
-                            history.push('/freelancer');
+                        if (homeAction) {
+                            if (homeAction === 'postJobAction') {
+                                history.push('/hirer');
+                            } else {
+                                history.push('/freelancer');
+                            }
                         }
                     }
                     console.log('connected');
