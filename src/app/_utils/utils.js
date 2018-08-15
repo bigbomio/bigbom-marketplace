@@ -145,7 +145,7 @@ class Utils {
                         throw new Error(
                             JSON.stringify({
                                 code: 'CONNECT_WALLET',
-                                message: 'Please connect your wallet with Metamask!',
+                                message: 'Please login Metamask!',
                             })
                         );
                     }

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import Manage from '../../components/hirer/Manage';
 import JobDetail from '../../components/hirer/JobDetail';
@@ -19,7 +20,15 @@ const styles = theme => ({
         maxWidth: 'inherit',
     },
 });
+
 class HirerCatagories extends Component {
+    componentDidMount() {
+        const { isConnected, history } = this.props;
+        if (!isConnected) {
+            history.push('/login');
+        }
+    }
+
     render() {
         const { match } = this.props;
         const listSubLink = [
@@ -57,7 +66,6 @@ class HirerCatagories extends Component {
                 <Switch>
                     <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail data={Jobs} {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
-
                     <Route component={NotFound} />
                 </Switch>
             </div>
@@ -66,8 +74,23 @@ class HirerCatagories extends Component {
 }
 
 HirerCatagories.propTypes = {
+    history: PropTypes.object.isRequired,
+    isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(HirerCatagories);
+const mapStateToProps = state => {
+    return {
+        isConnected: state.homeReducer.isConnected,
+    };
+};
+
+const mapDispatchToProps = {};
+
+export default withStyles(styles)(
+    connect(
+        mapStateToProps,
+        mapDispatchToProps
+    )(HirerCatagories)
+);

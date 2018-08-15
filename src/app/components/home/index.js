@@ -2,38 +2,11 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import posed from 'react-pose';
-import Eth from 'ethjs';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 
-import Utils from '../../_utils/utils';
-import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount } from './actions';
-
-const connects = [
-    {
-        logo: '/images/metamask.png',
-        name: 'Metamask',
-        action: function(e) {
-            e.connectMetaMask();
-        },
-    },
-    {
-        logo: '/images/trezor.png',
-        name: 'Trezor',
-        action: null,
-    },
-    {
-        logo: '/images/ledger.png',
-        name: 'Ledger',
-        action: null,
-    },
-];
+import LoginMethods from '../login/loginMethods';
 
 const ContainerProps = {
     open: {
@@ -60,92 +33,20 @@ const Square = posed.div({
     closed: { opacity: 0, x: 300 },
 });
 
-let _this;
 class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            web3: null,
-            hovering1: false,
-            hovering2: false,
-            hovering3: false,
             isLogout: false,
             isLogin: false,
-            open: false,
+            homeAction: '',
         };
-        _this = this;
     }
 
     componentDidMount() {
-        const { setWeb3 } = this.props;
-        setWeb3(global.web3);
-        _this.checkMetamaskID = setInterval(() => {
-            _this.checkMetamask();
-        }, 1000);
         this.setState({ isLogout: true });
         document.getElementById('login').style.display = 'none';
     }
-
-    componentWillUnmount() {
-        clearInterval(this.checkMetamaskID);
-        clearInterval(this.refreshTokenID);
-    }
-
-    static getDerivedStateFromProps(props, previousState) {
-        const { web3 } = props;
-        const state = {};
-        if (web3 && web3 !== previousState.web3) {
-            state.web3 = web3;
-            state.eth = new Eth(web3.currentProvider);
-        }
-        return state;
-    }
-
-    checkMetamask = async () => {
-        const { isConnected, logoutMetamask, setAccount, defaultAccount, history, setNetwork } = this.props;
-        const { web3 } = this.state;
-        if (isConnected) {
-            try {
-                const { account, network } = await Utils.connectMetaMask(web3);
-                if (defaultAccount !== account) {
-                    setAccount(account);
-                    setNetwork(network);
-                    if (defaultAccount) {
-                        logoutMetamask();
-                        console.log('logout');
-                        history.push('/');
-                    }
-                }
-            } catch (error) {
-                logoutMetamask();
-            }
-        }
-    };
-
-    connectMetaMask = () => {
-        const { loginMetamask } = this.props;
-        const { web3 } = this.state;
-        Utils.connectMetaMask(web3).then(
-            async () => {
-                try {
-                    loginMetamask();
-                    console.log('connected');
-                } catch (err) {
-                    this.setState({ open: true, errMsg: 'Something went wrong!' });
-                }
-            },
-            error => {
-                if (error) {
-                    const message = JSON.parse(error.message);
-                    if (message.code === 'NETWORK') {
-                        this.setState({ open: true, errMsg: 'Network error' });
-                    } else {
-                        this.setState({ open: true, errMsg: message.message });
-                    }
-                }
-            }
-        );
-    };
 
     disconnectRender = () => {
         const { isLogout } = this.state;
@@ -154,10 +55,16 @@ class Home extends Component {
                 <Square className="col-6">
                     <h1>Hire expert freelancers for any job</h1>
                     <div className="buttons">
-                        <ButtonBase className="btn btn-medium btn-white left" onClick={() => this.login()}>
+                        <ButtonBase
+                            className="btn btn-medium btn-white left"
+                            onClick={() => this.HomeAction('postJobAction')}
+                        >
                             Find a Freelancer
                         </ButtonBase>
-                        <ButtonBase className="btn btn-medium btn-white" onClick={() => this.login()}>
+                        <ButtonBase
+                            className="btn btn-medium btn-white"
+                            onClick={() => this.HomeAction('findJobAction')}
+                        >
                             Find a Job
                         </ButtonBase>
                     </div>
@@ -169,79 +76,33 @@ class Home extends Component {
         );
     };
 
-    connectRender() {
-        const { isLogin } = this.state;
-        return (
-            <Container id="login" className="home-intro sidebar" pose={isLogin ? 'open' : 'closed'}>
-                {connects.map((cn, i) => {
-                    const hoverName = 'hovering' + i;
-                    return (
-                        <Square
-                            pose={this.state[hoverName] ? 'popped' : 'idle'}
-                            onMouseEnter={() => this.setState({ [hoverName]: true })}
-                            onMouseLeave={() => this.setState({ [hoverName]: false })}
-                            key={i}
-                            className="connect-item-wrp"
-                        >
-                            <div className="connect-item">
-                                <div className="logo">
-                                    <img src={cn.logo} alt="" />
-                                </div>
-                                <div className="name">{cn.name}</div>
-                                {cn.action ? (
-                                    <ButtonBase className="btn btn-normal btn-white" onClick={() => cn.action(this)}>
-                                        Connect
-                                    </ButtonBase>
-                                ) : (
-                                    <ButtonBase className="btn btn-normal btn-white">Connect</ButtonBase>
-                                )}
-                            </div>
-                        </Square>
-                    );
-                })}
-            </Container>
-        );
-    }
-
-    login = () => {
-        this.setState({ isLogout: false });
-        setTimeout(() => {
-            document.getElementById('intro').style.display = 'none';
-            document.getElementById('login').style.display = 'flex';
-            this.setState({ isLogin: true });
-        }, 300);
-    };
-
-    handleClose = () => {
-        this.setState({ open: false });
+    HomeAction = action => {
+        const { isConnected, history } = this.props;
+        if (isConnected) {
+            if (action === 'postJobAction') {
+                history.push('/hirer');
+            } else {
+                history.push('/freelancer');
+            }
+        } else {
+            this.setState({ isLogout: false, homeAction: action });
+            setTimeout(() => {
+                document.getElementById('intro').style.display = 'none';
+                document.getElementById('login').style.display = 'flex';
+                this.setState({ isLogin: true });
+            }, 300);
+        }
     };
 
     render() {
-        const { open, errMsg } = this.state;
+        const { isLogin, homeAction } = this.state;
+        const { history } = this.props;
         return (
             <div id="home" className="container-wrp">
-                <Dialog
-                    open={open}
-                    onClose={this.handleClose}
-                    maxWidth="sm"
-                    fullWidth
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">Error:</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">{errMsg}</DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
-                            Close
-                        </ButtonBase>
-                    </DialogActions>
-                </Dialog>
                 <div className="container-wrp home-wrp full-top-wrp">
                     <div className="container wrapper">
                         {this.disconnectRender()}
-                        {this.connectRender()}
+                        <LoginMethods history={history} isLogin={isLogin} home homeAction={homeAction} />
                     </div>
                 </div>
                 <div className="container wrapper">
@@ -286,31 +147,17 @@ class Home extends Component {
 }
 
 Home.propTypes = {
-    loginMetamask: PropTypes.func.isRequired,
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
-    defaultAccount: PropTypes.string.isRequired,
-    setWeb3: PropTypes.func.isRequired,
-    logoutMetamask: PropTypes.func.isRequired,
-    setAccount: PropTypes.func.isRequired,
-    setNetwork: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        defaultAccount: state.homeReducer.defaultAccount,
     };
 };
 
-const mapDispatchToProps = {
-    loginMetamask,
-    setWeb3,
-    logoutMetamask,
-    setAccount,
-    setNetwork,
-};
+const mapDispatchToProps = {};
 
 export default connect(
     mapStateToProps,

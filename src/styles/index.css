@@ -582,6 +582,11 @@ body {
   width: 100%;
   padding: 40px 0; }
 
+#home .home-content .note,
+#hirer .home-content .note {
+  text-align: center;
+  width: 100%; }
+
 #home .home-content .home-content-item,
 #hirer .home-content .home-content-item {
   color: #444; }

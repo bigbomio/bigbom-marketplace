@@ -82,7 +82,7 @@ class JobDetailBid extends Component {
                     <div className="top-action">
                         <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back">
                             <FontAwesomeIcon icon="angle-left" />
-                            View all Bid
+                            Back
                         </ButtonBase>
                         <span className="note">
                             <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>,
@@ -95,7 +95,7 @@ class JobDetailBid extends Component {
                     <div className="top-action">
                         <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back">
                             <FontAwesomeIcon icon="angle-left" />
-                            View all Bid
+                            Back
                         </ButtonBase>
                         <ButtonBase className="btn btn-normal btn-green btn-back btn-bid">Bid On This Job</ButtonBase>
                     </div>
@@ -106,7 +106,7 @@ class JobDetailBid extends Component {
                 <div className="top-action">
                     <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back">
                         <FontAwesomeIcon icon="angle-left" />
-                        View all Bid
+                        Back
                     </ButtonBase>
                     <ButtonBase className="btn btn-normal btn-red btn-back btn-bid">Cancel</ButtonBase>
                     <ButtonBase className="btn btn-normal btn-blue btn-back btn-bid">Complete</ButtonBase>
