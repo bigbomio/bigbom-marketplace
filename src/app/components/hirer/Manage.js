@@ -71,7 +71,7 @@ const categories = settingsApi.getCategories();
 //     category: ['banner', 'design', 'artist'],
 // }
 
-let jobData;
+let jobs, bids, acceptedBids;
 
 class HirerDashboard extends Component {
     constructor(props) {
@@ -87,7 +87,10 @@ class HirerDashboard extends Component {
     }
 
     componentDidMount() {
-        this.getJobs();
+        const { isConnected } = this.props;
+        if (isConnected) {
+            this.getJobs();
+        }
     }
 
     getJobs = async () => {
@@ -95,13 +98,15 @@ class HirerDashboard extends Component {
         this.setState({ isLoading: true });
         const _categories = await this.getCategories();
         await Utils.getPastEvents(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.JobCreatedDataInit);
-        if (jobData) {
-            this.setState({ status: jobData.status, jobData });
-            this.JobInfoInit();
-            await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidCreated', _categories, this.BidCreatedDataInit);
+        await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidAccepted', _categories, this.BidAcceptedDataInit);
+        await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidCreated', _categories, this.BidCreatedDataInit);
+        if (jobs) {
+            let _jobs = this.JobInfoInit();
+            this.AllJobDataMap(_jobs, bids);
         }
     };
 
+    // get all categories
     async getCategories() {
         let allCategories = [];
         for (let category of categories) {
@@ -110,85 +115,93 @@ class HirerDashboard extends Component {
         return allCategories;
     }
 
+    // map job detail info from IPFS
     JobInfoInit = () => {
         const { web3 } = this.props;
-        const { jobData } = this.state;
-        jobData.jobs.map(async (job, index) => {
+        return jobs.map(job => {
             const jobHash = web3.toAscii(job.id);
-            return ipfs.catJSON(jobHash, (err, data) => {
+            console.log('jobHash: ', jobHash);
+            ipfs.catJSON(jobHash, (err, data) => {
                 if (err) {
                     console.log(err);
                     return;
                 }
-                jobData.jobs[index].title = data.title;
-                jobData.jobs[index].description = data.description;
-                jobData.jobs[index].currency = data.currency;
-                jobData.jobs[index].status = {
+                job.title = data.title;
+                job.description = data.description;
+                job.currency = data.currency;
+                job.budget = data.budget;
+                job.status = {
                     started: false,
                     canceled: false,
                     completed: false,
                     claimed: false,
                     expired: false,
                 };
-                return jobData.jobs;
             });
+            return job;
         });
-        console.log(jobData);
-        this.setState({ jobData, isLoading: false });
     };
 
-    AllJobDataMap = () => {
-        const { jobData } = this.state;
-        console.log(jobData.bids);
-        let dataMap = [];
-        for (let job of jobData.jobs) {
-            let dataMapTpl = { ...job, bid: [] };
-            for (let bid of jobData.bids) {
+    // map all data
+    AllJobDataMap = (_jobs, _bids) => {
+        for (let job of _jobs) {
+            job.bid = [];
+            for (let bid of _bids) {
                 if (bid.id === job.id) {
-                    dataMapTpl.bid.push(bid);
+                    job.bid.push(bid);
                 }
             }
-            dataMap.push(dataMapTpl);
         }
-        console.log(dataMap);
-        //return dataMap;
+        this.setState({ jobs: _jobs, isLoading: false });
     };
 
+    // receive jobs list from JobCreated
     JobCreatedDataInit = async jobEvents => {
-        const { web3 } = this.props;
-        let jobs = [];
-        jobData = {};
+        jobs = [];
         for (let jobEvent of jobEvents.data) {
             const jobTpl = {
                 id: jobEvent.args.jobHash,
-                budget: web3.fromWei(jobEvent.args.budget.toString(), 'ether'),
                 category: jobEvent.args.category,
                 expired: jobEvent.args.expired.toString(),
                 transactionHash: jobEvent.transactionHash,
             };
             jobs.push(jobTpl);
         }
-        jobData.jobs = jobs;
-        jobData.status = jobEvents.status;
     };
 
+    // receive bids list from BidCreated and map with acceptedBids
     BidCreatedDataInit = async jobEvents => {
         const { web3 } = this.props;
-        const { jobData } = this.state;
-        let bids = [];
+        bids = [];
         for (let jobEvent of jobEvents.data) {
             const bidTpl = {
                 address: jobEvent.args.owner,
                 award: web3.fromWei(jobEvent.args.bid.toString(), 'ether'),
                 created: jobEvent.args.created.toString(),
                 id: jobEvent.args.jobHash,
+                accepted: false,
             };
+            if (acceptedBids.length > 0) {
+                for (let bid of acceptedBids) {
+                    if (bid.jobHash === jobEvent.args.jobHash && jobEvent.args.owner === bid.address) {
+                        bidTpl.accepted = true;
+                    }
+                }
+            }
             bids.push(bidTpl);
         }
-        jobData.bids = bids;
-        jobData.status = jobEvents.status;
-        this.setState({ jobData });
-        this.AllJobDataMap();
+    };
+
+    // receive accepted bids list from BidAccepted
+    BidAcceptedDataInit = async jobEvents => {
+        acceptedBids = [];
+        for (let jobEvent of jobEvents.data) {
+            const bidTpl = {
+                address: jobEvent.args.freelancer,
+                jobHash: jobEvent.args.jobHash,
+            };
+            acceptedBids.push(bidTpl);
+        }
     };
 
     createAction = () => {
@@ -206,9 +219,9 @@ class HirerDashboard extends Component {
 
     render() {
         const { match } = this.props;
-        const { selectedCategory, status, open, isLoading } = this.state;
+        const { selectedCategory, status, open, isLoading, jobs } = this.state;
         const categories = settingsApi.getCategories();
-
+        console.log(jobs);
         return (
             <div id="hirer" className="container-wrp">
                 <Dialog
