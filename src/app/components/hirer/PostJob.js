@@ -37,28 +37,16 @@ class HirerPostJob extends Component {
         };
     }
 
-    async contractInstanceGenerator(type) {
-        const { defaultAccount, web3 } = this.props;
-        const address = abiConfig.getContract(type).address;
-        const abiInstance = web3.eth.contract(abiConfig.getContract(type).abi);
-        const instance = await abiInstance.at(address);
-        const gasPrice = await Utils.callMethodWithReject(web3.eth.getGasPrice)();
-        return {
-            defaultAccount,
-            instance,
-            gasPrice,
-            address,
-        };
-    }
-
     async newJobInit(jobHash) {
-        const { selectedSkill } = this.state;
-        const jobInstance = await this.contractInstanceGenerator('BBFreelancerJob');
+        const { selectedSkill, selectedBudget } = this.state;
+        const { web3 } = this.props;
+        const budget = web3.toWei(selectedBudget.min_sum, 'ether');
+        const jobInstance = await Utils.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + 7 * 24 * 3600; // expired after 7 days
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
-            500e18,
+            budget,
             selectedSkill[0].value,
             {
                 from: jobInstance.defaultAccount,
@@ -82,12 +70,12 @@ class HirerPostJob extends Component {
 
     creatJob = () => {
         const { namePrepare, desPrepare, selectedCurrency, selectedBudget, selectedSkill } = this.state;
-        const name = this.validate(namePrepare, 'name');
+        const title = this.validate(namePrepare, 'title');
         const des = this.validate(desPrepare, 'description');
         const skills = this.validate(selectedSkill, 'skills');
-        if (name && des && skills) {
+        if (title && des && skills) {
             const jobPostData = {
-                name: namePrepare,
+                title: namePrepare,
                 description: desPrepare,
                 budget: selectedBudget,
                 currency: selectedCurrency,
@@ -109,7 +97,7 @@ class HirerPostJob extends Component {
     validate = (val, field) => {
         let min = 10;
         let max = 255;
-        if (field === 'name') {
+        if (field === 'title') {
             if (val.length < min) {
                 this.setState({ nameErr: 'Please enter at least 10 characters.' });
                 return false;
@@ -143,8 +131,8 @@ class HirerPostJob extends Component {
 
     inputOnChange = (e, field) => {
         const val = e.target.value;
-        if (field === 'name') {
-            if (!this.validate(val, 'name')) {
+        if (field === 'title') {
+            if (!this.validate(val, 'title')) {
                 return;
             }
             this.setState({ namePrepare: val, nameErr: null });
@@ -211,7 +199,7 @@ class HirerPostJob extends Component {
                         {isLoading ? (
                             <div className="loading">
                                 <CircularProgress size={50} color="secondary" />
-                                <span>Loading...</span>
+                                <span>Waiting...</span>
                             </div>
                         ) : (
                             <div className="alert-dialog-description">
@@ -255,12 +243,12 @@ class HirerPostJob extends Component {
                     <div className="container wrapper">
                         <Grid container className="single-body">
                             <Grid item xs={12} className="mkp-form-row">
-                                <span className="mkp-form-row-label">Job name</span>
+                                <span className="mkp-form-row-label">Job title</span>
                                 <span className="mkp-form-row-description">From 10 to 255 characters</span>
                                 <input
                                     type="text"
                                     className={nameErr ? 'input-err' : ''}
-                                    onBlur={e => this.inputOnChange(e, 'name')}
+                                    onBlur={e => this.inputOnChange(e, 'title')}
                                 />
                                 {nameErr && <span className="err">{nameErr}</span>}
                             </Grid>
@@ -323,12 +311,11 @@ class HirerPostJob extends Component {
 }
 
 HirerPostJob.propTypes = {
-    defaultAccount: PropTypes.string.isRequired,
+    web3: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        defaultAccount: state.homeReducer.defaultAccount,
     };
 };
 

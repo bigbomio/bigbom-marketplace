@@ -1,41 +1,259 @@
 import React, { Component } from 'react';
-import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+
+import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
 
 import Utils from '../../_utils/utils';
-
 import settingsApi from '../../_services/settingsApi';
+import abiConfig from '../../_services/abiConfig';
+
 import Jobs from '../../_services/jobData';
 
+const ipfs = abiConfig.getIpfs();
+
+const categories = settingsApi.getCategories();
+
+// {
+//     id: 'wwkrjhfs',
+//     title: 'Design some banner ad',
+//     description:
+//         'New member will create their account by filling the basic details like – Name, Email, Mobile, Password, City, State and Country. After the account creation there will be 2 more form to fill up. Any ID proof can be uploaded for verification also. Those form will have optional fields like bank details, personal details, business details, relatives detail any kind of details. Members will be able to view and modify their details. Member can pay online for joining the community or pay later. He will be able to buy advertisement space on website for their business display. Member will be able to share their question answers on website and also able to share the pictures. He will be able give feedback on topics. Members can also see the details in the website which is only eligible for members. Every Member will have their Unique ID. Members will be able to upload the images through the mobile as well.',
+//     budget: {
+//         min_sum: '5000',
+//         max_sum: '10000',
+//     },
+//     bid: [
+//         {
+//             address: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551',
+//             award: 1000,
+//             time: '10 days',
+//             accepted: false,
+//         },
+//         {
+//             address: '0x6D02c7ac101F4e909A233d149022fb85e4939a68',
+//             award: 500,
+//             time: '10 days',
+//             accepted: false,
+//         },
+//         {
+//             address: '0x6D02c7ac101F4e909A233d1549022fbb5e4939a68',
+//             award: 520,
+//             time: '20 days',
+//             accepted: false,
+//         },
+//         {
+//             address: '0x6D02c7ac201F4e909A233d149022fbb5e4939a68',
+//             award: 520,
+//             time: '20 days',
+//             accepted: false,
+//         },
+//     ],
+//     currency: 'USD',
+//     status: {
+//         started: false,
+//         canceled: false,
+//         completed: false,
+//         claimed: false,
+//         expired: false,
+//     },
+//     category: ['banner', 'design', 'artist'],
+// }
+
+let jobData;
+
 class HirerDashboard extends Component {
-    state = {
-        checkedStarted: true,
-        checkedCompleted: true,
-        checkedBidding: true,
-        checkedExpired: false,
+    constructor(props) {
+        super(props);
+        this.state = {
+            checkedStarted: true,
+            checkedCompleted: true,
+            checkedBidding: true,
+            checkedExpired: false,
+            isLoading: false,
+            open: false,
+        };
+    }
+
+    componentDidMount() {
+        this.getJobs();
+    }
+
+    getJobs = async () => {
+        const { web3 } = this.props;
+        this.setState({ isLoading: true });
+        const _categories = await this.getCategories();
+        await Utils.getPastEvents(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.JobCreatedDataInit);
+        if (jobData) {
+            this.setState({ status: jobData.status, jobData });
+            this.JobInfoInit();
+            await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidCreated', _categories, this.BidCreatedDataInit);
+        }
     };
+
+    async getCategories() {
+        let allCategories = [];
+        for (let category of categories) {
+            allCategories.push(category.value);
+        }
+        return allCategories;
+    }
+
+    JobInfoInit = () => {
+        const { web3 } = this.props;
+        const { jobData } = this.state;
+        jobData.jobs.map(async (job, index) => {
+            const jobHash = web3.toAscii(job.id);
+            return ipfs.catJSON(jobHash, (err, data) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                jobData.jobs[index].title = data.title;
+                jobData.jobs[index].description = data.description;
+                jobData.jobs[index].currency = data.currency;
+                jobData.jobs[index].status = {
+                    started: false,
+                    canceled: false,
+                    completed: false,
+                    claimed: false,
+                    expired: false,
+                };
+                return jobData.jobs;
+            });
+        });
+        console.log(jobData);
+        this.setState({ jobData, isLoading: false });
+    };
+
+    AllJobDataMap = () => {
+        const { jobData } = this.state;
+        console.log(jobData.bids);
+        let dataMap = [];
+        for (let job of jobData.jobs) {
+            let dataMapTpl = { ...job, bid: [] };
+            for (let bid of jobData.bids) {
+                if (bid.id === job.id) {
+                    dataMapTpl.bid.push(bid);
+                }
+            }
+            dataMap.push(dataMapTpl);
+        }
+        console.log(dataMap);
+        //return dataMap;
+    };
+
+    JobCreatedDataInit = async jobEvents => {
+        const { web3 } = this.props;
+        let jobs = [];
+        jobData = {};
+        for (let jobEvent of jobEvents.data) {
+            const jobTpl = {
+                id: jobEvent.args.jobHash,
+                budget: web3.fromWei(jobEvent.args.budget.toString(), 'ether'),
+                category: jobEvent.args.category,
+                expired: jobEvent.args.expired.toString(),
+                transactionHash: jobEvent.transactionHash,
+            };
+            jobs.push(jobTpl);
+        }
+        jobData.jobs = jobs;
+        jobData.status = jobEvents.status;
+    };
+
+    BidCreatedDataInit = async jobEvents => {
+        const { web3 } = this.props;
+        const { jobData } = this.state;
+        let bids = [];
+        for (let jobEvent of jobEvents.data) {
+            const bidTpl = {
+                address: jobEvent.args.owner,
+                award: web3.fromWei(jobEvent.args.bid.toString(), 'ether'),
+                created: jobEvent.args.created.toString(),
+                id: jobEvent.args.jobHash,
+            };
+            bids.push(bidTpl);
+        }
+        jobData.bids = bids;
+        jobData.status = jobEvents.status;
+        this.setState({ jobData });
+        this.AllJobDataMap();
+    };
+
     createAction = () => {
         const { history } = this.props;
         history.push('/hirer');
     };
+
     handleChange = name => event => {
         this.setState({ [name]: event.target.checked });
     };
+
     handleChangeCategory = selectedOption => {
         this.setState({ selectedCategory: selectedOption });
     };
+
     render() {
         const { match } = this.props;
-        const { selectedCategory } = this.state;
+        const { selectedCategory, status, open, isLoading } = this.state;
         const categories = settingsApi.getCategories();
+
         return (
             <div id="hirer" className="container-wrp">
+                <Dialog
+                    open={open}
+                    onClose={this.handleClose}
+                    maxWidth="sm"
+                    fullWidth
+                    className="dialog"
+                    disableBackdropClick
+                    disableEscapeKeyDown
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">Create New Job:</DialogTitle>
+                    <DialogContent>
+                        {isLoading ? (
+                            <div className="loading">
+                                <CircularProgress size={50} color="secondary" />
+                                <span>Waiting...</span>
+                            </div>
+                        ) : (
+                            <div className="alert-dialog-description">
+                                {status && (
+                                    <div className="dialog-result">
+                                        {status.err ? (
+                                            <div className="err">{status.text}</div>
+                                        ) : (
+                                            <div className="success">
+                                                {status.text}
+                                                <p>success</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        {!isLoading && (
+                            <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
+                                Close
+                            </ButtonBase>
+                        )}
+                    </DialogActions>
+                </Dialog>
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
@@ -118,7 +336,7 @@ class HirerDashboard extends Component {
                             <Grid container className="list-container">
                                 <Grid container className="list-header">
                                     <Grid item xs={5}>
-                                        Job name
+                                        Job title
                                     </Grid>
                                     <Grid item xs={2}>
                                         Budget
@@ -178,9 +396,23 @@ class HirerDashboard extends Component {
         );
     }
 }
+
 HirerDashboard.propTypes = {
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
+    web3: PropTypes.object.isRequired,
+    isConnected: PropTypes.bool.isRequired,
+};
+const mapStateToProps = state => {
+    return {
+        web3: state.homeReducer.web3,
+        isConnected: state.homeReducer.isConnected,
+    };
 };
 
-export default HirerDashboard;
+const mapDispatchToProps = {};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(HirerDashboard);
