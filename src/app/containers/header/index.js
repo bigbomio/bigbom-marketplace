@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Route, Link } from 'react-router-dom';
 //import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import ButtonBase from '@material-ui/core/ButtonBase';
 
@@ -15,8 +16,14 @@ class Header extends PureComponent {
         };
     }
 
+    login = () => {
+        const { history } = this.props;
+        history.push('/login');
+    };
+
     render() {
         const { routes } = this.state;
+        const { isConnected } = this.props;
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
@@ -41,11 +48,17 @@ class Header extends PureComponent {
                                         </Route>
                                     );
                                 })}
-                                <li>
-                                    <ButtonBase variant="contained" className="btn btn-normal btn-green">
-                                        Login
-                                    </ButtonBase>
-                                </li>
+                                {!isConnected && (
+                                    <li>
+                                        <ButtonBase
+                                            variant="contained"
+                                            className="btn btn-normal btn-green"
+                                            onClick={() => this.login()}
+                                        >
+                                            Login
+                                        </ButtonBase>
+                                    </li>
+                                )}
                             </ul>
                         )}
                     </header>
@@ -55,10 +68,13 @@ class Header extends PureComponent {
     }
 }
 
-Header.propTypes = {};
+Header.propTypes = {
+    history: PropTypes.object.isRequired,
+    isConnected: PropTypes.bool.isRequired,
+};
 
-const mapStateToProps = () => {
-    return {};
+const mapStateToProps = state => {
+    return { isConnected: state.homeReducer.isConnected };
 };
 
 const mapDispatchToProps = {};

@@ -88,12 +88,20 @@ $orange: #f99a0c;
             &:focus {
                 border: 1px solid $green;
             }
+            &.input-err {
+                border: 1px solid $red;
+            }
         }
         .creatable-select {
             padding: 0 0 10px 0;
         }
         .left {
             padding-right: 20px;
+        }
+        .err {
+            padding: 5px 0;
+            font-size: 12px;
+            color: $red;
         }
     }
     .account-info {
@@ -115,9 +123,6 @@ $orange: #f99a0c;
             div {
                 color: #999;
                 font-size: 12px;
-            }
-            span {
-                font-weight: bold;
             }
         }
     }
@@ -192,7 +197,6 @@ $orange: #f99a0c;
             font-size: 14px;
             .list-body-row {
                 border-bottom: 1px dotted #ddd;
-
                 div {
                     border-right: 1px solid #ccc;
                     padding: 15px;
@@ -214,6 +218,9 @@ $orange: #f99a0c;
                             &:hover {
                                 color: $darkBlue;
                             }
+                        }
+                        .err {
+                            color: $red;
                         }
                     }
                 }
@@ -357,5 +364,24 @@ $orange: #f99a0c;
     }
     .col-6 {
         width: 50%;
+    }
+    .dialog {
+        .loading {
+            min-height: inherit;
+        }
+        .dialog-result {
+            padding: 30px;
+            font-size: 18px;
+            text-align: center;
+            .success {
+                font-weight: bold;
+                .icon {
+                    color: $green;
+                    width: 22px;
+                    height: 22px;
+                    margin-right: 5px;
+                }
+            }
+        }
     }
 }

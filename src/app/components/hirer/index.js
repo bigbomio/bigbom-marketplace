@@ -2,16 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
-import Grid from '@material-ui/core/Grid';
-import Tooltip from '@material-ui/core/Tooltip';
-
-import Utils from '../../_utils/utils';
+import { connect } from 'react-redux';
 
 import Manage from '../../components/hirer/Manage';
 import JobDetail from '../../components/hirer/JobDetail';
 import PostJob from '../../components/hirer//PostJob';
 import Jobs from '../../_services/jobData';
 import NotFound from '../../components/NotFound';
+import UserInfoNav from '../../components/common/UserInfoNav';
 
 const styles = theme => ({
     lightTooltip: {
@@ -22,9 +20,17 @@ const styles = theme => ({
         maxWidth: 'inherit',
     },
 });
+
 class HirerCatagories extends Component {
+    componentDidMount() {
+        const { isConnected, history } = this.props;
+        if (!isConnected) {
+            history.push('/login');
+        }
+    }
+
     render() {
-        const { match, classes } = this.props;
+        const { match } = this.props;
         const listSubLink = [
             {
                 title: 'Post a Job',
@@ -54,33 +60,12 @@ class HirerCatagories extends Component {
                                 </Route>
                             ))}
                         </ul>
-                        <Grid container className="account-info">
-                            <Tooltip
-                                title="0xb10ca39DFa4903AE057E8C26E39377cfb4989551"
-                                classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}
-                            >
-                                <Grid
-                                    item
-                                    xs={7}
-                                    className="account-info-item"
-                                    aria-label="0xb10ca39DFa4903AE057E8C26E39377cfb4989551"
-                                >
-                                    <div>Your Wallet Address</div>
-
-                                    {Utils.truncate('0xb10ca39DFa4903AE057E8C26E39377cfb4989551', 22)}
-                                </Grid>
-                            </Tooltip>
-                            <Grid item xs={5} className="account-info-item right">
-                                <div>Balance</div>
-                                <span>10.000</span> USD
-                            </Grid>
-                        </Grid>
+                        <UserInfoNav />
                     </div>
                 </div>
                 <Switch>
                     <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail data={Jobs} {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
-
                     <Route component={NotFound} />
                 </Switch>
             </div>
@@ -89,8 +74,23 @@ class HirerCatagories extends Component {
 }
 
 HirerCatagories.propTypes = {
+    history: PropTypes.object.isRequired,
+    isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(HirerCatagories);
+const mapStateToProps = state => {
+    return {
+        isConnected: state.homeReducer.isConnected,
+    };
+};
+
+const mapDispatchToProps = {};
+
+export default withStyles(styles)(
+    connect(
+        mapStateToProps,
+        mapDispatchToProps
+    )(HirerCatagories)
+);
