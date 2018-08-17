@@ -103,7 +103,6 @@ class LoginMethods extends Component {
                             }
                         }
                     }
-                    console.log('connected');
                 } catch (err) {
                     this.setState({ open: true, errMsg: 'Something went wrong!' });
                 }

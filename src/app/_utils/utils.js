@@ -194,6 +194,11 @@ class Utils {
             callback(results);
         });
     }
+    fetchData() {
+        return new Promise(function(resolve, reject) {
+            resolve();
+        });
+    }
 }
 
 export default new Utils();

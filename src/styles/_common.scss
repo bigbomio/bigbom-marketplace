@@ -124,9 +124,6 @@ $orange: #f99a0c;
                 color: #999;
                 font-size: 12px;
             }
-            span {
-                font-weight: bold;
-            }
         }
     }
     .btn {
@@ -200,7 +197,6 @@ $orange: #f99a0c;
             font-size: 14px;
             .list-body-row {
                 border-bottom: 1px dotted #ddd;
-
                 div {
                     border-right: 1px solid #ccc;
                     padding: 15px;
@@ -222,6 +218,9 @@ $orange: #f99a0c;
                             &:hover {
                                 color: $darkBlue;
                             }
+                        }
+                        .err {
+                            color: $red;
                         }
                     }
                 }
@@ -369,6 +368,20 @@ $orange: #f99a0c;
     .dialog {
         .loading {
             min-height: inherit;
+        }
+        .dialog-result {
+            padding: 30px;
+            font-size: 18px;
+            text-align: center;
+            .success {
+                font-weight: bold;
+                .icon {
+                    color: $green;
+                    width: 22px;
+                    height: 22px;
+                    margin-right: 5px;
+                }
+            }
         }
     }
 }

@@ -19,59 +19,11 @@ import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
-import Jobs from '../../_services/jobData';
-
 const ipfs = abiConfig.getIpfs();
 
 const categories = settingsApi.getCategories();
 
-// {
-//     id: 'wwkrjhfs',
-//     title: 'Design some banner ad',
-//     description:
-//         'New member will create their account by filling the basic details like – Name, Email, Mobile, Password, City, State and Country. After the account creation there will be 2 more form to fill up. Any ID proof can be uploaded for verification also. Those form will have optional fields like bank details, personal details, business details, relatives detail any kind of details. Members will be able to view and modify their details. Member can pay online for joining the community or pay later. He will be able to buy advertisement space on website for their business display. Member will be able to share their question answers on website and also able to share the pictures. He will be able give feedback on topics. Members can also see the details in the website which is only eligible for members. Every Member will have their Unique ID. Members will be able to upload the images through the mobile as well.',
-//     budget: {
-//         min_sum: '5000',
-//         max_sum: '10000',
-//     },
-//     bid: [
-//         {
-//             address: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551',
-//             award: 1000,
-//             time: '10 days',
-//             accepted: false,
-//         },
-//         {
-//             address: '0x6D02c7ac101F4e909A233d149022fb85e4939a68',
-//             award: 500,
-//             time: '10 days',
-//             accepted: false,
-//         },
-//         {
-//             address: '0x6D02c7ac101F4e909A233d1549022fbb5e4939a68',
-//             award: 520,
-//             time: '20 days',
-//             accepted: false,
-//         },
-//         {
-//             address: '0x6D02c7ac201F4e909A233d149022fbb5e4939a68',
-//             award: 520,
-//             time: '20 days',
-//             accepted: false,
-//         },
-//     ],
-//     currency: 'USD',
-//     status: {
-//         started: false,
-//         canceled: false,
-//         completed: false,
-//         claimed: false,
-//         expired: false,
-//     },
-//     category: ['banner', 'design', 'artist'],
-// }
-
-let jobs, bids, acceptedBids;
+let jobs, bids, acceptedBids, watchDataID;
 
 class HirerDashboard extends Component {
     constructor(props) {
@@ -88,21 +40,29 @@ class HirerDashboard extends Component {
 
     componentDidMount() {
         const { isConnected } = this.props;
+        this.resetData();
         if (isConnected) {
-            this.getJobs();
+            this.getJobs(1);
         }
     }
 
-    getJobs = async () => {
+    getJobs = async step => {
+        console.log('---------getJobs: ', step);
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         const _categories = await this.getCategories();
-        await Utils.getPastEvents(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.JobCreatedDataInit);
-        await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidAccepted', _categories, this.BidAcceptedDataInit);
-        await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidCreated', _categories, this.BidCreatedDataInit);
-        if (jobs) {
-            let _jobs = this.JobInfoInit();
-            this.AllJobDataMap(_jobs, bids);
+        if (step === 1) {
+            await Utils.getPastEvents(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.JobCreatedDataInit);
+        } else if (step === 2) {
+            await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidAccepted', _categories, this.BidAcceptedDataInit);
+        } else if (step === 3) {
+            await Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidCreated', _categories, this.BidCreatedDataInit);
+        } else if (step === 4) {
+            const _jobs = await this.JobInfoInit();
+            const jobData = await this.AllJobDataMap(_jobs, bids);
+            watchDataID = setInterval(() => {
+                this.watchData(jobData);
+            }, 300);
         }
     };
 
@@ -115,28 +75,54 @@ class HirerDashboard extends Component {
         return allCategories;
     }
 
+    resetData() {
+        jobs = null;
+        bids = null;
+        acceptedBids = null;
+        watchDataID = null;
+        this.setState({ Jobs: null });
+    }
+
+    // check data init
+    watchData = _jobData => {
+        const len = _jobData.length - 1;
+        for (let i in _jobData) {
+            if (Number(i) === Number(len)) {
+                if (!_jobData[i].err) {
+                    if (_jobData[i].budget) {
+                        this.setState({ Jobs: _jobData, isLoading: false });
+                        clearInterval(watchDataID);
+                    }
+                } else {
+                    this.setState({ Jobs: _jobData, isLoading: false });
+                    clearInterval(watchDataID);
+                }
+            }
+        }
+    };
+
     // map job detail info from IPFS
     JobInfoInit = () => {
         const { web3 } = this.props;
         return jobs.map(job => {
             const jobHash = web3.toAscii(job.id);
-            console.log('jobHash: ', jobHash);
             ipfs.catJSON(jobHash, (err, data) => {
                 if (err) {
                     console.log(err);
-                    return;
+                    job.err = 'Can not fetch data from server';
+                } else {
+                    job.title = data.title;
+                    job.description = data.description;
+                    job.currency = data.currency;
+                    job.budget = data.budget;
+                    job.status = {
+                        started: false,
+                        canceled: false,
+                        completed: false,
+                        claimed: false,
+                        expired: false,
+                    };
                 }
-                job.title = data.title;
-                job.description = data.description;
-                job.currency = data.currency;
-                job.budget = data.budget;
-                job.status = {
-                    started: false,
-                    canceled: false,
-                    completed: false,
-                    claimed: false,
-                    expired: false,
-                };
             });
             return job;
         });
@@ -145,14 +131,18 @@ class HirerDashboard extends Component {
     // map all data
     AllJobDataMap = (_jobs, _bids) => {
         for (let job of _jobs) {
-            job.bid = [];
-            for (let bid of _bids) {
-                if (bid.id === job.id) {
-                    job.bid.push(bid);
+            if (!job.err) {
+                job.bid = [];
+                if (_bids.length > 0) {
+                    for (let bid of _bids) {
+                        if (bid.id === job.id) {
+                            job.bid.push(bid);
+                        }
+                    }
                 }
             }
         }
-        this.setState({ jobs: _jobs, isLoading: false });
+        return _jobs;
     };
 
     // receive jobs list from JobCreated
@@ -167,6 +157,7 @@ class HirerDashboard extends Component {
             };
             jobs.push(jobTpl);
         }
+        this.getJobs(2);
     };
 
     // receive bids list from BidCreated and map with acceptedBids
@@ -181,15 +172,18 @@ class HirerDashboard extends Component {
                 id: jobEvent.args.jobHash,
                 accepted: false,
             };
-            if (acceptedBids.length > 0) {
-                for (let bid of acceptedBids) {
-                    if (bid.jobHash === jobEvent.args.jobHash && jobEvent.args.owner === bid.address) {
-                        bidTpl.accepted = true;
+            if (acceptedBids) {
+                if (acceptedBids.length > 0) {
+                    for (let bid of acceptedBids) {
+                        if (bid.jobHash === jobEvent.args.jobHash && jobEvent.args.owner === bid.address) {
+                            bidTpl.accepted = true;
+                        }
                     }
                 }
             }
             bids.push(bidTpl);
         }
+        this.getJobs(4);
     };
 
     // receive accepted bids list from BidAccepted
@@ -202,6 +196,7 @@ class HirerDashboard extends Component {
             };
             acceptedBids.push(bidTpl);
         }
+        this.getJobs(3);
     };
 
     createAction = () => {
@@ -217,11 +212,69 @@ class HirerDashboard extends Component {
         this.setState({ selectedCategory: selectedOption });
     };
 
+    jobsRender = () => {
+        const { match, web3 } = this.props;
+        const { Jobs } = this.state;
+        if (Jobs) {
+            return (
+                <Grid container className="list-body">
+                    {Jobs.map(job => {
+                        return !job.err ? (
+                            <Grid key={job.id} container className="list-body-row">
+                                <Grid item xs={5} className="title">
+                                    <Link to={`${match.url}/${web3.toAscii(job.id)}`}>{job.title}</Link>
+                                </Grid>
+                                <Grid item xs={2}>
+                                    {job.budget && (
+                                        <span className="bold">
+                                            {job.budget.min_sum}
+                                            {' ( ' + job.currency.label + ' ) '}
+                                        </span>
+                                    )}
+                                </Grid>
+                                <Grid item xs={1}>
+                                    {job.bid.length}
+                                </Grid>
+                                <Grid item xs={2}>
+                                    {Utils.getStatusJobOpen(job.bid) ? 'Bidding' : Utils.getStatusJob(job.status)}
+                                </Grid>
+                                <Grid item xs={2} className="action">
+                                    <ButtonBase aria-label="Cancel" className="btn btn-small btn-red">
+                                        <FontAwesomeIcon icon="minus-circle" />
+                                        Cancel
+                                    </ButtonBase>
+                                </Grid>
+                            </Grid>
+                        ) : (
+                            <Grid key={job.id} container className="list-body-row">
+                                <Grid item xs={5} className="title">
+                                    <span className="err">{job.err}</span>
+                                </Grid>
+                                <Grid item xs={2}>
+                                    ---
+                                </Grid>
+                                <Grid item xs={1}>
+                                    ---
+                                </Grid>
+                                <Grid item xs={2}>
+                                    ---
+                                </Grid>
+                                <Grid item xs={2} className="action">
+                                    ---
+                                </Grid>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            );
+        } else {
+            return null;
+        }
+    };
+
     render() {
-        const { match } = this.props;
-        const { selectedCategory, status, open, isLoading, jobs } = this.state;
+        const { selectedCategory, status, open, isLoading } = this.state;
         const categories = settingsApi.getCategories();
-        console.log(jobs);
         return (
             <div id="hirer" className="container-wrp">
                 <Dialog
@@ -283,126 +336,99 @@ class HirerDashboard extends Component {
                 </div>
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
-                        <Grid container className="single-body">
-                            <fieldset className="list-filter">
-                                <legend>Filter:</legend>
-                                <Grid container className="list-filter-body">
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedStarted}
-                                                    onChange={this.handleChange('checkedStarted')}
-                                                    value="checkedStarted"
-                                                />
-                                            }
-                                            label="Started"
-                                        />
+                        {!isLoading ? (
+                            <Grid container className="single-body">
+                                <fieldset className="list-filter">
+                                    <legend>Filter:</legend>
+                                    <Grid container className="list-filter-body">
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.checkedStarted}
+                                                        onChange={this.handleChange('checkedStarted')}
+                                                        value="checkedStarted"
+                                                    />
+                                                }
+                                                label="Started"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.checkedCompleted}
+                                                        onChange={this.handleChange('checkedCompleted')}
+                                                        value="checkedCompleted"
+                                                    />
+                                                }
+                                                label="Completed"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.checkedBidding}
+                                                        onChange={this.handleChange('checkedBidding')}
+                                                        value="checkedBidding"
+                                                    />
+                                                }
+                                                label="Bidding"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.checkedExpired}
+                                                        onChange={this.handleChange('checkedExpired')}
+                                                        value="checkedExpired"
+                                                    />
+                                                }
+                                                label="Expired"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Select
+                                                value={selectedCategory}
+                                                onChange={this.handleChangeCategory}
+                                                options={categories}
+                                                isMulti
+                                                placeholder="Select category..."
+                                            />
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedCompleted}
-                                                    onChange={this.handleChange('checkedCompleted')}
-                                                    value="checkedCompleted"
-                                                />
-                                            }
-                                            label="Completed"
-                                        />
+                                </fieldset>
+                                <Grid container className="list-container">
+                                    <Grid container className="list-header">
+                                        <Grid item xs={5}>
+                                            Job title
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            Budget
+                                        </Grid>
+                                        <Grid item xs={1}>
+                                            Bid
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            Status
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            Action
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedBidding}
-                                                    onChange={this.handleChange('checkedBidding')}
-                                                    value="checkedBidding"
-                                                />
-                                            }
-                                            label="Bidding"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        <FormControlLabel
-                                            control={
-                                                <Switch
-                                                    checked={this.state.checkedExpired}
-                                                    onChange={this.handleChange('checkedExpired')}
-                                                    value="checkedExpired"
-                                                />
-                                            }
-                                            label="Expired"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={4}>
-                                        <Select
-                                            value={selectedCategory}
-                                            onChange={this.handleChangeCategory}
-                                            options={categories}
-                                            isMulti
-                                            placeholder="Select category..."
-                                        />
-                                    </Grid>
+                                    {this.jobsRender()}
                                 </Grid>
-                            </fieldset>
-                            <Grid container className="list-container">
-                                <Grid container className="list-header">
-                                    <Grid item xs={5}>
-                                        Job title
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        Budget
-                                    </Grid>
-                                    <Grid item xs={1}>
-                                        Bid
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        Status
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        Action
-                                    </Grid>
-                                </Grid>
-
-                                {Jobs.length && (
-                                    <Grid container className="list-body">
-                                        {Jobs.map(job => {
-                                            return (
-                                                <Grid key={job.id} container className="list-body-row">
-                                                    <Grid item xs={5} className="title">
-                                                        <Link to={`${match.url}/${job.id}`}>{job.title}</Link>
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        <span className="bold">
-                                                            {job.budget.min_sum} - {job.budget.max_sum}
-                                                            {' ( ' + job.currency + ' ) '}
-                                                        </span>
-                                                    </Grid>
-                                                    <Grid item xs={1}>
-                                                        {job.bid.length}
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        {Utils.getStatusJobOpen(job.bid)
-                                                            ? 'Bidding'
-                                                            : Utils.getStatusJob(job.status)}
-                                                    </Grid>
-                                                    <Grid item xs={2} className="action">
-                                                        <ButtonBase
-                                                            aria-label="Cancel"
-                                                            className="btn btn-small btn-red"
-                                                        >
-                                                            <FontAwesomeIcon icon="minus-circle" />
-                                                            Cancel
-                                                        </ButtonBase>
-                                                    </Grid>
-                                                </Grid>
-                                            );
-                                        })}
-                                    </Grid>
-                                )}
                             </Grid>
-                        </Grid>
+                        ) : (
+                            <Grid container className="single-body">
+                                <div className="loading">
+                                    <CircularProgress size={50} color="secondary" />
+                                    <span>Loading...</span>
+                                </div>
+                            </Grid>
+                        )}
                     </div>
                 </div>
             </div>
@@ -415,11 +441,13 @@ HirerDashboard.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    defaultAccount: PropTypes.string.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
+        defaultAccount: state.homeReducer.defaultAccount,
     };
 };
 

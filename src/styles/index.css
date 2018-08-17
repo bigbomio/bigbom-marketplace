@@ -235,8 +235,6 @@ body {
     #bigbomMarketplace .account-info .account-info-item div {
       color: #999;
       font-size: 12px; }
-    #bigbomMarketplace .account-info .account-info-item span {
-      font-weight: bold; }
 
 #bigbomMarketplace .btn {
   border-radius: 25px; }
@@ -322,6 +320,8 @@ body {
           color: #353535; }
           #bigbomMarketplace .list-container .list-body .list-body-row div.title a:hover {
             color: #1876e2; }
+        #bigbomMarketplace .list-container .list-body .list-body-row div.title .err {
+          color: red; }
 
 #bigbomMarketplace .list-filter {
   border: 1px solid #ccc;
@@ -440,6 +440,18 @@ body {
 
 #bigbomMarketplace .dialog .loading {
   min-height: inherit; }
+
+#bigbomMarketplace .dialog .dialog-result {
+  padding: 30px;
+  font-size: 18px;
+  text-align: center; }
+  #bigbomMarketplace .dialog .dialog-result .success {
+    font-weight: bold; }
+    #bigbomMarketplace .dialog .dialog-result .success .icon {
+      color: #40bd56;
+      width: 22px;
+      height: 22px;
+      margin-right: 5px; }
 
 #header {
   background: #fff; }
@@ -752,6 +764,7 @@ body {
   width: 100%; }
 
 .loading {
+  width: 100%;
   font-size: 30px;
   min-height: 600px;
   text-align: center;

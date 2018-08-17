@@ -20,8 +20,29 @@ const styles = theme => ({
 });
 
 class UserInfoNav extends Component {
+    state = {
+        yourNetwork: '',
+    };
+
+    componentDidMount() {
+        const { isConnected } = this.props;
+        if (isConnected) {
+            this.getNetwork();
+        }
+    }
+
+    getNetwork = async () => {
+        const { web3 } = this.props;
+        let [err, netId] = await Utils.callMethod(web3.version.getNetwork)();
+        if (!err) {
+            const yourNetwork = Utils.getNetwork(netId);
+            this.setState({ yourNetwork });
+        }
+    };
+
     render() {
         const { defaultAccount, isConnected, classes } = this.props;
+        const { yourNetwork } = this.state;
         return (
             <Grid container className="account-info">
                 {isConnected && (
@@ -31,15 +52,16 @@ class UserInfoNav extends Component {
                     >
                         <Grid item xs={7} className="account-info-item" aria-label={defaultAccount}>
                             <div>Your Wallet Address</div>
-
                             {Utils.truncate(defaultAccount, 22)}
                         </Grid>
                     </Tooltip>
                 )}
-                <Grid item xs={5} className="account-info-item right">
-                    <div>Balance</div>
-                    <span>10.000</span> USD
-                </Grid>
+                {isConnected && (
+                    <Grid item xs={5} className="account-info-item right">
+                        <div>Your Network</div>
+                        <span>{yourNetwork}</span>
+                    </Grid>
+                )}
             </Grid>
         );
     }
@@ -49,12 +71,14 @@ UserInfoNav.propTypes = {
     defaultAccount: PropTypes.string.isRequired,
     isConnected: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
+    web3: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         defaultAccount: state.homeReducer.defaultAccount,
         isConnected: state.homeReducer.isConnected,
+        web3: state.homeReducer.web3,
     };
 };
 

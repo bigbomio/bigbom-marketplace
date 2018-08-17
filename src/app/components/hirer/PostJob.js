@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
@@ -15,6 +14,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
+import { FontAwesomeIcon } from '../../../../node_modules/@fortawesome/react-fontawesome';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -63,9 +63,9 @@ class HirerPostJob extends Component {
         // check event logs
         this.setState({ isLoading: false, status: { err: false, text: 'Your job has been created!' } });
         console.log('joblog: ', jobLog);
-        ipfs.catJSON(jobHash, (err, data) => {
-            console.log(err, 'data: ', data);
-        });
+        setTimeout(() => {
+            this.handleClose();
+        }, 2000);
     }
 
     creatJob = () => {
@@ -86,11 +86,9 @@ class HirerPostJob extends Component {
                 if (err) {
                     return console.log(err);
                 }
-                console.log('jobHash: ', jobHash);
                 this.setState({ jobHash });
                 this.newJobInit(jobHash);
             });
-            console.log(jobPostData);
         }
     };
 
@@ -164,7 +162,12 @@ class HirerPostJob extends Component {
     };
 
     handleClose = () => {
+        const { status } = this.state;
+        const { history } = this.props;
         this.setState({ open: false });
+        if (!status.err) {
+            history.push('hirer/manage');
+        }
     };
 
     render() {
@@ -179,7 +182,6 @@ class HirerPostJob extends Component {
             status,
             open,
             isLoading,
-            jobHash,
         } = this.state;
         return (
             <div className="container-wrp">
@@ -209,10 +211,8 @@ class HirerPostJob extends Component {
                                             <div className="err">{status.text}</div>
                                         ) : (
                                             <div className="success">
+                                                <FontAwesomeIcon className="icon" icon="check" />
                                                 {status.text}
-                                                <p>
-                                                    <Link to={'/freelancer/jobs/' + jobHash}>View Your Job</Link>
-                                                </p>
                                             </div>
                                         )}
                                     </div>
@@ -312,6 +312,7 @@ class HirerPostJob extends Component {
 
 HirerPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
+    history: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
