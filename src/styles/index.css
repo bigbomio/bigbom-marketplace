@@ -453,6 +453,10 @@ body {
       height: 22px;
       margin-right: 5px; }
 
+#bigbomMarketplace .top-actions {
+  float: right;
+  padding-right: 30px; }
+
 #header {
   background: #fff; }
   #header header {

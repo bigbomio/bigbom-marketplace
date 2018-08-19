@@ -23,7 +23,7 @@ const ipfs = abiConfig.getIpfs();
 
 const categories = settingsApi.getCategories();
 
-let jobs = [];
+let jobs, bids, acceptedBids, watchDataID;
 
 class HirerDashboard extends Component {
     constructor(props) {
@@ -32,27 +32,43 @@ class HirerDashboard extends Component {
             checkedStarted: true,
             checkedCompleted: true,
             checkedBidding: true,
-            checkedExpired: true,
+            checkedExpired: false,
             isLoading: false,
             open: false,
-            filtered: false,
             Jobs: [],
         };
     }
 
     componentDidMount() {
         const { isConnected } = this.props;
+        this.resetData();
         if (isConnected) {
-            this.getJobs();
+            this.getJobs(null, 0);
         }
     }
 
-    getJobs = async () => {
+    getJobs = async (jobEvents, step) => {
+        console.log('---------getJobs: ', step);
         const { web3 } = this.props;
         const _categories = await this.getCategories();
-        this.setState({ isLoading: true, Jobs: [] });
-        jobs = [];
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.JobCreatedInit);
+        if (step === 0) {
+            this.setState({ isLoading: true });
+            Utils.getPastEvents(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.getJobs, 1);
+        } else if (step === 1) {
+            this.JobsDataInit(jobEvents, step);
+            Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidAccepted', _categories, this.getJobs, 2);
+        } else if (step === 2) {
+            this.JobsDataInit(jobEvents, step);
+            Utils.getPastEvents(web3, 'BBFreelancerBid', 'BidCreated', _categories, this.getJobs, 3);
+        } else if (step === 3) {
+            this.JobsDataInit(jobEvents, step);
+        } else if (step === 4) {
+            const _jobs = await this.JobInfoInit();
+            const jobData = await this.AllJobDataMap(_jobs, bids);
+            watchDataID = setInterval(() => {
+                this.watchData(jobData);
+            }, 300);
+        }
     };
 
     // get all categories
@@ -64,102 +80,130 @@ class HirerDashboard extends Component {
         return allCategories;
     }
 
-    JobCreatedInit = eventLog => {
+    getDataIPFS = async job => {
         const { web3 } = this.props;
-        const event = eventLog.data;
-        const jobHash = web3.toAscii(event.args.jobHash);
-        ipfs.catJSON(jobHash, (err, data) => {
+        const jobHash = web3.toAscii(job.id);
+        await ipfs.catJSON(jobHash, (err, data) => {
             if (err) {
                 console.log(err);
-                const jobTpl = {
-                    id: event.args.jobHash,
-                    jobHash: jobHash,
-                    category: event.args.category,
-                    expired: event.args.expired.toString(),
-                    transactionHash: event.transactionHash,
-                    err: 'Can not fetch data from server',
-                    status: {
-                        started: false,
-                        canceled: false,
-                        completed: false,
-                        claimed: false,
-                        expired: Number(event.args.expired.toString()) <= Math.floor(Date.now() / 1000) ? true : false,
-                    },
-                    bid: [],
-                };
-                this.BidCreatedInit(jobTpl);
+                job.err = 'Can not fetch data from server';
             } else {
-                const jobTpl = {
-                    id: event.args.jobHash,
-                    jobHash: jobHash,
-                    category: event.args.category,
-                    expired: event.args.expired.toString(),
-                    transactionHash: event.transactionHash,
-                    title: data.title,
-                    description: data.description,
-                    currency: data.currency,
-                    budget: data.budget,
-                    status: {
-                        started: false,
-                        canceled: false,
-                        completed: false,
-                        claimed: false,
-                        expired: Number(event.args.expired.toString()) <= Math.floor(Date.now() / 1000) ? true : false,
-                    },
-                    bid: [],
+                job.title = data.title;
+                job.description = data.description;
+                job.currency = data.currency;
+                job.budget = data.budget;
+                job.status = {
+                    started: false,
+                    canceled: false,
+                    completed: false,
+                    claimed: false,
+                    expired: false,
                 };
-                this.BidCreatedInit(jobTpl);
             }
         });
     };
 
-    BidCreatedInit = async job => {
-        const { web3 } = this.props;
-        const _categories = await this.getCategories();
-        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', _categories, job, this.BidAcceptedInit);
-    };
+    resetData() {
+        jobs = null;
+        bids = null;
+        acceptedBids = null;
+        watchDataID = null;
+        this.setState({ Jobs: null });
+    }
 
-    BidAcceptedInit = async jobData => {
-        const { web3 } = this.props;
-        const _categories = await this.getCategories();
-        abiConfig.getPastEventsBidAccepted(
-            web3,
-            'BBFreelancerBid',
-            'BidAccepted',
-            _categories,
-            jobData.data,
-            this.JobsInit
-        );
-    };
-
-    JobsInit = jobData => {
-        jobs.push(jobData.data);
-        this.setState({ Jobs: jobs, isLoading: false });
-        console.log(jobs);
-    };
-
-    jobsFilter(filterData, filterBy) {
-        const { filtered, Jobs } = this.state;
-        let jobsFiltered = [];
-        let jobsSource = jobs; // get from variable
-
-        if (filtered) {
-            jobsSource = Jobs; // get from state
-        }
-        if (filterBy === 'category') {
-            if (filterData) {
-                if (filterData.length > 0) {
-                    for (let category of filterData) {
-                        const jobsFilterSelected = jobsSource.filter(job => job.category === category.value);
-                        jobsFiltered = [...jobsFiltered, ...jobsFilterSelected];
-                        this.setState({ Jobs: jobsFiltered, filtered: true });
+    // check data init
+    watchData = _jobData => {
+        const len = _jobData.length - 1;
+        for (let i in _jobData) {
+            if (Number(i) === Number(len)) {
+                if (!_jobData[i].err) {
+                    if (_jobData[i].budget) {
+                        this.setState({ Jobs: _jobData, isLoading: false });
+                        clearInterval(watchDataID);
                     }
                 } else {
-                    this.setState({ Jobs: jobs, filtered: false });
+                    this.setState({ Jobs: _jobData, isLoading: false });
+                    clearInterval(watchDataID);
                 }
             }
         }
-    }
+    };
+
+    // map job detail info from IPFS
+    JobInfoInit = async () => {
+        jobs.map(async job => {
+            Utils.callMethodWithReject(this.getDataIPFS)(job);
+            return job;
+        });
+        return jobs;
+    };
+
+    // map all data
+    AllJobDataMap = (_jobs, _bids) => {
+        for (let job of _jobs) {
+            if (!job.err) {
+                job.bid = [];
+                if (_bids.length > 0) {
+                    for (let bid of _bids) {
+                        if (bid.id === job.id) {
+                            job.bid.push(bid);
+                        }
+                    }
+                }
+            }
+        }
+        return _jobs;
+    };
+
+    JobsDataInit = (jobEvents, step) => {
+        if (step === 1) {
+            // receive jobs list from JobCreated
+            jobs = [];
+            for (let jobEvent of jobEvents.data) {
+                const jobTpl = {
+                    id: jobEvent.args.jobHash,
+                    category: jobEvent.args.category,
+                    expired: jobEvent.args.expired.toString(),
+                    transactionHash: jobEvent.transactionHash,
+                };
+                jobs.push(jobTpl);
+            }
+        } else if (step === 2) {
+            // receive accepted bids list from BidAccepted
+            acceptedBids = [];
+            for (let jobEvent of jobEvents.data) {
+                const bidTpl = {
+                    address: jobEvent.args.freelancer,
+                    jobHash: jobEvent.args.jobHash,
+                };
+                acceptedBids.push(bidTpl);
+            }
+        } else if (step === 3) {
+            // receive bids list from BidCreated and map with acceptedBids
+            const { web3 } = this.props;
+            bids = [];
+            for (let jobEvent of jobEvents.data) {
+                const bidTpl = {
+                    address: jobEvent.args.owner,
+                    award: web3.fromWei(jobEvent.args.bid.toString(), 'ether'),
+                    created: jobEvent.args.created.toString(),
+                    id: jobEvent.args.jobHash,
+                    accepted: false,
+                };
+                if (acceptedBids) {
+                    if (acceptedBids.length > 0) {
+                        for (let bid of acceptedBids) {
+                            if (bid.jobHash === jobEvent.args.jobHash && jobEvent.args.owner === bid.address) {
+                                bidTpl.accepted = true;
+                            }
+                        }
+                    }
+                }
+                bids.push(bidTpl);
+            }
+            this.getJobs(null, 4);
+        }
+    };
 
     createAction = () => {
         const { history } = this.props;
@@ -167,13 +211,11 @@ class HirerDashboard extends Component {
     };
 
     handleChange = name => event => {
-        console.log(event.target.checked);
         this.setState({ [name]: event.target.checked });
     };
 
     handleChangeCategory = selectedOption => {
         this.setState({ selectedCategory: selectedOption });
-        this.jobsFilter(selectedOption, 'category');
     };
 
     jobsRender = () => {
@@ -184,6 +226,7 @@ class HirerDashboard extends Component {
             return (
                 <Grid container className="list-body">
                     {Jobs.map(job => {
+                        //console.log(job.status);
                         return !job.err ? (
                             <Grid key={job.id} container className="list-body-row">
                                 <Grid item xs={5} className="title">
@@ -301,12 +344,6 @@ class HirerDashboard extends Component {
                 </div>
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
-                        <div className="top-actions">
-                            <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
-                                <FontAwesomeIcon icon="sync-alt" />
-                                Refresh
-                            </ButtonBase>
-                        </div>
                         {!isLoading ? (
                             <Grid container className="single-body">
                                 <fieldset className="list-filter">

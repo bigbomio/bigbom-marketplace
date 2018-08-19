@@ -1,5 +1,3 @@
-import abiConfig from '../_services/abiConfig';
-
 class Utils {
     getNetwork(netId) {
         switch (netId) {
@@ -154,50 +152,6 @@ class Utils {
                 }
             }
         }
-    }
-
-    async contractInstanceGenerator(web3, type) {
-        const defaultAccount = web3.eth.defaultAccount;
-        const address = abiConfig.getContract(type).address;
-        const abiInstance = web3.eth.contract(abiConfig.getContract(type).abi);
-        const instance = await abiInstance.at(address);
-        const gasPrice = await this.callMethodWithReject(web3.eth.getGasPrice)();
-        return {
-            defaultAccount,
-            instance,
-            gasPrice,
-            address,
-        };
-    }
-
-    async getPastEvents(web3, type, event, category, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, type);
-        let results = {
-            data: [],
-        };
-        const events = contractInstance.instance[event](
-            {},
-            {
-                filter: { owner: contractInstance.defaultAccount, category: category }, // filter by owner, category
-                fromBlock: 3847012, // should use recent number
-                toBlock: 'latest',
-            }
-        );
-        events.get(function(error, logs) {
-            if (error) {
-                console.log(error);
-                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                callback(results);
-            }
-            results.data = logs;
-            results.status = { err: false, text: 'get events log success!' };
-            callback(results);
-        });
-    }
-    fetchData() {
-        return new Promise(function(resolve, reject) {
-            resolve();
-        });
     }
 }
 
