@@ -41,7 +41,7 @@ class HirerPostJob extends Component {
         const { selectedSkill, selectedBudget } = this.state;
         const { web3 } = this.props;
         const budget = web3.toWei(selectedBudget.min_sum, 'ether');
-        const jobInstance = await Utils.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + 7 * 24 * 3600; // expired after 7 days
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,

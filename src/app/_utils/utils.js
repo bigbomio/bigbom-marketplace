@@ -153,6 +153,11 @@ class Utils {
             }
         }
     }
+
+    isWalletAddress(walletAddress) {
+        const regexWalletAdress = /^(0x)?[0-9a-f]{40}$/i;
+        return walletAddress ? regexWalletAdress.test(walletAddress.trim()) : false;
+    }
 }
 
 export default new Utils();

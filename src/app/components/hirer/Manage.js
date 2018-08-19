@@ -63,53 +63,52 @@ class HirerDashboard extends Component {
         return allCategories;
     }
 
-    JobCreatedInit = eventLog => {
+    JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
         const event = eventLog.data;
         const jobHash = web3.toAscii(event.args.jobHash);
-        ipfs.catJSON(jobHash, (err, data) => {
-            if (err) {
-                console.log(err);
-                const jobTpl = {
-                    id: event.args.jobHash,
-                    jobHash: jobHash,
-                    category: event.args.category,
-                    expired: event.args.expired.toString(),
-                    transactionHash: event.transactionHash,
-                    err: 'Can not fetch data from server',
-                    status: {
-                        started: false,
-                        canceled: false,
-                        completed: false,
-                        claimed: false,
-                        expired: Number(event.args.expired.toString()) <= Math.floor(Date.now() / 1000) ? true : false,
-                    },
-                    bid: [],
-                };
-                this.BidCreatedInit(jobTpl);
-            } else {
-                const jobTpl = {
-                    id: event.args.jobHash,
-                    jobHash: jobHash,
-                    category: event.args.category,
-                    expired: event.args.expired.toString(),
-                    transactionHash: event.transactionHash,
-                    title: data.title,
-                    description: data.description,
-                    currency: data.currency,
-                    budget: data.budget,
-                    status: {
-                        started: false,
-                        canceled: false,
-                        completed: false,
-                        claimed: false,
-                        expired: Number(event.args.expired.toString()) <= Math.floor(Date.now() / 1000) ? true : false,
-                    },
-                    bid: [],
-                };
-                this.BidCreatedInit(jobTpl);
-            }
+
+        // get job status
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
         });
+        if (err) {
+            return console.log(err);
+        } else {
+            // [owner, expired, budget, cancel, status, freelancer]
+            const jobStatus = {
+                started: false, // ???
+                completed: false, // ???
+                claimed: false, // ???
+                canceled: jobStatusLog[3],
+                status: jobStatusLog[4].toString(), // ==> ??????
+                accepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000' ? true : false,
+                expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
+            };
+            ipfs.catJSON(jobHash, (err, data) => {
+                const jobTpl = {
+                    id: event.args.jobHash,
+                    jobHash: jobHash,
+                    category: event.args.category,
+                    expired: event.args.expired.toString(),
+                    transactionHash: event.transactionHash,
+                    status: jobStatus,
+                    bid: [],
+                };
+                if (err) {
+                    console.log(err);
+                    jobTpl.err = 'Can not fetch data from server';
+                } else {
+                    jobTpl.title = data.title;
+                    jobTpl.description = data.description;
+                    jobTpl.currency = data.currency;
+                    jobTpl.budget = data.budget;
+                }
+                this.BidCreatedInit(jobTpl);
+            });
+        }
     };
 
     BidCreatedInit = async job => {
