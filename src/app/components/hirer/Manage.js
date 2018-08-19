@@ -32,10 +32,9 @@ class HirerDashboard extends Component {
             checkedStarted: true,
             checkedCompleted: true,
             checkedBidding: true,
-            checkedExpired: true,
+            checkedExpired: false,
             isLoading: false,
             open: false,
-            filtered: false,
             Jobs: [],
         };
     }
@@ -139,23 +138,17 @@ class HirerDashboard extends Component {
     };
 
     jobsFilter(filterData, filterBy) {
-        const { filtered, Jobs } = this.state;
-        let jobsFiltered = [];
-        let jobsSource = jobs; // get from variable
-
-        if (filtered) {
-            jobsSource = Jobs; // get from state
-        }
+        let jobsFilter = [];
         if (filterBy === 'category') {
             if (filterData) {
                 if (filterData.length > 0) {
                     for (let category of filterData) {
-                        const jobsFilterSelected = jobsSource.filter(job => job.category === category.value);
-                        jobsFiltered = [...jobsFiltered, ...jobsFilterSelected];
-                        this.setState({ Jobs: jobsFiltered, filtered: true });
+                        const jobsFilterSelected = jobs.filter(job => job.category === category.value);
+                        jobsFilter = [...jobsFilter, ...jobsFilterSelected];
+                        this.setState({ Jobs: jobsFilter });
                     }
                 } else {
-                    this.setState({ Jobs: jobs, filtered: false });
+                    this.setState({ Jobs: jobs });
                 }
             }
         }
@@ -167,7 +160,6 @@ class HirerDashboard extends Component {
     };
 
     handleChange = name => event => {
-        console.log(event.target.checked);
         this.setState({ [name]: event.target.checked });
     };
 
