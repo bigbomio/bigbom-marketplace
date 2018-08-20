@@ -197,15 +197,18 @@ body {
     padding: 0 0 10px 0;
     display: inline-block; }
   #bigbomMarketplace .mkp-form-row input[type='text'],
+  #bigbomMarketplace .mkp-form-row input[type='number'],
   #bigbomMarketplace .mkp-form-row textarea {
     padding: 10px;
     width: 100%;
     border: 1px solid #ccc;
     font-size: 16px; }
     #bigbomMarketplace .mkp-form-row input[type='text']:focus,
+    #bigbomMarketplace .mkp-form-row input[type='number']:focus,
     #bigbomMarketplace .mkp-form-row textarea:focus {
       border: 1px solid #40bd56; }
     #bigbomMarketplace .mkp-form-row input[type='text'].input-err,
+    #bigbomMarketplace .mkp-form-row input[type='number'].input-err,
     #bigbomMarketplace .mkp-form-row textarea.input-err {
       border: 1px solid red; }
   #bigbomMarketplace .mkp-form-row .creatable-select {
@@ -330,6 +333,10 @@ body {
   box-sizing: border-box; }
   #bigbomMarketplace .list-filter .list-filter-body {
     padding: 20px; }
+    #bigbomMarketplace .list-filter .list-filter-body .allDisabled span {
+      color: #11cb5f !important; }
+      #bigbomMarketplace .list-filter .list-filter-body .allDisabled span:first-child {
+        color: #8ecaa7 !important; }
   #bigbomMarketplace .list-filter legend {
     font-size: 18px;
     padding: 0 5px; }
@@ -456,6 +463,15 @@ body {
 #bigbomMarketplace .top-actions {
   float: right;
   padding-right: 30px; }
+  #bigbomMarketplace .top-actions .action {
+    padding-right: 20px;
+    float: left; }
+    #bigbomMarketplace .top-actions .action.filter {
+      min-width: 400px;
+      z-index: 999;
+      position: relative; }
+    #bigbomMarketplace .top-actions .action .btn {
+      margin-top: 3px; }
 
 #header {
   background: #fff; }
@@ -665,6 +681,12 @@ body {
           height: 30px; }
     #hirer .freelancer-bidding .list-container .list-body .list-body-row div {
       border-right: none; }
+
+#hirer .mkp-form-row .mkp-form-row-sub.left {
+  padding-right: 40px; }
+
+#hirer .mkp-form-row .mkp-form-row-sub.number input {
+  padding: 7px 10px; }
 
 #bigbomMarketplace .job-detail .btn-back {
   margin-top: -30px;

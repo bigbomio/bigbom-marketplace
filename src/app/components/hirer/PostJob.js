@@ -20,6 +20,7 @@ const ipfs = abiConfig.getIpfs();
 
 const currencies = settingsApi.getCurrencies();
 const categories = settingsApi.getCategories();
+const skills = settingsApi.getSkills();
 const budgetsSource = settingsApi.getBudgets();
 
 class HirerPostJob extends Component {
@@ -28,7 +29,9 @@ class HirerPostJob extends Component {
         this.state = {
             namePrepare: '',
             desPrepare: '',
+            estimatedTimePrepare: 0,
             selectedSkill: [],
+            selectedCategory: [],
             selectedCurrency: currencies[0],
             budgets: budgetsSource,
             selectedBudget: budgetsSource[2],
@@ -38,7 +41,7 @@ class HirerPostJob extends Component {
     }
 
     async newJobInit(jobHash) {
-        const { selectedSkill, selectedBudget } = this.state;
+        const { selectedCategory, selectedBudget } = this.state;
         const { web3 } = this.props;
         const budget = web3.toWei(selectedBudget.min_sum, 'ether');
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
@@ -47,7 +50,7 @@ class HirerPostJob extends Component {
             jobHash,
             expiredTime,
             budget,
-            selectedSkill[0].value,
+            selectedCategory[0].value, // only one category suport for now
             {
                 from: jobInstance.defaultAccount,
                 gasPrice: +jobInstance.gasPrice.toString(10),
@@ -69,17 +72,29 @@ class HirerPostJob extends Component {
     }
 
     creatJob = () => {
-        const { namePrepare, desPrepare, selectedCurrency, selectedBudget, selectedSkill } = this.state;
+        const {
+            namePrepare,
+            desPrepare,
+            selectedCurrency,
+            selectedBudget,
+            selectedSkill,
+            estimatedTimePrepare,
+            selectedCategory,
+        } = this.state;
         const title = this.validate(namePrepare, 'title');
         const des = this.validate(desPrepare, 'description');
         const skills = this.validate(selectedSkill, 'skills');
-        if (title && des && skills) {
+        const category = this.validate(selectedCategory, 'category');
+
+        if (title && des && skills && category) {
             const jobPostData = {
                 title: namePrepare,
                 description: desPrepare,
                 budget: selectedBudget,
                 currency: selectedCurrency,
-                category: selectedSkill,
+                skills: selectedSkill,
+                category: selectedCategory,
+                estimatedTime: estimatedTimePrepare,
             };
             this.setState({ isLoading: true, open: true });
             ipfs.addJSON(jobPostData, (err, jobHash) => {
@@ -117,10 +132,16 @@ class HirerPostJob extends Component {
             return true;
         } else if (field === 'skills') {
             if (val.length <= 0) {
-                this.setState({ skillsErr: 'Please choise at least 1 skill.' });
+                this.setState({ skillsErr: 'Please select at least 1 skill.' });
                 return false;
             } else if (val.length > 5) {
-                this.setState({ skillsErr: 'Please choise at most 5 skills.' });
+                this.setState({ skillsErr: 'Please select at most 5 skills.' });
+                return false;
+            }
+            return true;
+        } else if (field === 'category') {
+            if (val.length <= 0) {
+                this.setState({ categoryErr: 'Please select a category.' });
                 return false;
             }
             return true;
@@ -134,11 +155,13 @@ class HirerPostJob extends Component {
                 return;
             }
             this.setState({ namePrepare: val, nameErr: null });
-        } else {
+        } else if (field === 'description') {
             if (!this.validate(val, 'description')) {
                 return;
             }
             this.setState({ desPrepare: val, desErr: null });
+        } else if (field === 'estimatedTime') {
+            this.setState({ estimatedTimePrepare: val });
         }
     };
 
@@ -147,6 +170,13 @@ class HirerPostJob extends Component {
             return;
         }
         this.setState({ selectedSkill: selectedOption, skillsErr: null });
+    };
+
+    handleChangeCategory = selectedOption => {
+        if (!this.validate(selectedOption, 'category')) {
+            return;
+        }
+        this.setState({ selectedCategory: selectedOption, categoryErr: null });
     };
 
     handleChangeCurrency = selectedOption => {
@@ -166,7 +196,7 @@ class HirerPostJob extends Component {
         const { history } = this.props;
         this.setState({ open: false });
         if (!status.err) {
-            history.push('hirer/manage');
+            history.push('/manage');
         }
     };
 
@@ -175,7 +205,9 @@ class HirerPostJob extends Component {
             selectedSkill,
             selectedCurrency,
             selectedBudget,
+            selectedCategory,
             nameErr,
+            categoryErr,
             desErr,
             skillsErr,
             budgets,
@@ -265,36 +297,62 @@ class HirerPostJob extends Component {
                                 />
                                 {desErr && <span className="err">{desErr}</span>}
                             </Grid>
-                            <Grid item xs={12} className="mkp-form-row">
-                                <span className="mkp-form-row-label">What skills are required?</span>
-                                <span className="mkp-form-row-description">
-                                    Enter up to 5 skills that best describe your project. Freelancers will use these
-                                    skills to find projects they are most interested and experienced in.
-                                </span>
-                                <Select
-                                    className={skillsErr ? 'input-err' : ''}
-                                    value={selectedSkill}
-                                    onChange={this.handleChangeSkills}
-                                    options={categories}
-                                    isMulti
-                                />
-                                {skillsErr && <span className="err">{skillsErr}</span>}
-                            </Grid>
                             <Grid container className="mkp-form-row">
-                                <span className="mkp-form-row-label">What is your estimated budget?</span>
-                                <Grid item xs={4} className="left">
+                                <Grid item xs={4} className="mkp-form-row-sub left">
+                                    <span className="mkp-form-row-label">Category</span>
+                                    <span className="mkp-form-row-description">Select a category for your job</span>
                                     <Select
-                                        value={selectedCurrency}
-                                        onChange={this.handleChangeCurrency}
-                                        options={currencies}
+                                        className={categoryErr ? 'input-err' : ''}
+                                        value={selectedCategory}
+                                        onChange={this.handleChangeCategory}
+                                        options={categories}
+                                    />
+                                    {categoryErr && <span className="err">{categoryErr}</span>}
+                                </Grid>
+                                <Grid item xs={8} className="mkp-form-row-sub">
+                                    <span className="mkp-form-row-label">What skills are required?</span>
+                                    <span className="mkp-form-row-description">
+                                        Enter up to 5 skills that best describe your project.
+                                    </span>
+                                    <Select
+                                        className={skillsErr ? 'input-err' : ''}
+                                        value={selectedSkill}
+                                        onChange={this.handleChangeSkills}
+                                        options={skills}
+                                        isMulti
+                                    />
+                                    {skillsErr && <span className="err">{skillsErr}</span>}
+                                </Grid>
+                            </Grid>
+
+                            <Grid container className="mkp-form-row">
+                                <Grid item xs={4} className="mkp-form-row-sub left number">
+                                    <span className="mkp-form-row-label">Estimated Time (Hour unit)</span>
+                                    <input
+                                        type="number"
+                                        id="estimatedTime"
+                                        name="estimatedTime"
+                                        onChange={e => this.inputOnChange(e, 'estimatedTime')}
                                     />
                                 </Grid>
-                                <Grid item xs={8}>
-                                    <Select
-                                        value={selectedBudget}
-                                        onChange={this.handleChangeBudget}
-                                        options={budgets}
-                                    />
+                                <Grid item xs={8} className="mkp-form-row-sub">
+                                    <Grid container>
+                                        <span className="mkp-form-row-label">What is your estimated budget?</span>
+                                        <Grid item xs={4} className="left">
+                                            <Select
+                                                value={selectedCurrency}
+                                                onChange={this.handleChangeCurrency}
+                                                options={currencies}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={8}>
+                                            <Select
+                                                value={selectedBudget}
+                                                onChange={this.handleChangeBudget}
+                                                options={budgets}
+                                            />
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </Grid>
                             <Grid container className="mkp-form-row">

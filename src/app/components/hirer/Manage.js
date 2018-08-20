@@ -19,8 +19,6 @@ import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
-const ipfs = abiConfig.getIpfs();
-
 const categories = settingsApi.getCategories();
 
 let jobs = [];
@@ -29,10 +27,15 @@ class HirerDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            checkedStarted: true,
-            checkedCompleted: true,
-            checkedBidding: true,
-            checkedExpired: false,
+            filterStatus: {
+                started: false,
+                completed: false,
+                bidAccepted: false,
+                expired: false,
+                bidding: false,
+            },
+            all: true,
+            allDisabled: true,
             isLoading: false,
             open: false,
             Jobs: [],
@@ -67,7 +70,6 @@ class HirerDashboard extends Component {
         const { web3 } = this.props;
         const event = eventLog.data;
         const jobHash = web3.toAscii(event.args.jobHash);
-
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
@@ -79,35 +81,44 @@ class HirerDashboard extends Component {
         } else {
             // [owner, expired, budget, cancel, status, freelancer]
             const jobStatus = {
-                started: false, // ???
-                completed: false, // ???
-                claimed: false, // ???
+                started: Number(jobStatusLog[4].toString()) === 1,
+                completed: Number(jobStatusLog[4].toString()) === 2,
+                claimed: Number(jobStatusLog[4].toString()) === 5, // ???
+                reject: Number(jobStatusLog[4].toString()) === 4,
+                acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
-                status: jobStatusLog[4].toString(), // ==> ??????
-                accepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000' ? true : false,
+                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000' ? true : false,
+                bidding: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000' ? false : true,
                 expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
             };
-            ipfs.catJSON(jobHash, (err, data) => {
-                const jobTpl = {
-                    id: event.args.jobHash,
-                    jobHash: jobHash,
-                    category: event.args.category,
-                    expired: event.args.expired.toString(),
-                    transactionHash: event.transactionHash,
-                    status: jobStatus,
-                    bid: [],
-                };
-                if (err) {
-                    console.log(err);
-                    jobTpl.err = 'Can not fetch data from server';
-                } else {
-                    jobTpl.title = data.title;
-                    jobTpl.description = data.description;
-                    jobTpl.currency = data.currency;
-                    jobTpl.budget = data.budget;
-                }
-                this.BidCreatedInit(jobTpl);
-            });
+            // get detail from ipfs
+            const URl = abiConfig.getIpfsLink() + jobHash;
+            const jobTpl = {
+                id: event.args.jobHash,
+                jobHash: jobHash,
+                category: event.args.category,
+                expired: event.args.expired.toString(),
+                transactionHash: event.transactionHash,
+                status: jobStatus,
+                bid: [],
+            };
+            fetch(URl)
+                .then(res => res.json())
+                .then(
+                    result => {
+                        jobTpl.title = result.title;
+                        jobTpl.skills = result.skills;
+                        jobTpl.description = result.description;
+                        jobTpl.currency = result.currency;
+                        jobTpl.budget = result.budget;
+                        this.BidCreatedInit(jobTpl);
+                    },
+                    error => {
+                        console.log(error);
+                        jobTpl.err = 'Can not fetch data from server';
+                        this.BidCreatedInit(jobTpl);
+                    }
+                );
         }
     };
 
@@ -133,22 +144,53 @@ class HirerDashboard extends Component {
     JobsInit = jobData => {
         jobs.push(jobData.data);
         this.setState({ Jobs: jobs, isLoading: false });
-        console.log(jobs);
     };
+
+    unCheckAll(filterStatus) {
+        console.log(Object.values(filterStatus));
+        for (let stt of Object.values(filterStatus)) {
+            console.log(stt);
+            if (stt) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     jobsFilter(filterData, filterBy) {
         let jobsFilter = [];
+        const { filterStatus, jobsFiltered } = this.state;
+        let jobFilterData = jobs;
+        if (jobsFiltered) {
+            jobFilterData = jobsFiltered;
+        }
         if (filterBy === 'category') {
             if (filterData) {
                 if (filterData.length > 0) {
                     for (let category of filterData) {
                         const jobsFilterSelected = jobs.filter(job => job.category === category.value);
                         jobsFilter = [...jobsFilter, ...jobsFilterSelected];
-                        this.setState({ Jobs: jobsFilter });
+                        this.setState({ Jobs: jobsFilter, jobsFiltered: jobsFilter });
                     }
                 } else {
-                    this.setState({ Jobs: jobs });
+                    this.setState({ Jobs: jobs, jobsFiltered: jobs });
                 }
+            }
+        } else {
+            if (!filterData) {
+                if (!this.unCheckAll(filterStatus)) {
+                    Object.entries(filterStatus).forEach(([key, value]) => {
+                        if (value) {
+                            const jobsFilterSelected = jobFilterData.filter(job => job.status[key] === true);
+                            jobsFilter = [...jobsFilter, ...jobsFilterSelected];
+                            this.setState({ Jobs: jobsFilter, allDisabled: false });
+                        }
+                    });
+                } else {
+                    this.setState({ Jobs: jobFilterData, all: true, allDisabled: true });
+                }
+            } else {
+                this.setState({ Jobs: jobsFiltered });
             }
         }
     }
@@ -159,7 +201,19 @@ class HirerDashboard extends Component {
     };
 
     handleChange = name => event => {
-        this.setState({ [name]: event.target.checked });
+        const { filterStatus } = this.state;
+        filterStatus[name] = event.target.checked;
+        this.setState({ filterStatus: filterStatus, all: false });
+        this.jobsFilter(false, 'status');
+    };
+
+    handleChangeAll = name => event => {
+        const { filterStatus } = this.state;
+        Object.entries(filterStatus).forEach(([key]) => {
+            filterStatus[key] = false;
+        });
+        this.setState({ filterStatus: filterStatus, [name]: event.target.checked, allDisabled: true });
+        this.jobsFilter(true, 'status');
     };
 
     handleChangeCategory = selectedOption => {
@@ -170,7 +224,7 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match, web3 } = this.props;
         const { Jobs } = this.state;
-
+        console.log(Jobs);
         if (Jobs) {
             return (
                 <Grid container className="list-body">
@@ -192,7 +246,7 @@ class HirerDashboard extends Component {
                                     {job.bid.length}
                                 </Grid>
                                 <Grid item xs={2}>
-                                    {Utils.getStatusJobOpen(job.bid) ? 'Bidding' : Utils.getStatusJob(job.status)}
+                                    {Utils.getStatusJob(job.status)}
                                 </Grid>
                                 <Grid item xs={2} className="action">
                                     <ButtonBase aria-label="Cancel" className="btn btn-small btn-red">
@@ -292,12 +346,23 @@ class HirerDashboard extends Component {
                 </div>
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
-                        <div className="top-actions">
-                            <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
-                                <FontAwesomeIcon icon="sync-alt" />
-                                Refresh
-                            </ButtonBase>
-                        </div>
+                        <Grid className="top-actions">
+                            <Grid className="action">
+                                <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
+                                    <FontAwesomeIcon icon="sync-alt" />
+                                    Refresh
+                                </ButtonBase>
+                            </Grid>
+                            <Grid className="action filter">
+                                <Select
+                                    value={selectedCategory}
+                                    onChange={this.handleChangeCategory}
+                                    options={categories}
+                                    isMulti
+                                    placeholder="Select category..."
+                                />
+                            </Grid>
+                        </Grid>
                         {!isLoading ? (
                             <Grid container className="single-body">
                                 <fieldset className="list-filter">
@@ -307,33 +372,23 @@ class HirerDashboard extends Component {
                                             <FormControlLabel
                                                 control={
                                                     <Switch
-                                                        checked={this.state.checkedStarted}
-                                                        onChange={this.handleChange('checkedStarted')}
-                                                        value="checkedStarted"
+                                                        disabled={this.state.allDisabled}
+                                                        className={this.state.allDisabled ? 'allDisabled' : ''}
+                                                        checked={this.state.all}
+                                                        onChange={this.handleChangeAll('all')}
+                                                        value="all"
                                                     />
                                                 }
-                                                label="Started"
+                                                label="All"
                                             />
                                         </Grid>
                                         <Grid item xs={2}>
                                             <FormControlLabel
                                                 control={
                                                     <Switch
-                                                        checked={this.state.checkedCompleted}
-                                                        onChange={this.handleChange('checkedCompleted')}
-                                                        value="checkedCompleted"
-                                                    />
-                                                }
-                                                label="Completed"
-                                            />
-                                        </Grid>
-                                        <Grid item xs={2}>
-                                            <FormControlLabel
-                                                control={
-                                                    <Switch
-                                                        checked={this.state.checkedBidding}
-                                                        onChange={this.handleChange('checkedBidding')}
-                                                        value="checkedBidding"
+                                                        checked={this.state.filterStatus.bidding}
+                                                        onChange={this.handleChange('bidding')}
+                                                        value="bidding"
                                                     />
                                                 }
                                                 label="Bidding"
@@ -343,21 +398,48 @@ class HirerDashboard extends Component {
                                             <FormControlLabel
                                                 control={
                                                     <Switch
-                                                        checked={this.state.checkedExpired}
-                                                        onChange={this.handleChange('checkedExpired')}
-                                                        value="checkedExpired"
+                                                        checked={this.state.filterStatus.started}
+                                                        onChange={this.handleChange('started')}
+                                                        value="started"
+                                                    />
+                                                }
+                                                label="Started"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.filterStatus.completed}
+                                                        onChange={this.handleChange('completed')}
+                                                        value="completed"
+                                                    />
+                                                }
+                                                label="Completed"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.filterStatus.bidAccepted}
+                                                        onChange={this.handleChange('bidAccepted')}
+                                                        value="bidAccepted"
+                                                    />
+                                                }
+                                                label="Bid Accepted"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={this.state.filterStatus.expired}
+                                                        onChange={this.handleChange('expired')}
+                                                        value="expired"
                                                     />
                                                 }
                                                 label="Expired"
-                                            />
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Select
-                                                value={selectedCategory}
-                                                onChange={this.handleChangeCategory}
-                                                options={categories}
-                                                isMulti
-                                                placeholder="Select category..."
                                             />
                                         </Grid>
                                     </Grid>

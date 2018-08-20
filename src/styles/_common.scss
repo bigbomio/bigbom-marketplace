@@ -80,6 +80,7 @@ $orange: #f99a0c;
             display: inline-block;
         }
         input[type='text'],
+        input[type='number'],
         textarea {
             padding: 10px;
             width: 100%;
@@ -234,6 +235,14 @@ $orange: #f99a0c;
         box-sizing: border-box;
         .list-filter-body {
             padding: 20px;
+            .allDisabled {
+                span {
+                    color: #11cb5f !important;
+                    &:first-child {
+                        color: #8ecaa7 !important;
+                    }
+                }
+            }
         }
         legend {
             font-size: 18px;
@@ -387,5 +396,17 @@ $orange: #f99a0c;
     .top-actions {
         float: right;
         padding-right: 30px;
+        .action {
+            padding-right: 20px;
+            float: left;
+            &.filter {
+                min-width: 400px;
+                z-index: 999;
+                position: relative;
+            }
+            .btn {
+                margin-top: 3px;
+            }
+        }
     }
 }

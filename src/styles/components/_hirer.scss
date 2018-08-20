@@ -37,6 +37,18 @@
             }
         }
     }
+    .mkp-form-row {
+        .mkp-form-row-sub {
+            &.left {
+                padding-right: 40px;
+            }
+            &.number {
+                input {
+                    padding: 7px 10px;
+                }
+            }
+        }
+    }
 }
 
 #bigbomMarketplace {

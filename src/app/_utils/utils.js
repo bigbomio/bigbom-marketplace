@@ -73,9 +73,7 @@ class Utils {
 
     truncate = (fullStr, strLen, separator) => {
         if (fullStr.length <= strLen) return fullStr;
-
         separator = separator || '...';
-
         var sepLen = separator.length,
             charsToShow = strLen - sepLen,
             frontChars = Math.ceil(charsToShow / 2),
@@ -94,12 +92,13 @@ class Utils {
     };
 
     getStatusJob = all => {
+        let sttArr = [];
         Object.entries(all).forEach(([key, value]) => {
             if (value) {
-                return key;
+                sttArr.push(key);
             }
         });
-        return 'Accepted';
+        return sttArr;
     };
 
     async connectMetaMask(web3, ignoreNetwork = ['MAINNET']) {

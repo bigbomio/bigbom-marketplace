@@ -168,6 +168,7 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             (error, eventResult) => {
+                console.log(results);
                 if (error) {
                     console.log(error);
                     results.status = { err: true, text: 'something went wrong! can not get events log :(' };
