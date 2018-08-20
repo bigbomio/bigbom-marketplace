@@ -147,9 +147,7 @@ class HirerDashboard extends Component {
     };
 
     unCheckAll(filterStatus) {
-        console.log(Object.values(filterStatus));
         for (let stt of Object.values(filterStatus)) {
-            console.log(stt);
             if (stt) {
                 return false;
             }
@@ -157,41 +155,50 @@ class HirerDashboard extends Component {
         return true;
     }
 
-    jobsFilter(filterData, filterBy) {
+    jobsFilterByCategory(filterData) {
+        let jobsFilter = [];
+        const { filterStatus } = this.state;
+        if (filterData) {
+            if (filterData.length > 0) {
+                for (let category of filterData) {
+                    const jobsFilterSelected = jobs.filter(job => job.category === category.value);
+                    jobsFilter = [...jobsFilter, ...jobsFilterSelected];
+                    this.setState({ Jobs: jobsFilter, jobsFiltered: jobsFilter });
+                }
+            } else {
+                this.setState({ Jobs: jobs, jobsFiltered: jobs });
+            }
+        }
+        setTimeout(() => {
+            if (!this.unCheckAll(filterStatus)) {
+                this.jobsFilterByStatus(false);
+            } else {
+                this.jobsFilterByStatus(true);
+            }
+        }, 200);
+    }
+
+    jobsFilterByStatus(allCheck) {
         let jobsFilter = [];
         const { filterStatus, jobsFiltered } = this.state;
         let jobFilterData = jobs;
         if (jobsFiltered) {
             jobFilterData = jobsFiltered;
         }
-        if (filterBy === 'category') {
-            if (filterData) {
-                if (filterData.length > 0) {
-                    for (let category of filterData) {
-                        const jobsFilterSelected = jobs.filter(job => job.category === category.value);
+        if (!allCheck) {
+            if (!this.unCheckAll(filterStatus)) {
+                Object.entries(filterStatus).forEach(([key, value]) => {
+                    if (value) {
+                        const jobsFilterSelected = jobFilterData.filter(job => job.status[key] === true);
                         jobsFilter = [...jobsFilter, ...jobsFilterSelected];
-                        this.setState({ Jobs: jobsFilter, jobsFiltered: jobsFilter });
+                        this.setState({ Jobs: jobsFilter, allDisabled: false });
                     }
-                } else {
-                    this.setState({ Jobs: jobs, jobsFiltered: jobs });
-                }
+                });
+            } else {
+                this.setState({ Jobs: jobFilterData, all: true, allDisabled: true });
             }
         } else {
-            if (!filterData) {
-                if (!this.unCheckAll(filterStatus)) {
-                    Object.entries(filterStatus).forEach(([key, value]) => {
-                        if (value) {
-                            const jobsFilterSelected = jobFilterData.filter(job => job.status[key] === true);
-                            jobsFilter = [...jobsFilter, ...jobsFilterSelected];
-                            this.setState({ Jobs: jobsFilter, allDisabled: false });
-                        }
-                    });
-                } else {
-                    this.setState({ Jobs: jobFilterData, all: true, allDisabled: true });
-                }
-            } else {
-                this.setState({ Jobs: jobsFiltered });
-            }
+            this.setState({ Jobs: jobsFiltered });
         }
     }
 
@@ -204,7 +211,7 @@ class HirerDashboard extends Component {
         const { filterStatus } = this.state;
         filterStatus[name] = event.target.checked;
         this.setState({ filterStatus: filterStatus, all: false });
-        this.jobsFilter(false, 'status');
+        this.jobsFilterByStatus(false);
     };
 
     handleChangeAll = name => event => {
@@ -213,12 +220,12 @@ class HirerDashboard extends Component {
             filterStatus[key] = false;
         });
         this.setState({ filterStatus: filterStatus, [name]: event.target.checked, allDisabled: true });
-        this.jobsFilter(true, 'status');
+        this.jobsFilterByStatus(true);
     };
 
     handleChangeCategory = selectedOption => {
         this.setState({ selectedCategory: selectedOption });
-        this.jobsFilter(selectedOption, 'category');
+        this.jobsFilterByCategory(selectedOption);
     };
 
     jobsRender = () => {

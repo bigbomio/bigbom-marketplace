@@ -85,8 +85,9 @@ class HirerPostJob extends Component {
         const des = this.validate(desPrepare, 'description');
         const skills = this.validate(selectedSkill, 'skills');
         const category = this.validate(selectedCategory, 'category');
+        const estimatedTime = this.validate(estimatedTimePrepare, 'estimatedTime');
 
-        if (title && des && skills && category) {
+        if (title && des && skills && category && estimatedTime) {
             const jobPostData = {
                 title: namePrepare,
                 description: desPrepare,
@@ -101,7 +102,6 @@ class HirerPostJob extends Component {
                 if (err) {
                     return console.log(err);
                 }
-                this.setState({ jobHash });
                 this.newJobInit(jobHash);
             });
         }
@@ -145,6 +145,22 @@ class HirerPostJob extends Component {
                 return false;
             }
             return true;
+        } else if (field === 'estimatedTime') {
+            console.log(val);
+            if (val.length <= 0) {
+                this.setState({
+                    estimatedTimeErr: 'Please enter your estimated time for freelancer complete this job',
+                });
+                return false;
+            } else {
+                if (Number(val) < 1) {
+                    this.setState({
+                        estimatedTimeErr: 'Please enter your estimated time least 1 hour',
+                    });
+                    return false;
+                }
+            }
+            return true;
         }
     };
 
@@ -161,7 +177,10 @@ class HirerPostJob extends Component {
             }
             this.setState({ desPrepare: val, desErr: null });
         } else if (field === 'estimatedTime') {
-            this.setState({ estimatedTimePrepare: val });
+            if (!this.validate(val, 'estimatedTime')) {
+                return;
+            }
+            this.setState({ estimatedTimePrepare: val, estimatedTimeErr: null });
         }
     };
 
@@ -208,6 +227,7 @@ class HirerPostJob extends Component {
             selectedCategory,
             nameErr,
             categoryErr,
+            estimatedTimeErr,
             desErr,
             skillsErr,
             budgets,
@@ -332,8 +352,10 @@ class HirerPostJob extends Component {
                                         type="number"
                                         id="estimatedTime"
                                         name="estimatedTime"
+                                        min="1"
                                         onChange={e => this.inputOnChange(e, 'estimatedTime')}
                                     />
+                                    {estimatedTimeErr && <span className="err">{estimatedTimeErr}</span>}
                                 </Grid>
                                 <Grid item xs={8} className="mkp-form-row-sub">
                                     <Grid container>
