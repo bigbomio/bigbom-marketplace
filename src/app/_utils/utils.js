@@ -157,6 +157,24 @@ class Utils {
         const regexWalletAdress = /^(0x)?[0-9a-f]{40}$/i;
         return walletAddress ? regexWalletAdress.test(walletAddress.trim()) : false;
     }
+
+    toAscii(hex) {
+        // Find termination
+        var str = '';
+        var i = 0,
+            l = hex.length;
+        if (hex.substring(0, 2) === '0x') {
+            i = 2;
+        }
+        for (; i < l; i += 2) {
+            var code = parseInt(hex.substr(i, 2), 16);
+            if (code === 0) {
+                break;
+            }
+            str += String.fromCharCode(code);
+        }
+        return str;
+    }
 }
 
 export default new Utils();

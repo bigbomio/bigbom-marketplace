@@ -82,7 +82,7 @@ $orange: #f99a0c;
         input[type='text'],
         input[type='number'],
         textarea {
-            padding: 10px;
+            padding: 7px 10px;
             width: 100%;
             border: 1px solid #ccc;
             font-size: 16px;
@@ -105,6 +105,14 @@ $orange: #f99a0c;
             color: $red;
         }
     }
+    .react-select {
+        &.input-err {
+            & > div {
+                border-color: $red;
+            }
+        }
+    }
+
     .account-info {
         padding: 4px 10px;
         width: 30%;
@@ -406,6 +414,9 @@ $orange: #f99a0c;
             }
             .btn {
                 margin-top: 3px;
+            }
+            &:last-child {
+                padding-right: 0;
             }
         }
     }

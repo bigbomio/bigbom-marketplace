@@ -29,9 +29,10 @@ class HirerPostJob extends Component {
         this.state = {
             namePrepare: '',
             desPrepare: '',
+            expiredTimePrepare: 0,
             estimatedTimePrepare: 0,
             selectedSkill: [],
-            selectedCategory: [],
+            selectedCategory: {},
             selectedCurrency: currencies[0],
             budgets: budgetsSource,
             selectedBudget: budgetsSource[2],
@@ -41,16 +42,18 @@ class HirerPostJob extends Component {
     }
 
     async newJobInit(jobHash) {
-        const { selectedCategory, selectedBudget } = this.state;
+        const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
         const { web3 } = this.props;
         const budget = web3.toWei(selectedBudget.min_sum, 'ether');
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const expiredTime = parseInt(Date.now() / 1000, 10) + 7 * 24 * 3600; // expired after 7 days
+        const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
+        const estimatedTime = estimatedTimePrepare * 60 * 60;
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
+            estimatedTime,
             budget,
-            selectedCategory[0].value, // only one category suport for now
+            selectedCategory.value, // only one category suport for now
             {
                 from: jobInstance.defaultAccount,
                 gasPrice: +jobInstance.gasPrice.toString(10),
@@ -61,14 +64,15 @@ class HirerPostJob extends Component {
                 isLoading: false,
                 status: { err: true, text: 'something went wrong! Can not create job :(' },
             });
-            return console.log(err);
+            console.log(err);
         }
         // check event logs
-        this.setState({ isLoading: false, status: { err: false, text: 'Your job has been created!' } });
-        console.log('joblog: ', jobLog);
-        setTimeout(() => {
-            this.handleClose();
-        }, 2000);
+        if (jobLog) {
+            this.setState({ isLoading: false, status: { err: false, text: 'Your job has been created!' } });
+            setTimeout(() => {
+                this.handleClose();
+            }, 2000);
+        }
     }
 
     creatJob = () => {
@@ -79,6 +83,7 @@ class HirerPostJob extends Component {
             selectedBudget,
             selectedSkill,
             estimatedTimePrepare,
+            expiredTimePrepare,
             selectedCategory,
         } = this.state;
         const title = this.validate(namePrepare, 'title');
@@ -86,8 +91,9 @@ class HirerPostJob extends Component {
         const skills = this.validate(selectedSkill, 'skills');
         const category = this.validate(selectedCategory, 'category');
         const estimatedTime = this.validate(estimatedTimePrepare, 'estimatedTime');
+        const expiredTime = this.validate(expiredTimePrepare, 'expiredTime');
 
-        if (title && des && skills && category && estimatedTime) {
+        if (title && des && skills && category && estimatedTime && expiredTime) {
             const jobPostData = {
                 title: namePrepare,
                 description: desPrepare,
@@ -96,6 +102,7 @@ class HirerPostJob extends Component {
                 skills: selectedSkill,
                 category: selectedCategory,
                 estimatedTime: estimatedTimePrepare,
+                expiredTime: expiredTimePrepare,
             };
             this.setState({ isLoading: true, open: true });
             ipfs.addJSON(jobPostData, (err, jobHash) => {
@@ -140,13 +147,12 @@ class HirerPostJob extends Component {
             }
             return true;
         } else if (field === 'category') {
-            if (val.length <= 0) {
+            if (!val.value) {
                 this.setState({ categoryErr: 'Please select a category.' });
                 return false;
             }
             return true;
         } else if (field === 'estimatedTime') {
-            console.log(val);
             if (val.length <= 0) {
                 this.setState({
                     estimatedTimeErr: 'Please enter your estimated time for freelancer complete this job',
@@ -156,6 +162,26 @@ class HirerPostJob extends Component {
                 if (Number(val) < 1) {
                     this.setState({
                         estimatedTimeErr: 'Please enter your estimated time least 1 hour',
+                    });
+                    return false;
+                }
+            }
+            return true;
+        } else if (field === 'expiredTime') {
+            if (val.length <= 0) {
+                this.setState({
+                    expiredTimeErr: 'Please set your expired time for your job',
+                });
+                return false;
+            } else {
+                if (Number(val) < 1) {
+                    this.setState({
+                        expiredTimeErr: 'Please enter your expired time least 1 day',
+                    });
+                    return false;
+                } else if (Number(val) > 30) {
+                    this.setState({
+                        expiredTimeErr: 'Please enter your expired time most 30 days',
                     });
                     return false;
                 }
@@ -180,7 +206,12 @@ class HirerPostJob extends Component {
             if (!this.validate(val, 'estimatedTime')) {
                 return;
             }
-            this.setState({ estimatedTimePrepare: val, estimatedTimeErr: null });
+            this.setState({ estimatedTimePrepare: Number(val), estimatedTimeErr: null });
+        } else if (field === 'expiredTime') {
+            if (!this.validate(val, 'expiredTime')) {
+                return;
+            }
+            this.setState({ expiredTimePrepare: Number(val), expiredTimeErr: null });
         }
     };
 
@@ -215,7 +246,7 @@ class HirerPostJob extends Component {
         const { history } = this.props;
         this.setState({ open: false });
         if (!status.err) {
-            history.push('/manage');
+            history.push('hirer/manage');
         }
     };
 
@@ -228,6 +259,7 @@ class HirerPostJob extends Component {
             nameErr,
             categoryErr,
             estimatedTimeErr,
+            expiredTimeErr,
             desErr,
             skillsErr,
             budgets,
@@ -322,7 +354,7 @@ class HirerPostJob extends Component {
                                     <span className="mkp-form-row-label">Category</span>
                                     <span className="mkp-form-row-description">Select a category for your job</span>
                                     <Select
-                                        className={categoryErr ? 'input-err' : ''}
+                                        className={categoryErr ? 'react-select input-err' : ''}
                                         value={selectedCategory}
                                         onChange={this.handleChangeCategory}
                                         options={categories}
@@ -335,7 +367,7 @@ class HirerPostJob extends Component {
                                         Enter up to 5 skills that best describe your project.
                                     </span>
                                     <Select
-                                        className={skillsErr ? 'input-err' : ''}
+                                        className={skillsErr ? 'react-select input-err' : ''}
                                         value={selectedSkill}
                                         onChange={this.handleChangeSkills}
                                         options={skills}
@@ -344,11 +376,29 @@ class HirerPostJob extends Component {
                                     {skillsErr && <span className="err">{skillsErr}</span>}
                                 </Grid>
                             </Grid>
-
                             <Grid container className="mkp-form-row">
-                                <Grid item xs={4} className="mkp-form-row-sub left number">
+                                <span className="mkp-form-row-label">What is your estimated budget?</span>
+                                <Grid item xs={3} className="left">
+                                    <Select
+                                        value={selectedCurrency}
+                                        onChange={this.handleChangeCurrency}
+                                        options={currencies}
+                                    />
+                                </Grid>
+                                <Grid item xs={9}>
+                                    <Select
+                                        value={selectedBudget}
+                                        onChange={this.handleChangeBudget}
+                                        options={budgets}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Grid container className="mkp-form-row">
+                                <Grid item xs={4} className="mkp-form-row-sub left">
                                     <span className="mkp-form-row-label">Estimated Time (Hour unit)</span>
+                                    <span className="mkp-form-row-description">Select a category for your job</span>
                                     <input
+                                        className={estimatedTimeErr ? 'input-err' : ''}
                                         type="number"
                                         id="estimatedTime"
                                         name="estimatedTime"
@@ -357,28 +407,24 @@ class HirerPostJob extends Component {
                                     />
                                     {estimatedTimeErr && <span className="err">{estimatedTimeErr}</span>}
                                 </Grid>
-                                <Grid item xs={8} className="mkp-form-row-sub">
-                                    <Grid container>
-                                        <span className="mkp-form-row-label">What is your estimated budget?</span>
-                                        <Grid item xs={4} className="left">
-                                            <Select
-                                                value={selectedCurrency}
-                                                onChange={this.handleChangeCurrency}
-                                                options={currencies}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={8}>
-                                            <Select
-                                                value={selectedBudget}
-                                                onChange={this.handleChangeBudget}
-                                                options={budgets}
-                                            />
-                                        </Grid>
-                                    </Grid>
+                                <Grid item xs={5} className="mkp-form-row-sub">
+                                    <span className="mkp-form-row-label">Expired time (Day unit)</span>
+                                    <span className="mkp-form-row-description">
+                                        After this time freelancer can not bid
+                                    </span>
+                                    <input
+                                        className={expiredTimeErr ? 'input-err' : ''}
+                                        type="number"
+                                        id="expiredTime"
+                                        name="expiredTime"
+                                        min="1"
+                                        onChange={e => this.inputOnChange(e, 'expiredTime')}
+                                    />
+                                    {expiredTimeErr && <span className="err">{expiredTimeErr}</span>}
                                 </Grid>
                             </Grid>
                             <Grid container className="mkp-form-row">
-                                <ButtonBase className="btn btn-normal btn-blue" onClick={this.creatJob}>
+                                <ButtonBase className="btn btn-medium btn-blue" onClick={this.creatJob}>
                                     Create Job
                                 </ButtonBase>
                             </Grid>

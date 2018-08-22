@@ -5,10 +5,6 @@ import { connect } from 'react-redux';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -37,8 +33,8 @@ class HirerDashboard extends Component {
             all: true,
             allDisabled: true,
             isLoading: false,
-            open: false,
             Jobs: [],
+            stt: { err: false, text: null },
         };
     }
 
@@ -51,10 +47,15 @@ class HirerDashboard extends Component {
 
     getJobs = async () => {
         const { web3 } = this.props;
-        const _categories = await this.getCategories();
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', _categories, this.JobCreatedInit);
+        abiConfig.getPastSingleEvent(
+            web3,
+            'BBFreelancerJob',
+            'JobCreated',
+            { owner: web3.eth.defaultAccount },
+            this.JobCreatedInit
+        );
     };
 
     // get all categories
@@ -69,7 +70,11 @@ class HirerDashboard extends Component {
     JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
         const event = eventLog.data;
-        const jobHash = web3.toAscii(event.args.jobHash);
+        if (!eventLog.data) {
+            this.setState({ stt: { err: true, text: 'You have no any job!' }, isLoading: false });
+            return;
+        }
+        const jobHash = Utils.toAscii(event.args.jobHash);
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
@@ -83,22 +88,22 @@ class HirerDashboard extends Component {
             const jobStatus = {
                 started: Number(jobStatusLog[4].toString()) === 1,
                 completed: Number(jobStatusLog[4].toString()) === 2,
-                claimed: Number(jobStatusLog[4].toString()) === 5, // ???
+                claimed: Number(jobStatusLog[4].toString()) === 5,
                 reject: Number(jobStatusLog[4].toString()) === 4,
                 acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
-                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000' ? true : false,
-                bidding: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000' ? false : true,
+                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
+                bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
                 expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
             };
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
                 id: event.args.jobHash,
+                owner: event.args.owner,
                 jobHash: jobHash,
-                category: event.args.category,
+                category: Utils.toAscii(event.args.category),
                 expired: event.args.expired.toString(),
-                transactionHash: event.transactionHash,
                 status: jobStatus,
                 bid: [],
             };
@@ -124,18 +129,23 @@ class HirerDashboard extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        const _categories = await this.getCategories();
-        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', _categories, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMerge(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { owner: web3.eth.defaultAccount },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        const _categories = await this.getCategories();
         abiConfig.getPastEventsBidAccepted(
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            _categories,
+            { owner: web3.eth.defaultAccount },
             jobData.data,
             this.JobsInit
         );
@@ -229,17 +239,16 @@ class HirerDashboard extends Component {
     };
 
     jobsRender = () => {
-        const { match, web3 } = this.props;
-        const { Jobs } = this.state;
-        console.log(Jobs);
+        const { match } = this.props;
+        const { Jobs, stt } = this.state;
         if (Jobs) {
-            return (
+            return !stt.err ? (
                 <Grid container className="list-body">
                     {Jobs.map(job => {
                         return !job.err ? (
                             <Grid key={job.id} container className="list-body-row">
                                 <Grid item xs={5} className="title">
-                                    <Link to={`${match.url}/${web3.toAscii(job.id)}`}>{job.title}</Link>
+                                    <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
                                 </Grid>
                                 <Grid item xs={2}>
                                     {job.budget && (
@@ -265,7 +274,7 @@ class HirerDashboard extends Component {
                         ) : (
                             <Grid key={job.id} container className="list-body-row">
                                 <Grid item xs={5} className="title">
-                                    <span className="err">{web3.toAscii(job.id)}</span>
+                                    <span className="err">{Utils.toAscii(job.id)}</span>
                                 </Grid>
                                 <Grid item xs={2}>
                                     ---
@@ -283,6 +292,10 @@ class HirerDashboard extends Component {
                         );
                     })}
                 </Grid>
+            ) : (
+                <Grid container className="no-data">
+                    {stt.text}
+                </Grid>
             );
         } else {
             return null;
@@ -290,53 +303,9 @@ class HirerDashboard extends Component {
     };
 
     render() {
-        const { selectedCategory, status, open, isLoading } = this.state;
-        const categories = settingsApi.getCategories();
+        const { selectedCategory, isLoading } = this.state;
         return (
             <div id="hirer" className="container-wrp">
-                <Dialog
-                    open={open}
-                    onClose={this.handleClose}
-                    maxWidth="sm"
-                    fullWidth
-                    className="dialog"
-                    disableBackdropClick
-                    disableEscapeKeyDown
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">Create New Job:</DialogTitle>
-                    <DialogContent>
-                        {isLoading ? (
-                            <div className="loading">
-                                <CircularProgress size={50} color="secondary" />
-                                <span>Waiting...</span>
-                            </div>
-                        ) : (
-                            <div className="alert-dialog-description">
-                                {status && (
-                                    <div className="dialog-result">
-                                        {status.err ? (
-                                            <div className="err">{status.text}</div>
-                                        ) : (
-                                            <div className="success">
-                                                {status.text}
-                                                <p>success</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </DialogContent>
-                    <DialogActions>
-                        {!isLoading && (
-                            <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
-                                Close
-                            </ButtonBase>
-                        )}
-                    </DialogActions>
-                </Dialog>
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">

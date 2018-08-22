@@ -59,44 +59,50 @@ class abiConfigs {
         };
     }
 
-    async getPastEvents(web3, type, event, category, callback) {
+    async getPastEvents(web3, type, event, filter, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
             data: [],
         };
-        const events = contractInstance.instance[event](
-            {},
-            {
-                filter: { owner: contractInstance.defaultAccount, category: category }, // filter by owner, category
-                fromBlock: 3847012, // should use recent number
-                toBlock: 'latest',
-            }
-        );
-        await events.get(function(error, logs) {
+        function resultsInit(error, eventResult) {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            results.data = logs;
-            results.status = { err: false, text: 'get events log success!' };
-            callback(results);
+            if (eventResult.length > 0) {
+                results.data = eventResult;
+                results.status = { err: false, text: 'get events log success!' };
+                callback(results);
+            } else {
+                results.status = { err: true, text: 'Data not found! :(' };
+                callback(results);
+            }
+        }
+
+        const eventInstance = contractInstance.instance[event](filter, {
+            fromBlock: 3880298, // should use recent number
+            toBlock: 'latest',
+        });
+
+        eventInstance.watch((error, eventResult) => {
+            resultsInit(error, eventResult); // when data update
+        });
+
+        eventInstance.get(function(error, eventResult) {
+            resultsInit(error, eventResult);
         });
     }
 
-    async getPastEventsMerge(web3, type, event, category, mergeData, callback) {
+    async getPastEventsMerge(web3, type, event, filter, mergeData, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
             data: [],
         };
-        const events = contractInstance.instance[event](
-            {},
-            {
-                filter: { owner: contractInstance.defaultAccount, category: category }, // filter by owner, category
-                fromBlock: 3847012, // should use recent number
-                toBlock: 'latest',
-            }
-        );
+        const events = contractInstance.instance[event](filter, {
+            fromBlock: 3880298, // should use recent number
+            toBlock: 'latest',
+        });
         await events.get(function(error, events) {
             if (error) {
                 console.log(error);
@@ -121,19 +127,15 @@ class abiConfigs {
         });
     }
 
-    async getPastEventsBidAccepted(web3, type, event, category, jobData, callback) {
+    async getPastEventsBidAccepted(web3, type, event, filter, jobData, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
             data: [],
         };
-        const events = contractInstance.instance[event](
-            {},
-            {
-                filter: { owner: contractInstance.defaultAccount, category: category }, // filter by owner, category
-                fromBlock: 3847012, // should use recent number
-                toBlock: 'latest',
-            }
-        );
+        const events = contractInstance.instance[event](filter, {
+            fromBlock: 3880298, // should use recent number
+            toBlock: 'latest',
+        });
         await events.get(function(error, events) {
             if (error) {
                 console.log(error);
@@ -155,30 +157,47 @@ class abiConfigs {
         });
     }
 
-    async getPastSingleEvent(web3, type, event, category, callback) {
+    async getPastSingleEvent(web3, type, event, filter, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
-            data: [],
+            data: null,
         };
-        contractInstance.instance[event](
-            {},
-            {
-                filter: { owner: contractInstance.defaultAccount, category: category }, // filter by owner, category
-                fromBlock: 3847012, // should use recent number
-                toBlock: 'latest',
-            },
-            (error, eventResult) => {
-                console.log(results);
-                if (error) {
-                    console.log(error);
-                    results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                    callback(results);
-                }
+
+        function resultsInit(error, eventResult) {
+            if (error) {
+                console.log(error);
+                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
+                callback(results);
+            } else {
                 results.data = eventResult;
                 results.status = { err: false, text: 'get events log success!' };
                 callback(results);
             }
+        }
+
+        contractInstance.instance[event](
+            filter,
+            {
+                fromBlock: 3880298, // should use recent number
+                toBlock: 'latest',
+            },
+            (error, eventResult) => {
+                console.log(eventResult);
+                resultsInit(error, eventResult);
+            }
         );
+
+        // check no data case
+        const eventInstance = contractInstance.instance[event](filter, {
+            fromBlock: 3880298, // should use recent number
+            toBlock: 'latest',
+        });
+        eventInstance.get(function(err, allEvent) {
+            if (allEvent.length <= 0) {
+                results.status = { err: false, text: 'Have no event' };
+                callback(results);
+            }
+        });
     }
 }
 

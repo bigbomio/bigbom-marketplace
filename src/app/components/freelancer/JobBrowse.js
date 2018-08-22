@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
-import { Link } from 'react-router-dom';
+import ButtonBase from '@material-ui/core/ButtonBase';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import SearchInput, { createFilter } from 'react-search-input';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import List from '@material-ui/core/List';
@@ -12,10 +17,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
-import Jobs from '../../_services/jobData';
+import abiConfig from '../../_services/abiConfig';
+
+let jobs = [];
 
 const options = ['Latest', 'Oldest', 'Lowest Budget', 'Highest Budget', 'Most Bids', 'Fewest Bids'];
-const KEYS_TO_FILTERS = ['id', 'title'];
+const KEYS_TO_FILTERS = ['owner', 'title', 'description'];
 
 class JobBrowser extends Component {
     constructor(props) {
@@ -24,17 +31,130 @@ class JobBrowser extends Component {
             anchorEl: null,
             selectedIndex: 1,
             searchTerm: '',
+            isLoading: false,
+            Jobs: [],
+            stt: { err: false, text: null },
         };
     }
 
+    componentDidMount() {
+        const { isConnected } = this.props;
+        if (isConnected) {
+            this.getJobs();
+        }
+    }
+
+    getJobs = async () => {
+        const { web3 } = this.props;
+        this.setState({ isLoading: true, Jobs: [] });
+        jobs = [];
+        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
+    };
+
+    JobCreatedInit = async eventLog => {
+        const { web3 } = this.props;
+        const event = eventLog.data;
+        if (!eventLog.data) {
+            this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
+            return;
+        }
+        const jobHash = Utils.toAscii(event.args.jobHash);
+        // get job status
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            return console.log(err);
+        } else {
+            // [owner, expired, budget, cancel, status, freelancer]
+
+            const jobStatus = {
+                started: Number(jobStatusLog[4].toString()) === 1,
+                completed: Number(jobStatusLog[4].toString()) === 2,
+                claimed: Number(jobStatusLog[4].toString()) === 5,
+                reject: Number(jobStatusLog[4].toString()) === 4,
+                acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
+                canceled: jobStatusLog[3],
+                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
+                bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
+                expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
+            };
+
+            if (!jobStatus.canceled || !jobStatus.expired) {
+                if (jobStatus.bidding) {
+                    // get detail from ipfs
+                    const URl = abiConfig.getIpfsLink() + jobHash;
+                    const jobTpl = {
+                        id: event.args.jobHash,
+                        owner: event.args.owner,
+                        jobHash: jobHash,
+                        category: Utils.toAscii(event.args.category),
+                        expired: event.args.expired.toString(),
+                        status: jobStatus,
+                        bid: [],
+                    };
+                    fetch(URl)
+                        .then(res => res.json())
+                        .then(
+                            result => {
+                                jobTpl.title = result.title;
+                                jobTpl.skills = result.skills;
+                                jobTpl.description = result.description;
+                                jobTpl.currency = result.currency;
+                                jobTpl.budget = result.budget;
+                                this.BidCreatedInit(jobTpl);
+                            },
+                            error => {
+                                console.log(error);
+                                jobTpl.err = 'Can not fetch data from server';
+                                this.BidCreatedInit(jobTpl);
+                            }
+                        );
+                }
+            }
+        }
+    };
+
+    BidCreatedInit = async job => {
+        const { web3 } = this.props;
+        abiConfig.getPastEventsMerge(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { owner: web3.eth.defaultAccount },
+            job,
+            this.BidAcceptedInit
+        );
+    };
+
+    BidAcceptedInit = async jobData => {
+        const { web3 } = this.props;
+        abiConfig.getPastEventsBidAccepted(
+            web3,
+            'BBFreelancerBid',
+            'BidAccepted',
+            { owner: web3.eth.defaultAccount },
+            jobData.data,
+            this.JobsInit
+        );
+    };
+
+    JobsInit = jobData => {
+        jobs.push(jobData.data);
+        this.setState({ Jobs: jobs, isLoading: false });
+    };
+
     jobsRender() {
+        const { Jobs } = this.state;
         const filteredJobs = Jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         return (
             <Grid container className="job-item-list">
                 {filteredJobs &&
                     filteredJobs.map(job => {
                         return (
-                            <Link to={'freelancer/jobs/' + job.id} key={job.id} className="job-item">
+                            <Link to={'freelancer/jobs/' + job.jobHash} key={job.id} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">
@@ -42,8 +162,8 @@ class JobBrowser extends Component {
                                         </Grid>
                                         <Grid item xs={3} className="budget">
                                             <span className="bold">
-                                                {job.budget.min_sum} - {job.budget.max_sum}
-                                                {' ( ' + job.currency + ' ) '}
+                                                {job.budget.max_sum}
+                                                {' ( ' + job.currency.label + ' ) '}
                                             </span>
                                         </Grid>
                                     </Grid>
@@ -52,22 +172,18 @@ class JobBrowser extends Component {
                                             {job.description}
                                         </Grid>
                                         <Grid item xs={12} className="status">
-                                            <span className="status green bold">
-                                                {Utils.getStatusJobOpen(job.bid)
-                                                    ? 'Bidding'
-                                                    : Utils.getStatusJob(job.status)}
-                                            </span>
+                                            <span className="status green bold">{Utils.getStatusJob(job.status)}</span>
                                             <span>
                                                 {' - ' + job.bid.length + ' '}
                                                 bids
                                             </span>
                                         </Grid>
                                         <Grid item xs={12} className="category">
-                                            <span className="bold">Category: </span>
-                                            {job.category.map((cate, key) => {
+                                            <span className="bold">Skill Required: </span>
+                                            {job.skills.map((skill, key) => {
                                                 return (
                                                     <span className="tag" key={key}>
-                                                        {cate}
+                                                        {skill.label}
                                                     </span>
                                                 );
                                             })}
@@ -79,6 +195,21 @@ class JobBrowser extends Component {
                     })}
             </Grid>
         );
+    }
+
+    jobsFilterByCategory(filterData) {
+        let jobsFilter = [];
+        if (filterData) {
+            if (filterData.length > 0) {
+                for (let category of filterData) {
+                    const jobsFilterSelected = jobs.filter(job => job.category === category.value);
+                    jobsFilter = [...jobsFilter, ...jobsFilterSelected];
+                    this.setState({ Jobs: jobsFilter });
+                }
+            } else {
+                this.setState({ Jobs: jobs });
+            }
+        }
     }
 
     searchUpdated(term) {
@@ -99,10 +230,11 @@ class JobBrowser extends Component {
 
     handleChangeCategory = selectedOption => {
         this.setState({ selectedCategory: selectedOption });
+        this.jobsFilterByCategory(selectedOption);
     };
 
     render() {
-        const { selectedCategory, anchorEl } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt } = this.state;
         const categories = settingsApi.getCategories();
 
         return (
@@ -117,10 +249,22 @@ class JobBrowser extends Component {
                 </div>
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
+                        <Grid className="top-actions">
+                            <Grid className="action">
+                                <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
+                                    <FontAwesomeIcon icon="sync-alt" />
+                                    Refresh
+                                </ButtonBase>
+                            </Grid>
+                        </Grid>
                         <Grid container className="single-body">
                             <Grid container className="filter">
                                 <Grid item xs={5}>
-                                    <SearchInput className="search-input" onChange={e => this.searchUpdated(e)} />
+                                    <SearchInput
+                                        className="search-input"
+                                        placeholder="Enter wallet address or anything..."
+                                        onChange={e => this.searchUpdated(e)}
+                                    />
                                 </Grid>
                                 <Grid item xs={5}>
                                     <Select
@@ -167,7 +311,18 @@ class JobBrowser extends Component {
                                     </Menu>
                                 </Grid>
                             </Grid>
-                            {this.jobsRender()}
+                            {!isLoading ? (
+                                !stt.err ? (
+                                    this.jobsRender()
+                                ) : (
+                                    <div className="no-data">{stt.text}</div>
+                                )
+                            ) : (
+                                <div className="loading">
+                                    <CircularProgress size={50} color="secondary" />
+                                    <span>Loading...</span>
+                                </div>
+                            )}
                         </Grid>
                     </div>
                 </div>
@@ -176,4 +331,20 @@ class JobBrowser extends Component {
     }
 }
 
-export default JobBrowser;
+JobBrowser.propTypes = {
+    web3: PropTypes.object.isRequired,
+    isConnected: PropTypes.bool.isRequired,
+};
+const mapStateToProps = state => {
+    return {
+        web3: state.homeReducer.web3,
+        isConnected: state.homeReducer.isConnected,
+    };
+};
+
+const mapDispatchToProps = {};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(JobBrowser);

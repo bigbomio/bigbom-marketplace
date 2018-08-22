@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import Manage from '../../components/hirer/Manage';
 import JobDetail from '../../components/hirer/JobDetail';
 import PostJob from '../../components/hirer//PostJob';
-import Jobs from '../../_services/jobData';
 import NotFound from '../../components/NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
 
@@ -46,7 +45,7 @@ class HirerCatagories extends Component {
         ];
 
         return (
-            <div id="hirer" className="container-wrp">
+            <div id="main" className="container-wrp">
                 <div className="container-wrp main-nav">
                     <div className="container">
                         <ul>
@@ -64,7 +63,7 @@ class HirerCatagories extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail data={Jobs} {...props} />} />
+                    <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>
