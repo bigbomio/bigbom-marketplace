@@ -39,17 +39,31 @@ class JobBrowser extends Component {
 
     componentDidMount() {
         const { isConnected } = this.props;
+        const { isLoading } = this.state;
         if (isConnected) {
-            this.getJobs();
+            if (!isLoading) {
+                this.getJobs();
+            }
         }
     }
 
-    getJobs = async () => {
+    getJobs = () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
+
+    getBiddingStt(stts) {
+        if (stts[3]) {
+            return false;
+        } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false) {
+            return false;
+        } else if (stts[5] !== '0x0000000000000000000000000000000000000000') {
+            return false;
+        }
+        return true;
+    }
 
     JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
@@ -69,7 +83,6 @@ class JobBrowser extends Component {
             return console.log(err);
         } else {
             // [owner, expired, budget, cancel, status, freelancer]
-
             const jobStatus = {
                 started: Number(jobStatusLog[4].toString()) === 1,
                 completed: Number(jobStatusLog[4].toString()) === 2,
@@ -78,11 +91,10 @@ class JobBrowser extends Component {
                 acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
+                bidding: this.getBiddingStt(jobStatusLog),
                 expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
             };
-
-            if (!jobStatus.canceled || !jobStatus.expired) {
+            if (jobStatus.bidding) {
                 if (jobStatus.bidding) {
                     // get detail from ipfs
                     const URl = abiConfig.getIpfsLink() + jobHash;
@@ -112,12 +124,14 @@ class JobBrowser extends Component {
                                 this.BidCreatedInit(jobTpl);
                             }
                         );
+                } else {
+                    this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
                 }
             }
         }
     };
 
-    BidCreatedInit = async job => {
+    BidCreatedInit = job => {
         const { web3 } = this.props;
         abiConfig.getPastEventsMerge(
             web3,
@@ -129,7 +143,7 @@ class JobBrowser extends Component {
         );
     };
 
-    BidAcceptedInit = async jobData => {
+    BidAcceptedInit = jobData => {
         const { web3 } = this.props;
         abiConfig.getPastEventsBidAccepted(
             web3,

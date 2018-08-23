@@ -40,8 +40,11 @@ class HirerDashboard extends Component {
 
     componentDidMount() {
         const { isConnected } = this.props;
+        const { isLoading } = this.state;
         if (isConnected) {
-            this.getJobs();
+            if (!isLoading) {
+                this.getJobs();
+            }
         }
     }
 
@@ -65,6 +68,17 @@ class HirerDashboard extends Component {
             allCategories.push(category.value);
         }
         return allCategories;
+    }
+
+    getBiddingStt(stts) {
+        if (stts[3]) {
+            return false;
+        } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false) {
+            return false;
+        } else if (stts[5] !== '0x0000000000000000000000000000000000000000') {
+            return false;
+        }
+        return true;
     }
 
     JobCreatedInit = async eventLog => {
@@ -93,7 +107,7 @@ class HirerDashboard extends Component {
                 acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
+                bidding: this.getBiddingStt(jobStatusLog),
                 expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
             };
             // get detail from ipfs
@@ -140,6 +154,7 @@ class HirerDashboard extends Component {
     };
 
     BidAcceptedInit = async jobData => {
+        console.log(jobData);
         const { web3 } = this.props;
         abiConfig.getPastEventsBidAccepted(
             web3,
@@ -241,6 +256,7 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match } = this.props;
         const { Jobs, stt } = this.state;
+        console.log(Jobs);
         if (Jobs) {
             return !stt.err ? (
                 <Grid container className="list-body">

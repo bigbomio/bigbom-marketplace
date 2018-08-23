@@ -109,7 +109,11 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
+
             for (let event of events) {
+                console.log('s----event', event);
+                console.log('------event.args.jobHash', Utils.toAscii(event.args.jobHash));
+                console.log('-----jobhash', Utils.toAscii(mergeData.id));
                 const bidTpl = {
                     address: event.args.owner,
                     award: event.args.bid.toString(),

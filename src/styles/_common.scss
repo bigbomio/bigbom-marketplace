@@ -96,9 +96,6 @@ $orange: #f99a0c;
         .creatable-select {
             padding: 0 0 10px 0;
         }
-        .left {
-            padding-right: 20px;
-        }
         .err {
             padding: 5px 0;
             font-size: 12px;
@@ -419,5 +416,23 @@ $orange: #f99a0c;
                 padding-right: 0;
             }
         }
+    }
+    .show-block {
+        display: block;
+    }
+    .show-flex {
+        display: flex;
+    }
+    .show-inline-block {
+        display: inline-block;
+    }
+    .hide {
+        display: none;
+    }
+    .left {
+        padding-right: 20px;
+    }
+    .e-left {
+        margin-right: 20px;
     }
 }

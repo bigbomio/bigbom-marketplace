@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import Dashboard from './Dashboard';
 import JobDetailBid from './JobDetailBid';
 import JobBrowse from './JobBrowse';
-import Jobs from '../../_services/jobData';
 import NotFound from '../NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
 
@@ -62,10 +61,7 @@ class FreelancerContainer extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route
-                        path={`${match.url}/jobs/:jobId`}
-                        render={props => <JobDetailBid data={Jobs} {...props} />}
-                    />
+                    <Route path={`${match.url}/jobs/:jobId`} render={props => <JobDetailBid {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>

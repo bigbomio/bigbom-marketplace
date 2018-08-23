@@ -43,8 +43,11 @@ class JobDetail extends Component {
 
     componentDidMount() {
         const { isConnected } = this.props;
+        const { isLoading } = this.state;
         if (isConnected) {
-            this.jobDataInit();
+            if (!isLoading) {
+                this.jobDataInit();
+            }
         }
     }
 
@@ -84,6 +87,7 @@ class JobDetail extends Component {
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
                 id: jobHash,
+                owner: jobStatusLog[0],
                 status: jobStatus,
                 bid: [],
             };
@@ -298,11 +302,7 @@ class JobDetail extends Component {
                         </div>
                     </div>
                     <div className="container-wrp main-ct">
-                        <div className="container wrapper">
-                            <Grid container className="single-body">
-                                {jobTplRender()}
-                            </Grid>
-                        </div>
+                        <div className="container wrapper">{jobTplRender()}</div>
                     </div>
                 </div>
             </Grid>
