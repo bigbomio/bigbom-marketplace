@@ -81,7 +81,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3880298, // should use recent number
+            fromBlock: 3900115, // should use recent number
             toBlock: 'latest',
         });
 
@@ -100,7 +100,7 @@ class abiConfigs {
             data: [],
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3880298, // should use recent number
+            fromBlock: 3900115, // should use recent number
             toBlock: 'latest',
         });
         await events.get(function(error, events) {
@@ -111,17 +111,17 @@ class abiConfigs {
             }
 
             for (let event of events) {
-                console.log('s----event', event);
-                console.log('------event.args.jobHash', Utils.toAscii(event.args.jobHash));
-                console.log('-----jobhash', Utils.toAscii(mergeData.id));
+                console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
                     award: event.args.bid.toString(),
                     created: event.args.created.toString(),
+                    timeDone: event.args.timeDone.toString(),
                     id: event.args.jobHash,
+                    jobHash: mergeData.jobHash,
                     accepted: false,
                 };
-                if (mergeData.id === event.args.jobHash) {
+                if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
                     mergeData.bid.push(bidTpl);
                 }
             }
@@ -134,22 +134,22 @@ class abiConfigs {
     async getPastEventsBidAccepted(web3, type, event, filter, jobData, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
-            data: [],
+            data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3880298, // should use recent number
+            fromBlock: 3900115, // should use recent number
             toBlock: 'latest',
         });
-        await events.get(function(error, events) {
+        events.get(function(error, events) {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            for (let event of events) {
+            for (let e of events) {
                 if (jobData.bid.length > 0) {
                     for (let bid of jobData.bid) {
-                        if (bid.id === event.args.jobHash) {
+                        if (bid.id === e.args.jobHash) {
                             bid.accepted = true;
                         }
                     }
@@ -182,7 +182,7 @@ class abiConfigs {
         contractInstance.instance[event](
             filter,
             {
-                fromBlock: 3880298, // should use recent number
+                fromBlock: 3900115, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
@@ -193,7 +193,7 @@ class abiConfigs {
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3880298, // should use recent number
+            fromBlock: 3900115, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {

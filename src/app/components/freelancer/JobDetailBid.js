@@ -15,6 +15,8 @@ import Fade from '@material-ui/core/Fade';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 
+import Countdown from '../common/countdown';
+
 let myAddress;
 
 const avgBid = job => {
@@ -77,15 +79,12 @@ class JobDetailBid extends Component {
         if (jobData.bid.length > 0) {
             for (let freelancer of jobData.bid) {
                 if (freelancer.address === myAddress) {
-                    this.setState({ bidStt: true });
                     return (
                         <Grid item className="job-detail-col">
                             <div className="name">Your Bid ({jobData.currency.label})</div>
                             <div className="ct">${freelancer.award}</div>
                         </Grid>
                     );
-                } else {
-                    this.setState({ bidStt: false });
                 }
             }
         } else {
@@ -128,6 +127,7 @@ class JobDetailBid extends Component {
             const jobTpl = {
                 id: jobHash,
                 owner: jobStatusLog[0],
+                jobHash: jobHash,
                 status: jobStatus,
                 bid: [],
             };
@@ -135,7 +135,6 @@ class JobDetailBid extends Component {
                 .then(res => res.json())
                 .then(
                     result => {
-                        console.log(result);
                         jobTpl.title = result.title;
                         jobTpl.skills = result.skills;
                         jobTpl.description = result.description;
@@ -143,6 +142,7 @@ class JobDetailBid extends Component {
                         jobTpl.budget = result.budget;
                         jobTpl.category = result.category;
                         jobTpl.estimatedTime = result.estimatedTime;
+                        jobTpl.expiredTime = result.expiredTime;
                         this.BidCreatedInit(jobTpl);
                     },
                     error => {
@@ -156,20 +156,40 @@ class JobDetailBid extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', {}, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMerge(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { jobHash: web3.sha3(job.jobHash) },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', {}, jobData.data, this.JobsInit);
+        abiConfig.getPastEventsBidAccepted(
+            web3,
+            'BBFreelancerBid',
+            'BidAccepted',
+            { jobHash: jobData.jobHash },
+            jobData.data,
+            this.JobsInit
+        );
     };
 
     JobsInit = jobData => {
-        console.log(jobData);
         const { web3 } = this.props;
+        let bidStt = false;
+        for (let freelancer of jobData.data.bid) {
+            if (freelancer.address === myAddress) {
+                bidStt = true;
+            }
+        }
         this.setState({
             bidAccepted: jobData.data.status.bidAccepted,
             jobData: jobData.data,
+            bidStt,
             isOwner: web3.eth.defaultAccount === jobData.data.owner,
             isLoading: false,
         });
@@ -180,7 +200,7 @@ class JobDetailBid extends Component {
     };
 
     actions() {
-        const { bidAccepted, bidStt, isOwner, checkedBid } = this.state;
+        const { bidAccepted, bidStt, isOwner, checkedBid, bidDone } = this.state;
         if (!bidAccepted) {
             if (bidStt) {
                 return (
@@ -199,6 +219,7 @@ class JobDetailBid extends Component {
                             onClick={() => this.bidSwitched(true)}
                             aria-label="Collapse"
                             checked={checkedBid}
+                            disabled={bidDone}
                         >
                             Bid On This Job
                         </ButtonBase>
@@ -292,12 +313,18 @@ class JobDetailBid extends Component {
                 this.setState({
                     bidLoading: false,
                     stt: { err: true, text: 'something went wrong! Can not create bid! :(' },
+                    bidDone: false,
                 });
                 console.log(err);
                 return;
             }
             // check  logs
-            this.setState({ bidLoading: false, stt: { err: false, text: 'Job created!' } });
+            this.setState({
+                bidLoading: false,
+                stt: { err: false, text: 'Bid created!' },
+                bidDone: true,
+                checkedBid: false,
+            });
             console.log('joblog bid: ', jobLog);
         }
     }
@@ -465,6 +492,15 @@ class JobDetailBid extends Component {
                                                     <div className="name">Job budget ({jobData.currency.label})</div>
                                                     <div className="ct">${jobData.budget.max_sum}</div>
                                                 </Grid>
+                                                <Grid item className="job-detail-col">
+                                                    <div className="name">Estimate time</div>
+                                                    <div className="ct">
+                                                        {jobData.estimatedTime < 24
+                                                            ? jobData.estimatedTime + 'H'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + 'Days'}
+                                                    </div>
+                                                </Grid>
+                                                <Countdown expiredTime={jobData.expiredTime} />
                                             </Grid>
                                         </Grid>
                                         <Grid item xs={1}>
@@ -515,13 +551,17 @@ class JobDetailBid extends Component {
                                                                     </Grid>
                                                                     <Grid item xs={2}>
                                                                         <span className="bold">
-                                                                            {freelancer.award + ' '}
+                                                                            {freelancer.award}
+                                                                            &nbsp;
                                                                         </span>
                                                                         {jobData.currency.label}
                                                                     </Grid>
 
                                                                     <Grid item xs={2}>
-                                                                        {freelancer.time}
+                                                                        {freelancer.timeDone <= 24
+                                                                            ? freelancer.timeDone + 'h'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) +
+                                                                              'Days'}
                                                                     </Grid>
                                                                 </Grid>
                                                             );

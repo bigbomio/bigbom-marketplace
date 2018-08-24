@@ -147,20 +147,19 @@ class HirerDashboard extends Component {
             web3,
             'BBFreelancerBid',
             'BidCreated',
-            { owner: web3.eth.defaultAccount },
+            { jobHash: web3.sha3(job.jobHash) },
             job,
             this.BidAcceptedInit
         );
     };
 
     BidAcceptedInit = async jobData => {
-        console.log(jobData);
         const { web3 } = this.props;
         abiConfig.getPastEventsBidAccepted(
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { owner: web3.eth.defaultAccount },
+            { jobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );
@@ -263,7 +262,7 @@ class HirerDashboard extends Component {
                     {Jobs.map(job => {
                         return !job.err ? (
                             <Grid key={job.id} container className="list-body-row">
-                                <Grid item xs={5} className="title">
+                                <Grid item xs={7} className="title">
                                     <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
                                 </Grid>
                                 <Grid item xs={2}>
@@ -280,16 +279,10 @@ class HirerDashboard extends Component {
                                 <Grid item xs={2}>
                                     {Utils.getStatusJob(job.status)}
                                 </Grid>
-                                <Grid item xs={2} className="action">
-                                    <ButtonBase aria-label="Cancel" className="btn btn-small btn-red">
-                                        <FontAwesomeIcon icon="minus-circle" />
-                                        Cancel
-                                    </ButtonBase>
-                                </Grid>
                             </Grid>
                         ) : (
                             <Grid key={job.id} container className="list-body-row">
-                                <Grid item xs={5} className="title">
+                                <Grid item xs={7} className="title">
                                     <span className="err">{Utils.toAscii(job.id)}</span>
                                 </Grid>
                                 <Grid item xs={2}>
@@ -299,9 +292,6 @@ class HirerDashboard extends Component {
                                     ---
                                 </Grid>
                                 <Grid item xs={2}>
-                                    ---
-                                </Grid>
-                                <Grid item xs={2} className="action">
                                     ---
                                 </Grid>
                             </Grid>
@@ -438,7 +428,7 @@ class HirerDashboard extends Component {
                                 </fieldset>
                                 <Grid container className="list-container">
                                     <Grid container className="list-header">
-                                        <Grid item xs={5}>
+                                        <Grid item xs={7}>
                                             Job title
                                         </Grid>
                                         <Grid item xs={2}>
@@ -449,9 +439,6 @@ class HirerDashboard extends Component {
                                         </Grid>
                                         <Grid item xs={2}>
                                             Status
-                                        </Grid>
-                                        <Grid item xs={2}>
-                                            Action
                                         </Grid>
                                     </Grid>
                                     {this.jobsRender()}

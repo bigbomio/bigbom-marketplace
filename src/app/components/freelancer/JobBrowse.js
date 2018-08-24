@@ -95,38 +95,34 @@ class JobBrowser extends Component {
                 expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
             };
             if (jobStatus.bidding) {
-                if (jobStatus.bidding) {
-                    // get detail from ipfs
-                    const URl = abiConfig.getIpfsLink() + jobHash;
-                    const jobTpl = {
-                        id: event.args.jobHash,
-                        owner: event.args.owner,
-                        jobHash: jobHash,
-                        category: Utils.toAscii(event.args.category),
-                        expired: event.args.expired.toString(),
-                        status: jobStatus,
-                        bid: [],
-                    };
-                    fetch(URl)
-                        .then(res => res.json())
-                        .then(
-                            result => {
-                                jobTpl.title = result.title;
-                                jobTpl.skills = result.skills;
-                                jobTpl.description = result.description;
-                                jobTpl.currency = result.currency;
-                                jobTpl.budget = result.budget;
-                                this.BidCreatedInit(jobTpl);
-                            },
-                            error => {
-                                console.log(error);
-                                jobTpl.err = 'Can not fetch data from server';
-                                this.BidCreatedInit(jobTpl);
-                            }
-                        );
-                } else {
-                    this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
-                }
+                // get detail from ipfs
+                const URl = abiConfig.getIpfsLink() + jobHash;
+                const jobTpl = {
+                    id: event.args.jobHash,
+                    owner: event.args.owner,
+                    jobHash: jobHash,
+                    category: Utils.toAscii(event.args.category),
+                    expired: event.args.expired.toString(),
+                    status: jobStatus,
+                    bid: [],
+                };
+                fetch(URl)
+                    .then(res => res.json())
+                    .then(
+                        result => {
+                            jobTpl.title = result.title;
+                            jobTpl.skills = result.skills;
+                            jobTpl.description = result.description;
+                            jobTpl.currency = result.currency;
+                            jobTpl.budget = result.budget;
+                            this.BidCreatedInit(jobTpl);
+                        },
+                        error => {
+                            console.log(error);
+                            jobTpl.err = 'Can not fetch data from server';
+                            this.BidCreatedInit(jobTpl);
+                        }
+                    );
             }
         }
     };
@@ -137,7 +133,7 @@ class JobBrowser extends Component {
             web3,
             'BBFreelancerBid',
             'BidCreated',
-            { owner: web3.eth.defaultAccount },
+            { jobHash: web3.sha3(job.jobHash) },
             job,
             this.BidAcceptedInit
         );
@@ -149,7 +145,7 @@ class JobBrowser extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { owner: web3.eth.defaultAccount },
+            { jobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );

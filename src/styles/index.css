@@ -246,6 +246,9 @@ body {
     margin-right: 5px;
     width: 18px;
     height: 18px; }
+  #bigbomMarketplace .btn:disabled {
+    background: #ccc;
+    color: #666; }
 
 #bigbomMarketplace .btn-small {
   font-size: 12px;
@@ -720,7 +723,9 @@ body {
 #bigbomMarketplace .no-data {
   padding: 20px;
   text-align: center;
-  background: #f9f9f9; }
+  background: #f9f9f9;
+  width: 100%;
+  box-sizing: border-box; }
 
 #freelancer .filter {
   padding-bottom: 30px; }

@@ -92,8 +92,9 @@ class HirerPostJob extends Component {
         const category = this.validate(selectedCategory, 'category');
         const estimatedTime = this.validate(estimatedTimePrepare, 'estimatedTime');
         const expiredTime = this.validate(expiredTimePrepare, 'expiredTime');
-
         if (title && des && skills && category && estimatedTime && expiredTime) {
+            let expiredTimeSet = new Date();
+            expiredTimeSet.setDate(expiredTimeSet.getDate() + expiredTimePrepare);
             const jobPostData = {
                 title: namePrepare,
                 description: desPrepare,
@@ -102,7 +103,7 @@ class HirerPostJob extends Component {
                 skills: selectedSkill,
                 category: selectedCategory,
                 estimatedTime: estimatedTimePrepare,
-                expiredTime: expiredTimePrepare,
+                expiredTime: expiredTimeSet,
             };
             this.setState({ isLoading: true, open: true });
             ipfs.addJSON(jobPostData, (err, jobHash) => {
@@ -246,7 +247,7 @@ class HirerPostJob extends Component {
         const { history } = this.props;
         this.setState({ open: false });
         if (!status.err) {
-            history.push('hirer/manage');
+            history.goBack();
         }
     };
 

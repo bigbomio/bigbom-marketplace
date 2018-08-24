@@ -8,6 +8,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
+import Countdown from '../common/countdown';
+import DialogPopup from '../common/dialog';
 
 function avgBid(bids) {
     let total = 0;
@@ -38,6 +40,9 @@ class JobDetail extends Component {
         this.state = {
             isLoading: false,
             stt: { err: false, text: null },
+            actStt: { err: false, text: null },
+            dialogLoading: false,
+            open: false,
         };
     }
 
@@ -54,7 +59,7 @@ class JobDetail extends Component {
     jobDataInit = async () => {
         const { match, web3 } = this.props;
         const jobHash = match.params.jobId;
-        this.setState({ isLoading: true });
+        this.setState({ isLoading: true, jobHash });
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
@@ -88,6 +93,7 @@ class JobDetail extends Component {
             const jobTpl = {
                 id: jobHash,
                 owner: jobStatusLog[0],
+                jobHash: jobHash,
                 status: jobStatus,
                 bid: [],
             };
@@ -101,6 +107,8 @@ class JobDetail extends Component {
                         jobTpl.currency = result.currency;
                         jobTpl.budget = result.budget;
                         jobTpl.category = result.category;
+                        jobTpl.estimatedTime = result.estimatedTime;
+                        jobTpl.expiredTime = result.expiredTime;
                         this.BidCreatedInit(jobTpl);
                     },
                     error => {
@@ -118,7 +126,7 @@ class JobDetail extends Component {
             web3,
             'BBFreelancerBid',
             'BidCreated',
-            { owner: web3.eth.defaultAccount },
+            { jobHash: web3.sha3(job.jobHash) },
             job,
             this.BidAcceptedInit
         );
@@ -130,7 +138,7 @@ class JobDetail extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { owner: web3.eth.defaultAccount },
+            { jobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );
@@ -150,8 +158,43 @@ class JobDetail extends Component {
         history.push('/hirer');
     };
 
+    acceptBid = async () => {
+        const { jobHash, bidAddress } = this.state;
+        const { web3 } = this.props;
+        const BidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        const [errAccept, jobLogAccept] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobHash, bidAddress, {
+            from: BidInstance.defaultAccount,
+            gasPrice: +BidInstance.gasPrice.toString(10),
+        });
+        this.setState({ dialogLoading: true });
+        if (errAccept) {
+            this.setState({
+                isLoading: false,
+                actStt: { err: true, text: 'something went wrong! Can not accept bid! :(' },
+            });
+            console.log('errAccept', errAccept);
+            return;
+        }
+        console.log('jobLogAccept: ', jobLogAccept);
+        this.setState({
+            isLoading: false,
+            actStt: { err: true, text: 'Your job has been accepted!' },
+            acceptDone: true,
+            dialogLoading: false,
+        });
+    };
+
+    confirmAccept = bidAddress => {
+        this.setState({ open: true, bidAddress: bidAddress });
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
+    };
+
     render() {
-        const { jobData, isLoading, stt } = this.state;
+        const { jobData, isLoading, stt, acceptDone, dialogLoading, open, actStt } = this.state;
+        console.log(jobData);
         let jobTplRender;
         if (!isLoading) {
             if (stt.err) {
@@ -183,6 +226,15 @@ class JobDetail extends Component {
                                                     <div className="name">Job budget ({jobData.currency.label})</div>
                                                     <div className="ct">${jobData.budget.max_sum}</div>
                                                 </Grid>
+                                                <Grid item className="job-detail-col">
+                                                    <div className="name">Estimate time</div>
+                                                    <div className="ct">
+                                                        {jobData.estimatedTime <= 24
+                                                            ? jobData.estimatedTime + 'H'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + 'Days'}
+                                                    </div>
+                                                </Grid>
+                                                <Countdown expiredTime={jobData.expiredTime} />
                                             </Grid>
                                         </Grid>
                                         <Grid item xs={1}>
@@ -238,18 +290,26 @@ class JobDetail extends Component {
                                                                     <span className="bold">
                                                                         {freelancer.award + ' '}
                                                                     </span>
+                                                                    &nbsp;
                                                                     {jobData.currency.label}
                                                                 </Grid>
 
                                                                 <Grid item xs={2}>
-                                                                    {freelancer.time}
+                                                                    {freelancer.timeDone <= 24
+                                                                        ? freelancer.timeDone + 'h'
+                                                                        : (freelancer.timeDone / 24).toFixed(2) +
+                                                                          'Days'}
                                                                 </Grid>
                                                                 <Grid item xs={2} className="action">
                                                                     <ButtonBase
                                                                         aria-label="Cancel"
-                                                                        className="btn btn-small btn-green"
+                                                                        className="btn btn-small btn-blue"
+                                                                        onClick={() =>
+                                                                            this.confirmAccept(freelancer.address)
+                                                                        }
+                                                                        disabled={acceptDone}
                                                                     >
-                                                                        Accept Bid
+                                                                        <FontAwesomeIcon icon="check" /> Accept
                                                                     </ButtonBase>
                                                                 </Grid>
                                                             </Grid>
@@ -283,6 +343,15 @@ class JobDetail extends Component {
         }
         return (
             <Grid container className="job-detail">
+                <DialogPopup
+                    dialogLoading={dialogLoading}
+                    open={open}
+                    stt={actStt}
+                    actions={this.acceptBid}
+                    title="Do you want to accept bid?"
+                    actionText="Accept"
+                    actClose={this.handleClose}
+                />
                 <div id="hirer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
                         <div className="container wrapper">
