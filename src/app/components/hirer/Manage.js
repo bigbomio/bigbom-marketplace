@@ -44,8 +44,13 @@ class HirerDashboard extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.getJobs();
+                this.mounted = true;
             }
         }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     getJobs = async () => {
@@ -167,7 +172,10 @@ class HirerDashboard extends Component {
 
     JobsInit = jobData => {
         jobs.push(jobData.data);
-        this.setState({ Jobs: jobs, isLoading: false });
+        console.log(this.mounted);
+        if (this.mounted) {
+            this.setState({ Jobs: jobs, isLoading: false });
+        }
     };
 
     unCheckAll(filterStatus) {

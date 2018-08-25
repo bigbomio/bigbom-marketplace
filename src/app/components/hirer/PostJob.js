@@ -247,7 +247,7 @@ class HirerPostJob extends Component {
         const { history } = this.props;
         this.setState({ open: false });
         if (!status.err) {
-            history.goBack();
+            history.push('/');
         }
     };
 

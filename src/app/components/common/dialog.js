@@ -23,11 +23,11 @@ class DialogPopup extends Component {
 
     handleClose = () => {
         const { actClose } = this.props;
-        actClose()
+        actClose();
     };
 
     render() {
-        const { dialogLoading, stt, title, actionText,open } = this.props;
+        const { dialogLoading, stt, title, actionText, open } = this.props;
         const { actionRun } = this.state;
         return (
             <Dialog
@@ -55,9 +55,7 @@ class DialogPopup extends Component {
                                     {stt.err ? (
                                         <div className="err">{stt.text}</div>
                                     ) : (
-                                        <div className="success">
-                                            {stt.text}
-                                        </div>
+                                        <div className="success">{stt.text}</div>
                                     )}
                                 </div>
                             )}
@@ -71,11 +69,7 @@ class DialogPopup extends Component {
                         </ButtonBase>
                     )}
                     {actionText && (
-                        <ButtonBase
-                            onClick={this.runAction}
-                            className="btn btn-normal btn-blue"
-                            disabled={actionRun}
-                        >
+                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={actionRun}>
                             {actionText}
                         </ButtonBase>
                     )}
@@ -92,6 +86,7 @@ DialogPopup.propTypes = {
     actions: PropTypes.func.isRequired,
     title: PropTypes.string.isRequired,
     actionText: PropTypes.string.isRequired,
+    actClose: PropTypes.func.isRequired,
 };
 
 export default DialogPopup;

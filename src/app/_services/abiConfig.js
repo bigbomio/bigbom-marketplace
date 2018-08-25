@@ -92,6 +92,8 @@ class abiConfigs {
         eventInstance.get(function(error, eventResult) {
             resultsInit(error, eventResult);
         });
+
+        eventInstance.stopWatching();
     }
 
     async getPastEventsMerge(web3, type, event, filter, mergeData, callback) {
@@ -103,7 +105,7 @@ class abiConfigs {
             fromBlock: 3900115, // should use recent number
             toBlock: 'latest',
         });
-        await events.get(function(error, events) {
+        events.get(function(error, events) {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
@@ -129,6 +131,7 @@ class abiConfigs {
             results.status = { err: false, text: 'get events log success!' };
             callback(results);
         });
+        events.stopWatching();
     }
 
     async getPastEventsBidAccepted(web3, type, event, filter, jobData, callback) {
@@ -159,6 +162,7 @@ class abiConfigs {
             results.status = { err: false, text: 'get events log success!' };
             callback(results);
         });
+        events.stopWatching();
     }
 
     async getPastSingleEvent(web3, type, event, filter, callback) {
@@ -202,6 +206,8 @@ class abiConfigs {
                 callback(results);
             }
         });
+
+        eventInstance.stopWatching();
     }
 }
 

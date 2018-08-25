@@ -43,8 +43,13 @@ class JobBrowser extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.getJobs();
+                this.mounted = true;
             }
         }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     getJobs = () => {
@@ -153,7 +158,9 @@ class JobBrowser extends Component {
 
     JobsInit = jobData => {
         jobs.push(jobData.data);
-        this.setState({ Jobs: jobs, isLoading: false });
+        if (this.mounted) {
+            this.setState({ Jobs: jobs, isLoading: false });
+        }
     };
 
     jobsRender() {
