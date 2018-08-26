@@ -57,13 +57,7 @@ class HirerDashboard extends Component {
         const { web3 } = this.props;
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
-        abiConfig.getPastSingleEvent(
-            web3,
-            'BBFreelancerJob',
-            'JobCreated',
-            { owner: web3.eth.defaultAccount },
-            this.JobCreatedInit
-        );
+        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', { owner: web3.eth.defaultAccount }, this.JobCreatedInit);
     };
 
     getBiddingStt(stts) {
@@ -139,14 +133,7 @@ class HirerDashboard extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { jobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
+        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = async jobData => {

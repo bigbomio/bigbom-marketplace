@@ -166,7 +166,9 @@ class JobDetail extends Component {
         if (errAccept) {
             this.setState({
                 isLoading: false,
-                actStt: { err: true, text: 'something went wrong! Can not accept bid! :(' },
+                acceptDone: false,
+                dialogLoading: false,
+                actStt: { err: true, text: 'Can not accept bid! :(' },
             });
             console.log('errAccept', errAccept);
             return;
@@ -174,7 +176,7 @@ class JobDetail extends Component {
         console.log('jobLogAccept: ', jobLogAccept);
         this.setState({
             isLoading: false,
-            actStt: { err: true, text: 'Your job has been accepted!' },
+            actStt: { err: false, text: 'Your job has been accepted!' },
             acceptDone: true,
             dialogLoading: false,
         });
@@ -188,9 +190,37 @@ class JobDetail extends Component {
         this.setState({ open: false });
     };
 
+    actionsRender = freelancer => {
+        const { acceptDone, jobData } = this.state;
+        if (jobData.status.bidAccepted) {
+            if (jobData.status.completed) {
+                return (
+                    <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue">
+                        <FontAwesomeIcon icon="check" /> Payment
+                    </ButtonBase>
+                );
+            }
+            return (
+                <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" disabled>
+                    <FontAwesomeIcon icon="check" /> Accepted
+                </ButtonBase>
+            );
+        } else {
+            return (
+                <ButtonBase
+                    aria-label="Cancel"
+                    className="btn btn-small btn-blue"
+                    onClick={() => this.confirmAccept(freelancer.address)}
+                    disabled={acceptDone}
+                >
+                    <FontAwesomeIcon icon="check" /> Accept
+                </ButtonBase>
+            );
+        }
+    };
+
     render() {
-        const { jobData, isLoading, stt, acceptDone, dialogLoading, open, actStt } = this.state;
-        console.log(jobData);
+        const { jobData, isLoading, stt, dialogLoading, open, actStt } = this.state;
         let jobTplRender;
         if (!isLoading) {
             if (stt.err) {
@@ -292,14 +322,7 @@ class JobDetail extends Component {
                                                                             : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                                 <Grid item xs={2} className="action">
-                                                                    <ButtonBase
-                                                                        aria-label="Cancel"
-                                                                        className="btn btn-small btn-blue"
-                                                                        onClick={() => this.confirmAccept(freelancer.address)}
-                                                                        disabled={acceptDone}
-                                                                    >
-                                                                        <FontAwesomeIcon icon="check" /> Accept
-                                                                    </ButtonBase>
+                                                                    {this.actionsRender(freelancer)}
                                                                 </Grid>
                                                             </Grid>
                                                         );
