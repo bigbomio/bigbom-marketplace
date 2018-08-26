@@ -26,7 +26,10 @@ const avgBid = job => {
         for (let b of bids) {
             total += b.award;
         }
-        return (total / bids.length).toFixed(2);
+        if (!Number.isInteger(total / bids.length)) {
+            return (total / bids.length).toFixed(2);
+        }
+        return total / bids.length;
     } else {
         return NaN;
     }
@@ -116,7 +119,7 @@ class JobDetailBid extends Component {
                 completed: Number(jobStatusLog[4].toString()) === 2,
                 claimed: Number(jobStatusLog[4].toString()) === 5,
                 reject: Number(jobStatusLog[4].toString()) === 4,
-                acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
+                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
                 bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
@@ -156,26 +159,12 @@ class JobDetailBid extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { jobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
+        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(
-            web3,
-            'BBFreelancerBid',
-            'BidAccepted',
-            { jobHash: jobData.jobHash },
-            jobData.data,
-            this.JobsInit
-        );
+        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
     };
 
     JobsInit = jobData => {
@@ -205,8 +194,8 @@ class JobDetailBid extends Component {
             if (bidStt) {
                 return (
                     <span className="note">
-                        <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>,
-                        please waiting acceptance from job owner.
+                        <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance from
+                        job owner.
                     </span>
                 );
             } else {
@@ -402,17 +391,11 @@ class JobDetailBid extends Component {
                             <Grid container className="single-body">
                                 <Grid container>
                                     <div className="top-action">
-                                        <ButtonBase
-                                            onClick={this.back}
-                                            className="btn btn-normal btn-default btn-back e-left"
-                                        >
+                                        <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
                                             <FontAwesomeIcon icon="angle-left" />
                                             Back
                                         </ButtonBase>
-                                        <ButtonBase
-                                            className="btn btn-normal btn-green btn-back"
-                                            onClick={this.jobDataInit}
-                                        >
+                                        <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
                                             <FontAwesomeIcon icon="sync-alt" />
                                             Refresh
                                         </ButtonBase>
@@ -420,17 +403,11 @@ class JobDetailBid extends Component {
                                     </div>
 
                                     <Fade in={checkedBid}>
-                                        <Grid
-                                            container
-                                            elevation={4}
-                                            className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}
-                                        >
+                                        <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
                                             <Grid container className="mkp-form-row">
                                                 <Grid item xs={5} className="mkp-form-row-sub left">
                                                     <span className="mkp-form-row-label">Time (Hour unit)</span>
-                                                    <span className="mkp-form-row-description">
-                                                        Time to complete this job
-                                                    </span>
+                                                    <span className="mkp-form-row-description">Time to complete this job</span>
                                                     <input
                                                         className={timeErr ? 'input-err' : ''}
                                                         type="number"
@@ -442,12 +419,8 @@ class JobDetailBid extends Component {
                                                     {timeErr && <span className="err">{timeErr}</span>}
                                                 </Grid>
                                                 <Grid item xs={4} className="mkp-form-row-sub">
-                                                    <span className="mkp-form-row-label">
-                                                        Award ({jobData.currency.label})
-                                                    </span>
-                                                    <span className="mkp-form-row-description">
-                                                        Your bid for this job
-                                                    </span>
+                                                    <span className="mkp-form-row-label">Award ({jobData.currency.label})</span>
+                                                    <span className="mkp-form-row-description">Your bid for this job</span>
                                                     <input
                                                         className={awardErr ? 'input-err' : ''}
                                                         type="number"
@@ -460,16 +433,10 @@ class JobDetailBid extends Component {
                                                 </Grid>
                                             </Grid>
                                             <Grid container className="mkp-form-row">
-                                                <ButtonBase
-                                                    className="btn btn-normal btn-blue e-left"
-                                                    onClick={() => this.createBid()}
-                                                >
+                                                <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.createBid()}>
                                                     <FontAwesomeIcon icon="check" /> Bid
                                                 </ButtonBase>
-                                                <ButtonBase
-                                                    className="btn btn-normal btn-red"
-                                                    onClick={() => this.bidSwitched(false)}
-                                                >
+                                                <ButtonBase className="btn btn-normal btn-red" onClick={() => this.bidSwitched(false)}>
                                                     <FontAwesomeIcon icon="times" />
                                                     Cancel
                                                 </ButtonBase>
@@ -496,8 +463,10 @@ class JobDetailBid extends Component {
                                                     <div className="name">Estimate time</div>
                                                     <div className="ct">
                                                         {jobData.estimatedTime < 24
-                                                            ? jobData.estimatedTime + 'H'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + 'Days'}
+                                                            ? jobData.estimatedTime + ' H'
+                                                            : Number.isInteger(jobData.estimatedTime / 24)
+                                                                ? jobData.estimatedTime / 24 + ' Days'
+                                                                : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                     </div>
                                                 </Grid>
                                                 <Countdown expiredTime={jobData.expiredTime} />
@@ -538,11 +507,7 @@ class JobDetailBid extends Component {
                                                     <Grid container className="list-body">
                                                         {jobData.bid.map(freelancer => {
                                                             return (
-                                                                <Grid
-                                                                    key={freelancer.address}
-                                                                    container
-                                                                    className="list-body-row"
-                                                                >
+                                                                <Grid key={freelancer.address} container className="list-body-row">
                                                                     <Grid item xs={8} className="title">
                                                                         <span className="avatar">
                                                                             <FontAwesomeIcon icon="user-circle" />
@@ -559,9 +524,10 @@ class JobDetailBid extends Component {
 
                                                                     <Grid item xs={2}>
                                                                         {freelancer.timeDone <= 24
-                                                                            ? freelancer.timeDone + 'h'
-                                                                            : (freelancer.timeDone / 24).toFixed(2) +
-                                                                              'Days'}
+                                                                            ? freelancer.timeDone + ' H'
+                                                                            : Number.isInteger(freelancer.timeDone / 24)
+                                                                                ? freelancer.timeDone / 24 + ' Days'
+                                                                                : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                     </Grid>
                                                                 </Grid>
                                                             );
@@ -604,10 +570,7 @@ class JobDetailBid extends Component {
                                     {jobData && <h1>{jobData.title}</h1>}
                                 </Grid>
                                 <Grid item xs={4} className="main-intro-right">
-                                    <ButtonBase
-                                        onClick={this.createAction}
-                                        className="btn btn-normal btn-white btn-create"
-                                    >
+                                    <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
                                         <FontAwesomeIcon icon="plus" /> Create A Job Like This
                                     </ButtonBase>
                                 </Grid>

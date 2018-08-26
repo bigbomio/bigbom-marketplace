@@ -16,7 +16,10 @@ function avgBid(bids) {
     for (let b of bids) {
         total += b.award;
     }
-    return (total / bids.length).toFixed(2);
+    if (!Number.isInteger(total / bids.length)) {
+        return (total / bids.length).toFixed(2);
+    }
+    return total / bids.length;
 }
 
 const skillShow = jobSkills => {
@@ -82,7 +85,7 @@ class JobDetail extends Component {
                 completed: Number(jobStatusLog[4].toString()) === 2,
                 claimed: Number(jobStatusLog[4].toString()) === 5,
                 reject: Number(jobStatusLog[4].toString()) === 4,
-                acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
+                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
                 bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
@@ -122,14 +125,7 @@ class JobDetail extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { jobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
+        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = async jobData => {
@@ -218,9 +214,7 @@ class JobDetail extends Component {
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                    <div className="ct">
-                                                        ${jobData.bid.length > 0 ? avgBid(jobData.bid) : 'NaN'}
-                                                    </div>
+                                                    <div className="ct">${jobData.bid.length > 0 ? avgBid(jobData.bid) : 'NaN'}</div>
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Job budget ({jobData.currency.label})</div>
@@ -229,9 +223,11 @@ class JobDetail extends Component {
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Estimate time</div>
                                                     <div className="ct">
-                                                        {jobData.estimatedTime <= 24
-                                                            ? jobData.estimatedTime + 'H'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + 'Days'}
+                                                        {jobData.estimatedTime < 24
+                                                            ? jobData.estimatedTime + ' H'
+                                                            : Number.isInteger(jobData.estimatedTime / 24)
+                                                                ? jobData.estimatedTime / 24 + ' Days'
+                                                                : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                     </div>
                                                 </Grid>
                                                 <Countdown expiredTime={jobData.expiredTime} />
@@ -275,11 +271,7 @@ class JobDetail extends Component {
                                                 <Grid container className="list-body">
                                                     {jobData.bid.map(freelancer => {
                                                         return (
-                                                            <Grid
-                                                                key={freelancer.address}
-                                                                container
-                                                                className="list-body-row"
-                                                            >
+                                                            <Grid key={freelancer.address} container className="list-body-row">
                                                                 <Grid item xs={6} className="title">
                                                                     <span className="avatar">
                                                                         <FontAwesomeIcon icon="user-circle" />
@@ -287,26 +279,23 @@ class JobDetail extends Component {
                                                                     {freelancer.address}
                                                                 </Grid>
                                                                 <Grid item xs={2}>
-                                                                    <span className="bold">
-                                                                        {freelancer.award + ' '}
-                                                                    </span>
+                                                                    <span className="bold">{freelancer.award + ' '}</span>
                                                                     &nbsp;
                                                                     {jobData.currency.label}
                                                                 </Grid>
 
                                                                 <Grid item xs={2}>
                                                                     {freelancer.timeDone <= 24
-                                                                        ? freelancer.timeDone + 'h'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) +
-                                                                          'Days'}
+                                                                        ? freelancer.timeDone + ' H'
+                                                                        : Number.isInteger(freelancer.timeDone / 24)
+                                                                            ? freelancer.timeDone / 24 + ' Days'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                                 <Grid item xs={2} className="action">
                                                                     <ButtonBase
                                                                         aria-label="Cancel"
                                                                         className="btn btn-small btn-blue"
-                                                                        onClick={() =>
-                                                                            this.confirmAccept(freelancer.address)
-                                                                        }
+                                                                        onClick={() => this.confirmAccept(freelancer.address)}
                                                                         disabled={acceptDone}
                                                                     >
                                                                         <FontAwesomeIcon icon="check" /> Accept
@@ -360,10 +349,7 @@ class JobDetail extends Component {
                                     {jobData && <h1>{jobData.title}</h1>}
                                 </Grid>
                                 <Grid item xs={4} className="main-intro-right">
-                                    <ButtonBase
-                                        onClick={this.createAction}
-                                        className="btn btn-normal btn-white btn-create"
-                                    >
+                                    <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
                                         <FontAwesomeIcon icon="plus" /> Create A New Job
                                     </ButtonBase>
                                 </Grid>

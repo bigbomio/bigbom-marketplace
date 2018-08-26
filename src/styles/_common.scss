@@ -439,4 +439,13 @@ $orange: #f99a0c;
     .e-left {
         margin-right: 20px;
     }
+    .timerReload {
+        & > div {
+            border: 3px solid #eee;
+            border-radius: 50%;
+        }
+        svg {
+            color: $blue;
+        }
+    }
 }

@@ -247,7 +247,7 @@ class HirerPostJob extends Component {
         const { history } = this.props;
         this.setState({ open: false });
         if (!status.err) {
-            history.push('/');
+            history.push('/hirer');
         }
     };
 
@@ -318,8 +318,8 @@ class HirerPostJob extends Component {
                         <Grid container className="main-intro">
                             <h1>Tell your freenlancer what you need done</h1>
                             <span className="description">
-                                Contact skilled freelancers within minutes. View profiles, ratings, portfolios and chat
-                                with them. Pay the freelancer only when you are 100% satisfied with their work.
+                                Contact skilled freelancers within minutes. View profiles, ratings, portfolios and chat with them. Pay the freelancer
+                                only when you are 100% satisfied with their work.
                             </span>
                         </Grid>
                     </div>
@@ -330,24 +330,15 @@ class HirerPostJob extends Component {
                             <Grid item xs={12} className="mkp-form-row">
                                 <span className="mkp-form-row-label">Job title</span>
                                 <span className="mkp-form-row-description">From 10 to 255 characters</span>
-                                <input
-                                    type="text"
-                                    className={nameErr ? 'input-err' : ''}
-                                    onBlur={e => this.inputOnChange(e, 'title')}
-                                />
+                                <input type="text" className={nameErr ? 'input-err' : ''} onBlur={e => this.inputOnChange(e, 'title')} />
                                 {nameErr && <span className="err">{nameErr}</span>}
                             </Grid>
                             <Grid item xs={12} className="mkp-form-row">
                                 <span className="mkp-form-row-label">Job description</span>
                                 <span className="mkp-form-row-description">
-                                    Start with a bit about yourself or your business, and include an overview of what
-                                    you need done.
+                                    Start with a bit about yourself or your business, and include an overview of what you need done.
                                 </span>
-                                <textarea
-                                    rows="5"
-                                    className={desErr ? 'input-err' : ''}
-                                    onBlur={e => this.inputOnChange(e, 'description')}
-                                />
+                                <textarea rows="5" className={desErr ? 'input-err' : ''} onBlur={e => this.inputOnChange(e, 'description')} />
                                 {desErr && <span className="err">{desErr}</span>}
                             </Grid>
                             <Grid container className="mkp-form-row">
@@ -364,9 +355,7 @@ class HirerPostJob extends Component {
                                 </Grid>
                                 <Grid item xs={8} className="mkp-form-row-sub">
                                     <span className="mkp-form-row-label">What skills are required?</span>
-                                    <span className="mkp-form-row-description">
-                                        Enter up to 5 skills that best describe your project.
-                                    </span>
+                                    <span className="mkp-form-row-description">Enter up to 5 skills that best describe your project.</span>
                                     <Select
                                         className={skillsErr ? 'react-select input-err' : ''}
                                         value={selectedSkill}
@@ -380,18 +369,10 @@ class HirerPostJob extends Component {
                             <Grid container className="mkp-form-row">
                                 <span className="mkp-form-row-label">What is your estimated budget?</span>
                                 <Grid item xs={3} className="left">
-                                    <Select
-                                        value={selectedCurrency}
-                                        onChange={this.handleChangeCurrency}
-                                        options={currencies}
-                                    />
+                                    <Select value={selectedCurrency} onChange={this.handleChangeCurrency} options={currencies} />
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Select
-                                        value={selectedBudget}
-                                        onChange={this.handleChangeBudget}
-                                        options={budgets}
-                                    />
+                                    <Select value={selectedBudget} onChange={this.handleChangeBudget} options={budgets} />
                                 </Grid>
                             </Grid>
                             <Grid container className="mkp-form-row">
@@ -410,9 +391,7 @@ class HirerPostJob extends Component {
                                 </Grid>
                                 <Grid item xs={5} className="mkp-form-row-sub">
                                     <span className="mkp-form-row-label">Expired time (Day unit)</span>
-                                    <span className="mkp-form-row-description">
-                                        After this time freelancer can not bid
-                                    </span>
+                                    <span className="mkp-form-row-description">After this time freelancer can not bid</span>
                                     <input
                                         className={expiredTimeErr ? 'input-err' : ''}
                                         type="number"

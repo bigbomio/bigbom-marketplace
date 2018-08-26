@@ -34,7 +34,9 @@ class JobBrowser extends Component {
             isLoading: false,
             Jobs: [],
             stt: { err: false, text: null },
+            completed: 0,
         };
+        this.timer = null;
     }
 
     componentDidMount() {
@@ -44,17 +46,19 @@ class JobBrowser extends Component {
             if (!isLoading) {
                 this.getJobs();
                 this.mounted = true;
+                this.timer = setInterval(this.progress, 1000);
             }
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.timer);
     }
 
     getJobs = () => {
         const { web3 } = this.props;
-        this.setState({ isLoading: true, Jobs: [] });
+        this.setState({ isLoading: true, Jobs: [], completed: 0 });
         jobs = [];
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
@@ -93,7 +97,7 @@ class JobBrowser extends Component {
                 completed: Number(jobStatusLog[4].toString()) === 2,
                 claimed: Number(jobStatusLog[4].toString()) === 5,
                 reject: Number(jobStatusLog[4].toString()) === 4,
-                acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
+                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
                 bidding: this.getBiddingStt(jobStatusLog),
@@ -134,14 +138,7 @@ class JobBrowser extends Component {
 
     BidCreatedInit = job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { jobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
+        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = jobData => {
@@ -229,6 +226,17 @@ class JobBrowser extends Component {
         }
     }
 
+    progress = () => {
+        const { completed } = this.state;
+        if (completed >= 100) {
+            if (this.mounted) {
+                this.getJobs();
+            }
+        } else {
+            this.setState({ completed: completed >= 100 ? 0 : completed + 100 / (60 * 2) }); // each 2 minutes that reload data
+        }
+    };
+
     searchUpdated(term) {
         this.setState({ searchTerm: term });
     }
@@ -267,6 +275,10 @@ class JobBrowser extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid className="top-actions">
+                            <div className="action timerReload">
+                                <CircularProgress variant="static" value={this.state.completed} />
+                            </div>
+
                             <Grid className="action">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
                                     <FontAwesomeIcon icon="sync-alt" />
@@ -310,12 +322,7 @@ class JobBrowser extends Component {
                                             <FontAwesomeIcon className="icon" icon="angle-down" />
                                         </ListItem>
                                     </List>
-                                    <Menu
-                                        id="lock-menu"
-                                        anchorEl={anchorEl}
-                                        open={Boolean(anchorEl)}
-                                        onClose={this.handleClose}
-                                    >
+                                    <Menu id="lock-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleClose}>
                                         {options.map((option, index) => (
                                             <MenuItem
                                                 key={option}

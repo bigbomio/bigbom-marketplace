@@ -66,15 +66,6 @@ class HirerDashboard extends Component {
         );
     };
 
-    // get all categories
-    async getCategories() {
-        let allCategories = [];
-        for (let category of categories) {
-            allCategories.push(category.value);
-        }
-        return allCategories;
-    }
-
     getBiddingStt(stts) {
         if (stts[3]) {
             return false;
@@ -109,7 +100,7 @@ class HirerDashboard extends Component {
                 completed: Number(jobStatusLog[4].toString()) === 2,
                 claimed: Number(jobStatusLog[4].toString()) === 5,
                 reject: Number(jobStatusLog[4].toString()) === 4,
-                acceptedPayment: Number(jobStatusLog[4].toString()) === 9,
+                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
                 bidding: this.getBiddingStt(jobStatusLog),
@@ -172,7 +163,6 @@ class HirerDashboard extends Component {
 
     JobsInit = jobData => {
         jobs.push(jobData.data);
-        console.log(this.mounted);
         if (this.mounted) {
             this.setState({ Jobs: jobs, isLoading: false });
         }
