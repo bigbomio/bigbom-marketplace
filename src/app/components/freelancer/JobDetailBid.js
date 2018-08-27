@@ -379,7 +379,6 @@ class JobDetailBid extends Component {
 
     render() {
         const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr } = this.state;
-        console.log(jobData);
         let jobTplRender;
         if (!isLoading) {
             if (stt.err) {

@@ -75,7 +75,7 @@ class FreelancerDashboard extends Component {
         const { web3 } = this.props;
         const event = eventLog.data;
         if (!eventLog.data) {
-            this.setState({ stt: { err: true, text: 'You have no any job!' }, isLoading: false });
+            this.setState({ stt: { err: true, text: 'You have no any bid!' }, isLoading: false });
             return;
         }
         const jobHash = Utils.toAscii(event.args.jobHash);
@@ -133,14 +133,7 @@ class FreelancerDashboard extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { jobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
+        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = async jobData => {
@@ -251,8 +244,7 @@ class FreelancerDashboard extends Component {
 
     jobsRender = () => {
         const { Jobs, stt } = this.state;
-        console.log(Jobs);
-        if (Jobs) {
+        if (Jobs.length > 0) {
             return !stt.err ? (
                 <Grid container className="list-body">
                     {Jobs.map(job => {
@@ -300,7 +292,11 @@ class FreelancerDashboard extends Component {
                 </Grid>
             );
         } else {
-            return null;
+            return (
+                <Grid container className="no-data">
+                    You have no any bid!
+                </Grid>
+            );
         }
     };
 

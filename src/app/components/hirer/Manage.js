@@ -240,8 +240,7 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match } = this.props;
         const { Jobs, stt } = this.state;
-        console.log(Jobs);
-        if (Jobs) {
+        if (Jobs.length > 0) {
             return !stt.err ? (
                 <Grid container className="list-body">
                     {Jobs.map(job => {
@@ -289,7 +288,11 @@ class HirerDashboard extends Component {
                 </Grid>
             );
         } else {
-            return null;
+            return (
+                <Grid container className="no-data">
+                    You have no any job!
+                </Grid>
+            );
         }
     };
 
