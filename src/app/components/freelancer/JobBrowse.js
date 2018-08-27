@@ -63,17 +63,6 @@ class JobBrowser extends Component {
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
 
-    getBiddingStt(stts) {
-        if (stts[3]) {
-            return false;
-        } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false) {
-            return false;
-        } else if (stts[5] !== '0x0000000000000000000000000000000000000000') {
-            return false;
-        }
-        return true;
-    }
-
     JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
         const event = eventLog.data;
@@ -100,8 +89,8 @@ class JobBrowser extends Component {
                 paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: this.getBiddingStt(jobStatusLog),
-                expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
+                bidding: Utils.getBiddingStt(jobStatusLog),
+                expired: false,
             };
             if (jobStatus.bidding) {
                 // get detail from ipfs

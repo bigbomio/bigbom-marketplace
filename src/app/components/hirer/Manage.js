@@ -98,7 +98,7 @@ class HirerDashboard extends Component {
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
                 bidding: this.getBiddingStt(jobStatusLog),
-                expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
+                expired: false,
             };
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
@@ -260,7 +260,7 @@ class HirerDashboard extends Component {
                                 <Grid item xs={1}>
                                     {job.bid.length}
                                 </Grid>
-                                <Grid item xs={2}>
+                                <Grid item xs={2} className="status">
                                     {Utils.getStatusJob(job.status)}
                                 </Grid>
                             </Grid>

@@ -96,24 +96,52 @@ class abiConfigs {
         eventInstance.stopWatching();
     }
 
-    async getPastEventsMerge(web3, type, event, filter, mergeData, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, type);
+    async getBidCancalled(web3, filter, mergeData, callback) {
+        const contractInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerBid');
         let results = {
-            data: [],
+            data: {},
         };
-        const events = contractInstance.instance[event](filter, {
+        const events = contractInstance.instance.BidCanceled(filter, {
             fromBlock: 3900115, // should use recent number
             toBlock: 'latest',
         });
-        events.get(function(error, events) {
+        events.get(function(error, bidCanceledEvents) {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
+            for (let bidEvents of bidCanceledEvents) {
+                for (let bid of mergeData.bid) {
+                    if (bid.address === bidEvents.args.owner) {
+                        bid.canceled = true;
+                    }
+                }
+            }
+            results.data = mergeData;
+            results.status = { err: false, text: 'get events log success!' };
+            callback(results);
+        });
+        events.stopWatching();
+    }
 
+    async getPastEventsMerge(web3, type, event, filter, mergeData, callback) {
+        const contractInstance = await this.contractInstanceGenerator(web3, type);
+        let results = {
+            data: {},
+        };
+        const events = contractInstance.instance[event](filter, {
+            fromBlock: 3900115, // should use recent number
+            toBlock: 'latest',
+        });
+        events.get((error, events) => {
+            if (error) {
+                console.log(error);
+                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
+                callback(results);
+            }
             for (let event of events) {
-                //console.log('event created bid  -------', event);
+                console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
                     award: event.args.bid.toString(),
@@ -122,6 +150,7 @@ class abiConfigs {
                     id: event.args.jobHash,
                     jobHash: mergeData.jobHash,
                     accepted: false,
+                    canceled: false,
                 };
                 if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
                     mergeData.bid.push(bidTpl);
@@ -129,7 +158,7 @@ class abiConfigs {
             }
             results.data = mergeData;
             results.status = { err: false, text: 'get events log success!' };
-            callback(results);
+            this.getBidCancalled(web3, filter, results.data, callback);
         });
         events.stopWatching();
     }
@@ -156,6 +185,8 @@ class abiConfigs {
                             bid.accepted = true;
                         }
                     }
+                } else {
+                    jobData.status.expired = Number(jobData.expired) <= Math.floor(Date.now() / 1000) ? true : false;
                 }
             }
             results.data = jobData;

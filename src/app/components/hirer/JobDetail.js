@@ -11,17 +11,6 @@ import abiConfig from '../../_services/abiConfig';
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 
-function avgBid(bids) {
-    let total = 0;
-    for (let b of bids) {
-        total += b.award;
-    }
-    if (!Number.isInteger(total / bids.length)) {
-        return (total / bids.length).toFixed(2);
-    }
-    return total / bids.length;
-}
-
 const skillShow = jobSkills => {
     return (
         <div className="skill">
@@ -46,6 +35,11 @@ class JobDetail extends Component {
             actStt: { err: false, text: null },
             dialogLoading: false,
             open: false,
+            dialogData: {
+                title: null,
+                actionText: null,
+                actions: null,
+            },
         };
     }
 
@@ -88,8 +82,8 @@ class JobDetail extends Component {
                 paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
-                expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
+                bidding: Utils.getBiddingStt(jobStatusLog),
+                expired: false,
             };
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
@@ -182,24 +176,65 @@ class JobDetail extends Component {
         });
     };
 
+    cancelJob = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        this.setState({ dialogLoading: true });
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        const [cancelErr, cancelLog] = await Utils.callMethod(jobInstance.instance.cancelJob)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (cancelErr) {
+            this.setState({
+                dialogLoading: false,
+                cancelDone: false,
+                actStt: { err: true, text: 'Can not cancel job! :(' },
+            });
+            return console.log(cancelErr);
+        }
+        this.setState({
+            actStt: { err: false, text: 'Your job has been canceled!' },
+            cancelDone: true,
+            dialogLoading: false,
+        });
+        console.log('jobLog cancel: ', cancelLog);
+    };
+
     confirmAccept = bidAddress => {
-        this.setState({ open: true, bidAddress: bidAddress });
+        this.setState({
+            open: true,
+            bidAddress: bidAddress,
+            dialogData: {
+                title: 'Do you want to accept bid?',
+                actionText: 'Accept',
+                actions: this.acceptBid,
+            },
+        });
     };
 
     handleClose = () => {
         this.setState({ open: false });
     };
 
-    actionsRender = freelancer => {
+    confirmCancelJob = () => {
+        this.setState({
+            dialogData: {
+                title: 'Do you want to cancel this job?',
+                actionText: 'Cancel',
+                actions: this.cancelJob,
+            },
+            open: true,
+        });
+    };
+
+    bidActions = freelancer => {
         const { acceptDone, jobData } = this.state;
+        let disabled = acceptDone;
+        if (jobData.status.canceled) {
+            disabled = true;
+        }
         if (jobData.status.bidAccepted) {
-            if (jobData.status.completed) {
-                return (
-                    <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue">
-                        <FontAwesomeIcon icon="check" /> Payment
-                    </ButtonBase>
-                );
-            }
             return (
                 <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" disabled>
                     <FontAwesomeIcon icon="check" /> Accepted
@@ -211,7 +246,7 @@ class JobDetail extends Component {
                     aria-label="Cancel"
                     className="btn btn-small btn-blue"
                     onClick={() => this.confirmAccept(freelancer.address)}
-                    disabled={acceptDone}
+                    disabled={disabled}
                 >
                     <FontAwesomeIcon icon="check" /> Accept
                 </ButtonBase>
@@ -219,8 +254,29 @@ class JobDetail extends Component {
         }
     };
 
+    jobActions = () => {
+        const { jobData, cancelDone } = this.state;
+        console.log(jobData);
+        if (jobData.status.bidding) {
+            return (
+                <span>
+                    <ButtonBase className="btn btn-normal btn-red btn-back btn-bid" disabled={cancelDone} onClick={this.confirmCancelJob}>
+                        Cancel
+                    </ButtonBase>
+                </span>
+            );
+        } else if (jobData.status.completed) {
+            return (
+                <span>
+                    <ButtonBase className="btn btn-normal btn-blue btn-back btn-bid">Payment</ButtonBase>
+                    <ButtonBase className="btn btn-normal btn-orange btn-back btn-bid">Reject Payment</ButtonBase>
+                </span>
+            );
+        }
+    };
+
     render() {
-        const { jobData, isLoading, stt, dialogLoading, open, actStt } = this.state;
+        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData } = this.state;
         let jobTplRender;
         if (!isLoading) {
             if (stt.err) {
@@ -231,10 +287,19 @@ class JobDetail extends Component {
                         return (
                             <Grid container className="single-body">
                                 <Grid container>
-                                    <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back">
-                                        <FontAwesomeIcon icon="angle-left" />
-                                        View all Job
-                                    </ButtonBase>
+                                    <div className="top-action">
+                                        <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
+                                            <FontAwesomeIcon icon="angle-left" />
+                                            View all Job
+                                        </ButtonBase>
+                                        <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
+                                            <FontAwesomeIcon icon="sync-alt" />
+                                            Refresh
+                                        </ButtonBase>
+                                        {this.jobActions()}
+                                    </div>
+                                </Grid>
+                                <Grid container>
                                     <Grid container className="job-detail-row">
                                         <Grid item xs={11}>
                                             <Grid container>
@@ -244,7 +309,7 @@ class JobDetail extends Component {
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                    <div className="ct">${jobData.bid.length > 0 ? avgBid(jobData.bid) : 'NaN'}</div>
+                                                    <div className="ct">${jobData.bid.length > 0 ? Utils.avgBid(jobData.bid) : 'NaN'}</div>
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Job budget ({jobData.currency.label})</div>
@@ -307,6 +372,7 @@ class JobDetail extends Component {
                                                                         <FontAwesomeIcon icon="user-circle" />
                                                                     </span>
                                                                     {freelancer.address}
+                                                                    {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
                                                                 </Grid>
                                                                 <Grid item xs={2}>
                                                                     <span className="bold">{freelancer.award + ' '}</span>
@@ -322,7 +388,7 @@ class JobDetail extends Component {
                                                                             : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                                 <Grid item xs={2} className="action">
-                                                                    {this.actionsRender(freelancer)}
+                                                                    {this.bidActions(freelancer)}
                                                                 </Grid>
                                                             </Grid>
                                                         );
@@ -359,9 +425,9 @@ class JobDetail extends Component {
                     dialogLoading={dialogLoading}
                     open={open}
                     stt={actStt}
-                    actions={this.acceptBid}
-                    title="Do you want to accept bid?"
-                    actionText="Accept"
+                    actions={dialogData.actions}
+                    title={dialogData.title}
+                    actionText={dialogData.actionText}
                     actClose={this.handleClose}
                 />
                 <div id="hirer" className="container-wrp">
