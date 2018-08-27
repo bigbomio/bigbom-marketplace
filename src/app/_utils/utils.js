@@ -92,13 +92,56 @@ class Utils {
     };
 
     getStatusJob = all => {
-        let sttArr = [];
-        Object.entries(all).forEach(([key, value]) => {
-            if (value) {
-                sttArr.push(key);
+        if (all.canceled) {
+            return ['Canceled'];
+        } else if (all.expired) {
+            return ['Expired'];
+        } else if (all.bidding) {
+            return ['Bidding'];
+        } else if (all.bidAccepted) {
+            if (all.started) {
+                return ['Started'];
             }
-        });
-        return sttArr;
+            return ['Bid Accepted'];
+        } else if (all.started) {
+            return ['Started'];
+        } else if (all.completed) {
+            return ['Completed'];
+        } else if (all.reject) {
+            return ['Rejected'];
+        } else if (all.paymentAccepted) {
+            return ['Payment Accepted'];
+        } else if (all.claimed) {
+            return ['Claimed'];
+        }
+    };
+
+    getBiddingStt(stts) {
+        // [owner, expired, budget, cancel, status, freelancer]
+        if (stts[3]) {
+            return false;
+        } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false) {
+            return false;
+        } else if (stts[5] !== '0x0000000000000000000000000000000000000000') {
+            return false;
+        }
+        return true;
+    }
+
+    avgBid = job => {
+        const bids = job.bid;
+        let total = 0;
+        if (bids.length > 0) {
+            for (let b of bids) {
+                total += Number(b.award);
+            }
+            if (!Number.isInteger(total / bids.length)) {
+                return (total / bids.length).toFixed(2);
+            }
+            return total / bids.length;
+        } else {
+            return NaN;
+        }
     };
 
     async connectMetaMask(web3, ignoreNetwork = ['MAINNET']) {

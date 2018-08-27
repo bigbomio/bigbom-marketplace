@@ -233,6 +233,9 @@ $orange: #f99a0c;
                             color: $red;
                         }
                     }
+                    &.status {
+                        text-transform: capitalize;
+                    }
                 }
             }
         }
@@ -282,7 +285,14 @@ $orange: #f99a0c;
                 &.status {
                     align-items: center;
                     display: flex;
+                    padding: 0;
                     flex-direction: column;
+                    .ct {
+                        font-size: 16px;
+                        font-weight: bold;
+                        text-align: center;
+                        color: $darkGreen;
+                    }
                 }
                 &:last-child {
                     border: none;
@@ -405,6 +415,7 @@ $orange: #f99a0c;
     .top-actions {
         float: right;
         padding-right: 30px;
+
         .action {
             padding-right: 20px;
             float: left;
@@ -418,6 +429,28 @@ $orange: #f99a0c;
             }
             &:last-child {
                 padding-right: 0;
+            }
+        }
+    }
+    .top-action {
+        width: 100%;
+        .btn-bid {
+            float: right;
+            margin-left: 15px;
+        }
+        .note {
+            margin-top: -20px;
+            margin-bottom: 30px;
+            display: inline-block;
+            float: right;
+            svg {
+                height: 17px;
+                width: 17px;
+                margin-right: 3px;
+                color: $green;
+            }
+            button {
+                margin-top: -10px;
             }
         }
     }

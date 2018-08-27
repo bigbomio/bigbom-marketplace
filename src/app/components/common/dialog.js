@@ -52,11 +52,7 @@ class DialogPopup extends Component {
                         <div className="alert-dialog-description">
                             {stt && (
                                 <div className="dialog-result">
-                                    {stt.err ? (
-                                        <div className="err">{stt.text}</div>
-                                    ) : (
-                                        <div className="success">{stt.text}</div>
-                                    )}
+                                    {stt.err ? <div className="err">{stt.text}</div> : <div className="success">{stt.text}</div>}
                                 </div>
                             )}
                         </div>
@@ -83,10 +79,16 @@ DialogPopup.propTypes = {
     dialogLoading: PropTypes.bool.isRequired,
     open: PropTypes.bool.isRequired,
     stt: PropTypes.object.isRequired,
-    actions: PropTypes.func.isRequired,
-    title: PropTypes.string.isRequired,
-    actionText: PropTypes.string.isRequired,
+    actions: PropTypes.func,
+    title: PropTypes.string,
+    actionText: PropTypes.string,
     actClose: PropTypes.func.isRequired,
+};
+
+DialogPopup.defaultProps = {
+    actions: null,
+    title: null,
+    actionText: null,
 };
 
 export default DialogPopup;

@@ -6,34 +6,15 @@ import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Fade from '@material-ui/core/Fade';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 
 import Countdown from '../common/countdown';
+import DialogPopup from '../common/dialog';
 
 let myAddress;
-
-const avgBid = job => {
-    const bids = job.bid;
-    let total = 0;
-    if (bids.length > 0) {
-        for (let b of bids) {
-            total += b.award;
-        }
-        if (!Number.isInteger(total / bids.length)) {
-            return (total / bids.length).toFixed(2);
-        }
-        return total / bids.length;
-    } else {
-        return NaN;
-    }
-};
 
 const skillShow = job => {
     const jobSkills = job.skills;
@@ -63,6 +44,13 @@ class JobDetailBid extends Component {
             time: 0,
             award: 0,
             open: false,
+            actStt: { err: false, text: null },
+            dialogLoading: false,
+            dialogData: {
+                title: null,
+                actionText: null,
+                actions: null,
+            },
         };
     }
 
@@ -100,6 +88,61 @@ class JobDetailBid extends Component {
         }
     }
 
+    actions() {
+        const { web3 } = this.props;
+        const { bidAccepted, bidStt, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, jobData } = this.state;
+        const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
+        if (!bidAccepted) {
+            if (bidStt) {
+                if (mybid[0].canceled) {
+                    return (
+                        <span className="note">
+                            <span className="bold">Sorry, you have canceled this job</span>, you can not bid again
+                        </span>
+                    );
+                }
+                return (
+                    <span className="note">
+                        <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance from
+                        job owner.
+                        <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
+                            Cancel Bid
+                        </ButtonBase>
+                    </span>
+                );
+            } else {
+                if (isOwner) {
+                    return null;
+                } else {
+                    return (
+                        <ButtonBase
+                            className="btn btn-normal btn-green btn-back btn-bid"
+                            onClick={() => this.bidSwitched(true)}
+                            aria-label="Collapse"
+                            checked={checkedBid}
+                            disabled={bidDone}
+                        >
+                            Bid On This Job
+                        </ButtonBase>
+                    );
+                }
+            }
+        } else {
+            return (
+                <span>
+                    {!jobData.status.started ? (
+                        <ButtonBase className="btn btn-normal btn-green btn-back btn-bid" onClick={this.confirmStartJob} disabled={startJobDone}>
+                            Start Job
+                        </ButtonBase>
+                    ) : (
+                        <ButtonBase className="btn btn-normal btn-blue btn-back btn-bid">Complete</ButtonBase>
+                    )}
+                    <ButtonBase className="btn btn-normal btn-orange btn-back btn-bid">Claim Payment</ButtonBase>
+                </span>
+            );
+        }
+    }
+
     jobDataInit = async () => {
         const { match, web3 } = this.props;
         const jobHash = match.params.jobId;
@@ -122,8 +165,8 @@ class JobDetailBid extends Component {
                 paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
                 canceled: jobStatusLog[3],
                 bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: jobStatusLog[5] === '0x0000000000000000000000000000000000000000',
-                expired: Number(jobStatusLog[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false,
+                bidding: Utils.getBiddingStt(jobStatusLog),
+                expired: false,
             };
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
@@ -188,94 +231,6 @@ class JobDetailBid extends Component {
         this.setState({ checkedBid: open });
     };
 
-    actions() {
-        const { bidAccepted, bidStt, isOwner, checkedBid, bidDone } = this.state;
-        if (!bidAccepted) {
-            if (bidStt) {
-                return (
-                    <span className="note">
-                        <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance from
-                        job owner.
-                    </span>
-                );
-            } else {
-                if (isOwner) {
-                    return null;
-                } else {
-                    return (
-                        <ButtonBase
-                            className="btn btn-normal btn-green btn-back btn-bid"
-                            onClick={() => this.bidSwitched(true)}
-                            aria-label="Collapse"
-                            checked={checkedBid}
-                            disabled={bidDone}
-                        >
-                            Bid On This Job
-                        </ButtonBase>
-                    );
-                }
-            }
-        } else {
-            return (
-                <span>
-                    <ButtonBase className="btn btn-normal btn-red btn-back btn-bid">Cancel</ButtonBase>
-                    <ButtonBase className="btn btn-normal btn-blue btn-back btn-bid">Complete</ButtonBase>
-                    <ButtonBase className="btn btn-normal btn-green btn-back btn-bid">Start Job</ButtonBase>
-                    <ButtonBase className="btn btn-normal btn-orange btn-back btn-bid">Claim Payment</ButtonBase>
-                </span>
-            );
-        }
-    }
-
-    dialog = () => {
-        const { bidLoading, open, stt } = this.state;
-        return (
-            <Dialog
-                open={open}
-                onClose={this.handleClose}
-                maxWidth="sm"
-                fullWidth
-                className="dialog"
-                disableBackdropClick
-                disableEscapeKeyDown
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">Bid job:</DialogTitle>
-                <DialogContent>
-                    {bidLoading ? (
-                        <div className="loading">
-                            <CircularProgress size={50} color="secondary" />
-                            <span>Waiting...</span>
-                        </div>
-                    ) : (
-                        <div className="alert-dialog-description">
-                            {stt && (
-                                <div className="dialog-result">
-                                    {stt.err ? (
-                                        <div className="err">{stt.text}</div>
-                                    ) : (
-                                        <div className="success">
-                                            <FontAwesomeIcon className="icon" icon="check" />
-                                            {stt.text}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    {!bidLoading && (
-                        <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
-                            Close
-                        </ButtonBase>
-                    )}
-                </DialogActions>
-            </Dialog>
-        );
-    };
-
     back = () => {
         const { history } = this.props;
         history.goBack();
@@ -286,41 +241,122 @@ class JobDetailBid extends Component {
         history.push('/hirer');
     };
 
-    async createBid() {
+    createBid = async () => {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
+        const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, award, time, {
+            from: instanceBid.defaultAccount,
+            gasPrice: +instanceBid.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                bidDone: false,
+                dialogLoading: false,
+                actStt: { err: true, text: 'Can not create bid! :(' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            bidDone: true,
+            dialogLoading: false,
+            actStt: { err: true, text: 'Bid created!' },
+        });
+        console.log('joblog bid: ', jobLog);
+    };
+
+    cancelBid = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                cancelBidDone: false,
+                dialogLoading: false,
+                actStt: { err: true, text: 'Can not cancel bid! :(' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            cancelBidDone: true,
+            dialogLoading: false,
+            actStt: { err: true, text: 'Your bid has been canceled' },
+        });
+        console.log('joblog cancel bid: ', jobLog);
+    };
+
+    startJob = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                startJobDone: false,
+                dialogLoading: false,
+                actStt: { err: true, text: 'Can not start job! :(' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            startJobDone: true,
+            dialogLoading: false,
+            actStt: { err: true, text: 'This job has been started' },
+        });
+        console.log('joblog start: ', jobLog);
+    };
+
+    confirmBid = () => {
+        const { time, award } = this.state;
         const timeValid = this.validate(time, 'time');
         const awardValid = this.validate(award, 'award');
         if (timeValid && awardValid) {
-            this.setState({ bidLoading: true, open: true });
-            const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-            const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, award, time, {
-                from: instanceBid.defaultAccount,
-                gasPrice: +instanceBid.gasPrice.toString(10),
-            });
-            if (err) {
-                this.setState({
-                    bidLoading: false,
-                    stt: { err: true, text: 'something went wrong! Can not create bid! :(' },
-                    bidDone: false,
-                });
-                console.log(err);
-                return;
-            }
-            // check  logs
             this.setState({
-                bidLoading: false,
-                stt: { err: false, text: 'Bid created!' },
-                bidDone: true,
-                checkedBid: false,
+                open: true,
+                dialogData: {
+                    title: 'Do you want to bid this job?',
+                    actionText: 'Bid',
+                    actions: this.createBid,
+                },
             });
-            console.log('joblog bid: ', jobLog);
         }
-    }
+    };
+
+    confirmCancelBid = () => {
+        this.setState({
+            open: true,
+            dialogData: {
+                title: 'Do you want to cancel bid this job?',
+                actionText: 'Cancel',
+                actions: this.cancelBid,
+            },
+        });
+    };
+
+    confirmStartJob = () => {
+        this.setState({
+            open: true,
+            dialogData: {
+                title: 'Do you want to start this job?',
+                actionText: 'Start',
+                actions: this.startJob,
+            },
+        });
+    };
 
     validate = (val, field) => {
         const { jobData } = this.state;
-        const avg = avgBid(jobData);
+        const avg = Utils.avgBid(jobData);
         let min = 1;
         let max = jobData.estimatedTime; // need set to totaltime of job jobData.totalTime
         if (field === 'time') {
@@ -374,11 +410,12 @@ class JobDetailBid extends Component {
     };
 
     handleClose = () => {
-        this.setState({ open: false });
+        this.setState({ open: false, checkedBid: false });
     };
 
     render() {
-        const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr } = this.state;
+        const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData } = this.state;
+        console.log(jobData);
         let jobTplRender;
         if (!isLoading) {
             if (stt.err) {
@@ -432,7 +469,7 @@ class JobDetailBid extends Component {
                                                 </Grid>
                                             </Grid>
                                             <Grid container className="mkp-form-row">
-                                                <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.createBid()}>
+                                                <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.confirmBid()}>
                                                     <FontAwesomeIcon icon="check" /> Bid
                                                 </ButtonBase>
                                                 <ButtonBase className="btn btn-normal btn-red" onClick={() => this.bidSwitched(false)}>
@@ -443,7 +480,7 @@ class JobDetailBid extends Component {
                                         </Grid>
                                     </Fade>
                                     <Grid container className="job-detail-row">
-                                        <Grid item xs={11}>
+                                        <Grid item xs={10}>
                                             <Grid container>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Bid</div>
@@ -452,7 +489,7 @@ class JobDetailBid extends Component {
                                                 {this.getMyBid()}
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                    <div className="ct">${avgBid(jobData)}</div>
+                                                    <div className="ct">${Utils.avgBid(jobData)}</div>
                                                 </Grid>
                                                 <Grid item className="job-detail-col">
                                                     <div className="name">Job budget ({jobData.currency.label})</div>
@@ -471,7 +508,7 @@ class JobDetailBid extends Component {
                                                 <Countdown expiredTime={jobData.expiredTime} />
                                             </Grid>
                                         </Grid>
-                                        <Grid item xs={1}>
+                                        <Grid item xs={2}>
                                             <Grid item xs className="job-detail-col status">
                                                 <div className="name">Status</div>
                                                 <div className="ct">{Utils.getStatusJob(jobData.status)}</div>
@@ -512,6 +549,7 @@ class JobDetailBid extends Component {
                                                                             <FontAwesomeIcon icon="user-circle" />
                                                                         </span>
                                                                         {freelancer.address}
+                                                                        {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
                                                                     </Grid>
                                                                     <Grid item xs={2}>
                                                                         <span className="bold">
@@ -560,7 +598,15 @@ class JobDetailBid extends Component {
         }
         return (
             <Grid container className="job-detail">
-                {this.dialog()}
+                <DialogPopup
+                    dialogLoading={dialogLoading}
+                    open={open}
+                    stt={actStt}
+                    actions={dialogData.actions}
+                    title={dialogData.title}
+                    actionText={dialogData.actionText}
+                    actClose={this.handleClose}
+                />
                 <div id="freelancer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
                         <div className="container wrapper">
