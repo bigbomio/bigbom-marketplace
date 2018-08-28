@@ -60,9 +60,14 @@ class JobDetailBid extends Component {
         myAddress = web3.eth.defaultAccount;
         if (isConnected) {
             if (!isLoading) {
+                this.mounted = true;
                 this.jobDataInit();
             }
         }
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     getMyBid() {
@@ -88,28 +93,32 @@ class JobDetailBid extends Component {
         }
     }
 
-    actions() {
+    actions = () => {
         const { web3 } = this.props;
-        const { bidAccepted, bidStt, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, jobData } = this.state;
+        const { jobData, bidAccepted, bidStt, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone } = this.state;
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
         if (!bidAccepted) {
             if (bidStt) {
-                if (mybid[0].canceled) {
+                if (mybid.length > 0) {
+                    if (mybid[0].canceled) {
+                        return (
+                            <span className="note">
+                                <span className="bold">Sorry, you have canceled this job</span>, you can not bid again
+                            </span>
+                        );
+                    }
                     return (
                         <span className="note">
-                            <span className="bold">Sorry, you have canceled this job</span>, you can not bid again
+                            <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
+                            from job owner.
+                            <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
+                                Cancel Bid
+                            </ButtonBase>
                         </span>
                     );
+                } else {
+                    return null;
                 }
-                return (
-                    <span className="note">
-                        <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance from
-                        job owner.
-                        <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
-                            Cancel Bid
-                        </ButtonBase>
-                    </span>
-                );
             } else {
                 if (isOwner) {
                     return null;
@@ -128,20 +137,33 @@ class JobDetailBid extends Component {
                 }
             }
         } else {
-            return (
-                <span>
-                    {!jobData.status.started ? (
-                        <ButtonBase className="btn btn-normal btn-green btn-back btn-bid" onClick={this.confirmStartJob} disabled={startJobDone}>
-                            Start Job
-                        </ButtonBase>
-                    ) : (
-                        <ButtonBase className="btn btn-normal btn-blue btn-back btn-bid">Complete</ButtonBase>
-                    )}
-                    <ButtonBase className="btn btn-normal btn-orange btn-back btn-bid">Claim Payment</ButtonBase>
-                </span>
-            );
+            if (mybid.length > 0) {
+                return (
+                    <span>
+                        {!jobData.status.started && !jobData.status.completed && !jobData.status.paymentAccepted ? (
+                            <ButtonBase className="btn btn-normal btn-green btn-back btn-bid" onClick={this.confirmStartJob} disabled={startJobDone}>
+                                Start Job
+                            </ButtonBase>
+                        ) : (
+                            !jobData.status.completed &&
+                            !jobData.status.paymentAccepted && (
+                                <ButtonBase
+                                    className="btn btn-normal btn-blue btn-back btn-bid"
+                                    onClick={this.confirmCompleteJob}
+                                    disabled={completeJobDone}
+                                >
+                                    Complete
+                                </ButtonBase>
+                            )
+                        )}
+                        <ButtonBase className="btn btn-normal btn-orange btn-back btn-bid">Claim Payment</ButtonBase>
+                    </span>
+                );
+            } else {
+                return null;
+            }
         }
-    }
+    };
 
     jobDataInit = async () => {
         const { match, web3 } = this.props;
@@ -156,18 +178,7 @@ class JobDetailBid extends Component {
         if (err) {
             return console.log(err);
         } else {
-            // [owner, expired, budget, cancel, status, freelancer]
-            const jobStatus = {
-                started: Number(jobStatusLog[4].toString()) === 1,
-                completed: Number(jobStatusLog[4].toString()) === 2,
-                claimed: Number(jobStatusLog[4].toString()) === 5,
-                reject: Number(jobStatusLog[4].toString()) === 4,
-                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
-                canceled: jobStatusLog[3],
-                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: Utils.getBiddingStt(jobStatusLog),
-                expired: false,
-            };
+            const jobStatus = Utils.getStatus(jobStatusLog);
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
@@ -193,8 +204,11 @@ class JobDetailBid extends Component {
                     },
                     error => {
                         console.log(error);
-                        jobTpl.err = 'Can not fetch data from server';
-                        this.BidCreatedInit(jobTpl);
+                        this.setState({
+                            stt: { err: true, text: 'Can not fetch data from server' },
+                            isLoading: false,
+                            jobData: null,
+                        });
                     }
                 );
         }
@@ -218,13 +232,16 @@ class JobDetailBid extends Component {
                 bidStt = true;
             }
         }
-        this.setState({
-            bidAccepted: jobData.data.status.bidAccepted,
-            jobData: jobData.data,
-            bidStt,
-            isOwner: web3.eth.defaultAccount === jobData.data.owner,
-            isLoading: false,
-        });
+
+        if (this.mounted) {
+            this.setState({
+                bidAccepted: jobData.data.status.bidAccepted,
+                jobData: jobData.data,
+                bidStt,
+                isOwner: web3.eth.defaultAccount === jobData.data.owner,
+                isLoading: false,
+            });
+        }
     };
 
     bidSwitched = open => {
@@ -244,6 +261,7 @@ class JobDetailBid extends Component {
     createBid = async () => {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
+        this.setState({ dialogLoading: true });
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, award, time, {
             from: instanceBid.defaultAccount,
@@ -261,7 +279,7 @@ class JobDetailBid extends Component {
         this.setState({
             bidDone: true,
             dialogLoading: false,
-            actStt: { err: true, text: 'Bid created!' },
+            actStt: { err: false, text: 'Your bid has been created! Please waiting for confirm from your network.' },
         });
         console.log('joblog bid: ', jobLog);
     };
@@ -269,6 +287,7 @@ class JobDetailBid extends Component {
     cancelBid = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -286,7 +305,7 @@ class JobDetailBid extends Component {
         this.setState({
             cancelBidDone: true,
             dialogLoading: false,
-            actStt: { err: true, text: 'Your bid has been canceled' },
+            actStt: { err: false, text: 'Your bid has been canceled! Please waiting for confirm from your network.' },
         });
         console.log('joblog cancel bid: ', jobLog);
     };
@@ -294,6 +313,7 @@ class JobDetailBid extends Component {
     startJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -311,9 +331,35 @@ class JobDetailBid extends Component {
         this.setState({
             startJobDone: true,
             dialogLoading: false,
-            actStt: { err: true, text: 'This job has been started' },
+            actStt: { err: false, text: 'This job has been started! Please waiting for confirm from your network.' },
         });
         console.log('joblog start: ', jobLog);
+    };
+
+    completeJob = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        this.setState({ dialogLoading: true });
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                completeJobDone: false,
+                dialogLoading: false,
+                actStt: { err: true, text: 'Can not complete job! :(' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            completeJobDone: true,
+            dialogLoading: false,
+            actStt: { err: false, text: 'This job has been completed! Please waiting for confirm from your network.' },
+        });
+        console.log('joblog finish: ', jobLog);
     };
 
     confirmBid = () => {
@@ -327,6 +373,7 @@ class JobDetailBid extends Component {
                     title: 'Do you want to bid this job?',
                     actionText: 'Bid',
                     actions: this.createBid,
+                    actStt: { err: false, text: null },
                 },
             });
         }
@@ -339,6 +386,7 @@ class JobDetailBid extends Component {
                 title: 'Do you want to cancel bid this job?',
                 actionText: 'Cancel',
                 actions: this.cancelBid,
+                actStt: { err: false, text: null },
             },
         });
     };
@@ -350,13 +398,26 @@ class JobDetailBid extends Component {
                 title: 'Do you want to start this job?',
                 actionText: 'Start',
                 actions: this.startJob,
+                actStt: { err: false, text: null },
+            },
+        });
+    };
+
+    confirmCompleteJob = () => {
+        this.setState({
+            open: true,
+            dialogData: {
+                title: 'Do you want to complete this job?',
+                actionText: 'Complete',
+                actions: this.completeJob,
+                actStt: { err: false, text: null },
             },
         });
     };
 
     validate = (val, field) => {
         const { jobData } = this.state;
-        const avg = Utils.avgBid(jobData);
+        const avg = Utils.avgBid(jobData.bid);
         let min = 1;
         let max = jobData.estimatedTime; // need set to totaltime of job jobData.totalTime
         if (field === 'time') {
@@ -415,186 +476,188 @@ class JobDetailBid extends Component {
 
     render() {
         const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData } = this.state;
-        console.log(jobData);
+        //console.log(jobData);
         let jobTplRender;
-        if (!isLoading) {
-            if (stt.err) {
-                jobTplRender = () => <h2> Sorry. {stt.text} </h2>;
-            } else {
-                if (jobData) {
-                    jobTplRender = () => {
-                        return (
-                            <Grid container className="single-body">
-                                <Grid container>
-                                    <div className="top-action">
-                                        <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
-                                            <FontAwesomeIcon icon="angle-left" />
-                                            Back
-                                        </ButtonBase>
-                                        <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
-                                            <FontAwesomeIcon icon="sync-alt" />
-                                            Refresh
-                                        </ButtonBase>
-                                        {this.actions()}
-                                    </div>
 
-                                    <Fade in={checkedBid}>
-                                        <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
-                                            <Grid container className="mkp-form-row">
-                                                <Grid item xs={5} className="mkp-form-row-sub left">
-                                                    <span className="mkp-form-row-label">Time (Hour unit)</span>
-                                                    <span className="mkp-form-row-description">Time to complete this job</span>
-                                                    <input
-                                                        className={timeErr ? 'input-err' : ''}
-                                                        type="number"
-                                                        id="time"
-                                                        name="time"
-                                                        min="1"
-                                                        onChange={e => this.inputOnChange(e, 'time')}
-                                                    />
-                                                    {timeErr && <span className="err">{timeErr}</span>}
-                                                </Grid>
-                                                <Grid item xs={4} className="mkp-form-row-sub">
-                                                    <span className="mkp-form-row-label">Award ({jobData.currency.label})</span>
-                                                    <span className="mkp-form-row-description">Your bid for this job</span>
-                                                    <input
-                                                        className={awardErr ? 'input-err' : ''}
-                                                        type="number"
-                                                        id="award"
-                                                        name="award"
-                                                        min="1"
-                                                        onChange={e => this.inputOnChange(e, 'award')}
-                                                    />
-                                                    {awardErr && <span className="err">{awardErr}</span>}
-                                                </Grid>
-                                            </Grid>
-                                            <Grid container className="mkp-form-row">
-                                                <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.confirmBid()}>
-                                                    <FontAwesomeIcon icon="check" /> Bid
-                                                </ButtonBase>
-                                                <ButtonBase className="btn btn-normal btn-red" onClick={() => this.bidSwitched(false)}>
-                                                    <FontAwesomeIcon icon="times" />
-                                                    Cancel
-                                                </ButtonBase>
-                                            </Grid>
-                                        </Grid>
-                                    </Fade>
-                                    <Grid container className="job-detail-row">
-                                        <Grid item xs={10}>
-                                            <Grid container>
-                                                <Grid item className="job-detail-col">
-                                                    <div className="name">Bid</div>
-                                                    <div className="ct">{jobData.bid.length}</div>
-                                                </Grid>
-                                                {this.getMyBid()}
-                                                <Grid item className="job-detail-col">
-                                                    <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                    <div className="ct">${Utils.avgBid(jobData)}</div>
-                                                </Grid>
-                                                <Grid item className="job-detail-col">
-                                                    <div className="name">Job budget ({jobData.currency.label})</div>
-                                                    <div className="ct">${jobData.budget.max_sum}</div>
-                                                </Grid>
-                                                <Grid item className="job-detail-col">
-                                                    <div className="name">Estimate time</div>
-                                                    <div className="ct">
-                                                        {jobData.estimatedTime < 24
-                                                            ? jobData.estimatedTime + ' H'
-                                                            : Number.isInteger(jobData.estimatedTime / 24)
-                                                                ? jobData.estimatedTime / 24 + ' Days'
-                                                                : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
-                                                    </div>
-                                                </Grid>
-                                                <Countdown expiredTime={jobData.expiredTime} />
-                                            </Grid>
-                                        </Grid>
-                                        <Grid item xs={2}>
-                                            <Grid item xs className="job-detail-col status">
-                                                <div className="name">Status</div>
-                                                <div className="ct">{Utils.getStatusJob(jobData.status)}</div>
-                                            </Grid>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid container className="job-detail-description">
-                                        <Grid item xs={12} className="name">
-                                            Job description
-                                        </Grid>
-                                        <Grid item xs={12} className="ct">
-                                            {jobData.description}
-                                            {skillShow(jobData)}
-                                        </Grid>
-                                    </Grid>
-                                    {!bidAccepted && (
-                                        <Grid container className="freelancer-bidding">
-                                            <h2>Freelancer bidding</h2>
-                                            <Grid container className="list-container">
-                                                <Grid container className="list-header">
-                                                    <Grid item xs={8}>
-                                                        Bid Address
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        Awarded Bid
-                                                    </Grid>
-                                                    <Grid item xs={2}>
-                                                        Time
-                                                    </Grid>
-                                                </Grid>
-                                                {jobData.bid.length > 0 ? (
-                                                    <Grid container className="list-body">
-                                                        {jobData.bid.map(freelancer => {
-                                                            return (
-                                                                <Grid key={freelancer.address} container className="list-body-row">
-                                                                    <Grid item xs={8} className="title">
-                                                                        <span className="avatar">
-                                                                            <FontAwesomeIcon icon="user-circle" />
-                                                                        </span>
-                                                                        {freelancer.address}
-                                                                        {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
-                                                                    </Grid>
-                                                                    <Grid item xs={2}>
-                                                                        <span className="bold">
-                                                                            {freelancer.award}
-                                                                            &nbsp;
-                                                                        </span>
-                                                                        {jobData.currency.label}
-                                                                    </Grid>
-
-                                                                    <Grid item xs={2}>
-                                                                        {freelancer.timeDone <= 24
-                                                                            ? freelancer.timeDone + ' H'
-                                                                            : Number.isInteger(freelancer.timeDone / 24)
-                                                                                ? freelancer.timeDone / 24 + ' Days'
-                                                                                : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
-                                                                    </Grid>
-                                                                </Grid>
-                                                            );
-                                                        })}
-                                                    </Grid>
-                                                ) : (
-                                                    <Grid container className="no-data">
-                                                        This job have no anyone bid yet
-                                                    </Grid>
-                                                )}
-                                            </Grid>
-                                        </Grid>
-                                    )}
-                                </Grid>
-                            </Grid>
-                        );
-                    };
-                } else {
-                    jobTplRender = () => <h2> Sorry. Job does not exist </h2>;
-                }
-            }
-        } else {
-            return (
+        if (stt.err) {
+            jobTplRender = () => (
                 <Grid container className="single-body">
-                    <div className="loading">
-                        <CircularProgress size={50} color="secondary" />
-                        <span>Loading...</span>
-                    </div>
+                    <Grid container>
+                        <h2> Sorry. {stt.text} </h2>
+                    </Grid>
                 </Grid>
             );
+        } else {
+            if (jobData) {
+                jobTplRender = () => {
+                    return (
+                        <Grid container className="single-body">
+                            <Grid container>
+                                <div className="top-action">
+                                    <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
+                                        <FontAwesomeIcon icon="angle-left" />
+                                        Back
+                                    </ButtonBase>
+                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
+                                        <FontAwesomeIcon icon="sync-alt" />
+                                        Refresh
+                                    </ButtonBase>
+                                    {this.actions()}
+                                </div>
+
+                                <Fade in={checkedBid}>
+                                    <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
+                                        <Grid container className="mkp-form-row">
+                                            <Grid item xs={5} className="mkp-form-row-sub left">
+                                                <span className="mkp-form-row-label">Time (Hour unit)</span>
+                                                <span className="mkp-form-row-description">Time to complete this job</span>
+                                                <input
+                                                    className={timeErr ? 'input-err' : ''}
+                                                    type="number"
+                                                    id="time"
+                                                    name="time"
+                                                    min="1"
+                                                    onChange={e => this.inputOnChange(e, 'time')}
+                                                />
+                                                {timeErr && <span className="err">{timeErr}</span>}
+                                            </Grid>
+                                            <Grid item xs={4} className="mkp-form-row-sub">
+                                                <span className="mkp-form-row-label">Award ({jobData.currency.label})</span>
+                                                <span className="mkp-form-row-description">Your bid for this job</span>
+                                                <input
+                                                    className={awardErr ? 'input-err' : ''}
+                                                    type="number"
+                                                    id="award"
+                                                    name="award"
+                                                    min="1"
+                                                    onChange={e => this.inputOnChange(e, 'award')}
+                                                />
+                                                {awardErr && <span className="err">{awardErr}</span>}
+                                            </Grid>
+                                        </Grid>
+                                        <Grid container className="mkp-form-row">
+                                            <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.confirmBid()}>
+                                                <FontAwesomeIcon icon="check" /> Bid
+                                            </ButtonBase>
+                                            <ButtonBase className="btn btn-normal btn-red" onClick={() => this.bidSwitched(false)}>
+                                                <FontAwesomeIcon icon="times" />
+                                                Cancel
+                                            </ButtonBase>
+                                        </Grid>
+                                    </Grid>
+                                </Fade>
+                                <Grid container className="job-detail-row">
+                                    <Grid item xs={10}>
+                                        <Grid container>
+                                            <Grid item className="job-detail-col">
+                                                <div className="name">Bid</div>
+                                                <div className="ct">{jobData.bid.length}</div>
+                                            </Grid>
+                                            {this.getMyBid()}
+                                            <Grid item className="job-detail-col">
+                                                <div className="name">Avg Bid ({jobData.currency.label})</div>
+                                                <div className="ct">${Utils.avgBid(jobData.bid)}</div>
+                                            </Grid>
+                                            <Grid item className="job-detail-col">
+                                                <div className="name">Job budget ({jobData.currency.label})</div>
+                                                <div className="ct">${jobData.budget.max_sum}</div>
+                                            </Grid>
+                                            <Grid item className="job-detail-col">
+                                                <div className="name">Estimate time</div>
+                                                <div className="ct">
+                                                    {jobData.estimatedTime < 24
+                                                        ? jobData.estimatedTime + ' H'
+                                                        : Number.isInteger(jobData.estimatedTime / 24)
+                                                            ? jobData.estimatedTime / 24 + ' Days'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                </div>
+                                            </Grid>
+                                            <Countdown expiredTime={jobData.expiredTime} />
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        <Grid item xs className="job-detail-col status">
+                                            <div className="name">Status</div>
+                                            <div className="ct">{Utils.getStatusJob(jobData.status)}</div>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <Grid container className="job-detail-description">
+                                    <Grid item xs={12} className="name">
+                                        Job description
+                                    </Grid>
+                                    <Grid item xs={12} className="ct">
+                                        {jobData.description}
+                                        {skillShow(jobData)}
+                                    </Grid>
+                                </Grid>
+                                {!bidAccepted && (
+                                    <Grid container className="freelancer-bidding">
+                                        <h2>Freelancer bidding</h2>
+                                        <Grid container className="list-container">
+                                            <Grid container className="list-header">
+                                                <Grid item xs={8}>
+                                                    Bid Address
+                                                </Grid>
+                                                <Grid item xs={2}>
+                                                    Awarded Bid
+                                                </Grid>
+                                                <Grid item xs={2}>
+                                                    Time
+                                                </Grid>
+                                            </Grid>
+                                            {jobData.bid.length > 0 ? (
+                                                <Grid container className="list-body">
+                                                    {jobData.bid.map(freelancer => {
+                                                        return (
+                                                            <Grid key={freelancer.address} container className="list-body-row">
+                                                                <Grid item xs={8} className="title">
+                                                                    <span className="avatar">
+                                                                        <FontAwesomeIcon icon="user-circle" />
+                                                                    </span>
+                                                                    {freelancer.address}
+                                                                    {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
+                                                                </Grid>
+                                                                <Grid item xs={2}>
+                                                                    <span className="bold">
+                                                                        {freelancer.award}
+                                                                        &nbsp;
+                                                                    </span>
+                                                                    {jobData.currency.label}
+                                                                </Grid>
+
+                                                                <Grid item xs={2}>
+                                                                    {freelancer.timeDone <= 24
+                                                                        ? freelancer.timeDone + ' H'
+                                                                        : Number.isInteger(freelancer.timeDone / 24)
+                                                                            ? freelancer.timeDone / 24 + ' Days'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                </Grid>
+                                                            </Grid>
+                                                        );
+                                                    })}
+                                                </Grid>
+                                            ) : (
+                                                <Grid container className="no-data">
+                                                    This job have no anyone bid yet
+                                                </Grid>
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                )}
+                            </Grid>
+                        </Grid>
+                    );
+                };
+            } else {
+                jobTplRender = () => (
+                    <Grid container className="single-body">
+                        <Grid container>
+                            <h2> Sorry. Job does not exist </h2>
+                        </Grid>
+                    </Grid>
+                );
+            }
         }
         return (
             <Grid container className="job-detail">
@@ -623,7 +686,18 @@ class JobDetailBid extends Component {
                         </div>
                     </div>
                     <div className="container-wrp main-ct">
-                        <div className="container wrapper">{jobTplRender()}</div>
+                        <div className="container wrapper">
+                            {!isLoading ? (
+                                jobTplRender()
+                            ) : (
+                                <Grid container className="single-body">
+                                    <div className="loading">
+                                        <CircularProgress size={50} color="secondary" />
+                                        <span>Loading...</span>
+                                    </div>
+                                </Grid>
+                            )}
+                        </div>
                     </div>
                 </div>
             </Grid>

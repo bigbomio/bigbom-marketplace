@@ -68,7 +68,10 @@ class HirerPostJob extends Component {
         }
         // check event logs
         if (jobLog) {
-            this.setState({ isLoading: false, status: { err: false, text: 'Your job has been created!' } });
+            this.setState({
+                isLoading: false,
+                status: { err: false, text: 'Your job has been created! Please waiting for confirm from your network.' },
+            });
             setTimeout(() => {
                 this.handleClose();
             }, 2000);
@@ -244,10 +247,19 @@ class HirerPostJob extends Component {
 
     handleClose = () => {
         const { status } = this.state;
-        const { history } = this.props;
-        this.setState({ open: false });
         if (!status.err) {
-            history.push('/hirer');
+            this.setState({
+                open: false,
+                namePrepare: '',
+                desPrepare: '',
+                expiredTimePrepare: 0,
+                estimatedTimePrepare: 0,
+                selectedSkill: [],
+                selectedCategory: {},
+                selectedCurrency: currencies[0],
+                budgets: budgetsSource,
+                selectedBudget: budgetsSource[2],
+            });
         }
     };
 
@@ -377,8 +389,8 @@ class HirerPostJob extends Component {
                             </Grid>
                             <Grid container className="mkp-form-row">
                                 <Grid item xs={4} className="mkp-form-row-sub left">
-                                    <span className="mkp-form-row-label">Estimated Time (Hour unit)</span>
-                                    <span className="mkp-form-row-description">Select a category for your job</span>
+                                    <span className="mkp-form-row-label">Estimated Time</span>
+                                    <span className="mkp-form-row-description">Estimated Time (Hour unit)</span>
                                     <input
                                         className={estimatedTimeErr ? 'input-err' : ''}
                                         type="number"
@@ -390,8 +402,8 @@ class HirerPostJob extends Component {
                                     {estimatedTimeErr && <span className="err">{estimatedTimeErr}</span>}
                                 </Grid>
                                 <Grid item xs={5} className="mkp-form-row-sub">
-                                    <span className="mkp-form-row-label">Expired time (Day unit)</span>
-                                    <span className="mkp-form-row-description">After this time freelancer can not bid</span>
+                                    <span className="mkp-form-row-label">Expired time</span>
+                                    <span className="mkp-form-row-description">After this time freelancer can not bid (Day unit)</span>
                                     <input
                                         className={expiredTimeErr ? 'input-err' : ''}
                                         type="number"
@@ -418,7 +430,6 @@ class HirerPostJob extends Component {
 
 HirerPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
-    history: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {

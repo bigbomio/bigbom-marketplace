@@ -141,7 +141,7 @@ class abiConfigs {
                 callback(results);
             }
             for (let event of events) {
-                console.log('event created bid  -------', event);
+                //console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
                     award: event.args.bid.toString(),

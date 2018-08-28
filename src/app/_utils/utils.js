@@ -91,6 +91,26 @@ class Utils {
         return true;
     };
 
+    getStatus(jobStatusLog) {
+        // [owner, expired, budget, cancel, status, freelancer]
+        let bidAccepted = jobStatusLog[5] !== '0x0000000000000000000000000000000000000000';
+        const stt = {
+            started: Number(jobStatusLog[4].toString()) === 1,
+            completed: Number(jobStatusLog[4].toString()) === 2,
+            claimed: Number(jobStatusLog[4].toString()) === 5,
+            reject: Number(jobStatusLog[4].toString()) === 4,
+            paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
+            canceled: jobStatusLog[3],
+            bidAccepted: bidAccepted,
+            bidding: this.getBiddingStt(jobStatusLog),
+            expired: false,
+        };
+        if (stt.started || stt.completed || stt.claimed || stt.reject || stt.paymentAccepted) {
+            stt.bidAccepted = false;
+        }
+        return stt;
+    }
+
     getStatusJob = all => {
         if (all.canceled) {
             return ['Canceled'];
@@ -99,20 +119,19 @@ class Utils {
         } else if (all.bidding) {
             return ['Bidding'];
         } else if (all.bidAccepted) {
-            if (all.started) {
-                return ['Started'];
-            }
             return ['Bid Accepted'];
         } else if (all.started) {
             return ['Started'];
         } else if (all.completed) {
             return ['Completed'];
-        } else if (all.reject) {
-            return ['Rejected'];
         } else if (all.paymentAccepted) {
             return ['Payment Accepted'];
+        } else if (all.reject) {
+            return ['Rejected'];
         } else if (all.claimed) {
             return ['Claimed'];
+        } else if (!all.bidding && !all.bidAccepted) {
+            return ['Waiting'];
         }
     };
 
@@ -128,8 +147,7 @@ class Utils {
         return true;
     }
 
-    avgBid = job => {
-        const bids = job.bid;
+    avgBid = bids => {
         let total = 0;
         if (bids.length > 0) {
             for (let b of bids) {

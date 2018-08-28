@@ -80,18 +80,7 @@ class JobBrowser extends Component {
         if (err) {
             return console.log(err);
         } else {
-            // [owner, expired, budget, cancel, status, freelancer]
-            const jobStatus = {
-                started: Number(jobStatusLog[4].toString()) === 1,
-                completed: Number(jobStatusLog[4].toString()) === 2,
-                claimed: Number(jobStatusLog[4].toString()) === 5,
-                reject: Number(jobStatusLog[4].toString()) === 4,
-                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
-                canceled: jobStatusLog[3],
-                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: Utils.getBiddingStt(jobStatusLog),
-                expired: false,
-            };
+            const jobStatus = Utils.getStatus(jobStatusLog);
             if (jobStatus.bidding) {
                 // get detail from ipfs
                 const URl = abiConfig.getIpfsLink() + jobHash;
@@ -104,13 +93,15 @@ class JobBrowser extends Component {
                     status: jobStatus,
                     bid: [],
                 };
+                const maxLength = 400; // max length characters show on description
                 fetch(URl)
                     .then(res => res.json())
                     .then(
                         result => {
                             jobTpl.title = result.title;
                             jobTpl.skills = result.skills;
-                            jobTpl.description = result.description;
+                            jobTpl.description =
+                                result.description.length > maxLength ? result.description.slice(0, maxLength) + '...' : result.description;
                             jobTpl.currency = result.currency;
                             jobTpl.budget = result.budget;
                             this.BidCreatedInit(jobTpl);
@@ -155,9 +146,9 @@ class JobBrowser extends Component {
         return (
             <Grid container className="job-item-list">
                 {filteredJobs &&
-                    filteredJobs.map(job => {
+                    filteredJobs.map((job, i) => {
                         return (
-                            <Link to={'freelancer/jobs/' + job.jobHash} key={job.id} className="job-item">
+                            <Link to={'freelancer/jobs/' + job.jobHash} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">

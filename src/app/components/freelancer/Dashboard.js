@@ -88,18 +88,7 @@ class FreelancerDashboard extends Component {
         if (err) {
             return console.log(err);
         } else {
-            // [owner, expired, budget, cancel, status, freelancer]
-            const jobStatus = {
-                started: Number(jobStatusLog[4].toString()) === 1,
-                completed: Number(jobStatusLog[4].toString()) === 2,
-                claimed: Number(jobStatusLog[4].toString()) === 5,
-                reject: Number(jobStatusLog[4].toString()) === 4,
-                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
-                canceled: jobStatusLog[3],
-                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: this.getBiddingStt(jobStatusLog),
-                expired: false,
-            };
+            const jobStatus = Utils.getStatus(jobStatusLog);
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
@@ -212,7 +201,7 @@ class FreelancerDashboard extends Component {
                 this.setState({ Jobs: jobFilterData, all: true, allDisabled: true });
             }
         } else {
-            this.setState({ Jobs: jobsFiltered });
+            this.setState({ Jobs: jobFilterData });
         }
     }
 
@@ -256,7 +245,7 @@ class FreelancerDashboard extends Component {
                                 <Grid item xs={2}>
                                     {job.budget && (
                                         <span className="bold">
-                                            {job.budget.min_sum}
+                                            {job.budget.max_sum}
                                             {' ( ' + job.currency.label + ' ) '}
                                         </span>
                                     )}

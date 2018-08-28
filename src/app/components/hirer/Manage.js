@@ -88,18 +88,7 @@ class HirerDashboard extends Component {
         if (err) {
             return console.log(err);
         } else {
-            // [owner, expired, budget, cancel, status, freelancer]
-            const jobStatus = {
-                started: Number(jobStatusLog[4].toString()) === 1,
-                completed: Number(jobStatusLog[4].toString()) === 2,
-                claimed: Number(jobStatusLog[4].toString()) === 5,
-                reject: Number(jobStatusLog[4].toString()) === 4,
-                paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
-                canceled: jobStatusLog[3],
-                bidAccepted: jobStatusLog[5] !== '0x0000000000000000000000000000000000000000',
-                bidding: this.getBiddingStt(jobStatusLog),
-                expired: false,
-            };
+            const jobStatus = Utils.getStatus(jobStatusLog);
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
@@ -194,6 +183,7 @@ class HirerDashboard extends Component {
         if (jobsFiltered) {
             jobFilterData = jobsFiltered;
         }
+        console.log(filterStatus);
         if (!allCheck) {
             if (!this.unCheckAll(filterStatus)) {
                 Object.entries(filterStatus).forEach(([key, value]) => {
@@ -207,7 +197,7 @@ class HirerDashboard extends Component {
                 this.setState({ Jobs: jobFilterData, all: true, allDisabled: true });
             }
         } else {
-            this.setState({ Jobs: jobsFiltered });
+            this.setState({ Jobs: jobFilterData });
         }
     }
 
@@ -240,59 +230,61 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match } = this.props;
         const { Jobs, stt } = this.state;
-        if (Jobs.length > 0) {
-            return !stt.err ? (
-                <Grid container className="list-body">
-                    {Jobs.map(job => {
-                        return !job.err ? (
-                            <Grid key={job.id} container className="list-body-row">
-                                <Grid item xs={7} className="title">
-                                    <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+        if (Jobs) {
+            if (Jobs.length > 0) {
+                return !stt.err ? (
+                    <Grid container className="list-body">
+                        {Jobs.map(job => {
+                            return !job.err ? (
+                                <Grid key={job.id} container className="list-body-row">
+                                    <Grid item xs={7} className="title">
+                                        <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        {job.budget && (
+                                            <span className="bold">
+                                                {job.budget.max_sum}
+                                                {' ( ' + job.currency.label + ' ) '}
+                                            </span>
+                                        )}
+                                    </Grid>
+                                    <Grid item xs={1}>
+                                        {job.bid.length}
+                                    </Grid>
+                                    <Grid item xs={2} className="status">
+                                        {Utils.getStatusJob(job.status)}
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={2}>
-                                    {job.budget && (
-                                        <span className="bold">
-                                            {job.budget.min_sum}
-                                            {' ( ' + job.currency.label + ' ) '}
-                                        </span>
-                                    )}
+                            ) : (
+                                <Grid key={job.id} container className="list-body-row">
+                                    <Grid item xs={7} className="title">
+                                        <span className="err">{Utils.toAscii(job.id)}</span>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        ---
+                                    </Grid>
+                                    <Grid item xs={1}>
+                                        ---
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        ---
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={1}>
-                                    {job.bid.length}
-                                </Grid>
-                                <Grid item xs={2} className="status">
-                                    {Utils.getStatusJob(job.status)}
-                                </Grid>
-                            </Grid>
-                        ) : (
-                            <Grid key={job.id} container className="list-body-row">
-                                <Grid item xs={7} className="title">
-                                    <span className="err">{Utils.toAscii(job.id)}</span>
-                                </Grid>
-                                <Grid item xs={2}>
-                                    ---
-                                </Grid>
-                                <Grid item xs={1}>
-                                    ---
-                                </Grid>
-                                <Grid item xs={2}>
-                                    ---
-                                </Grid>
-                            </Grid>
-                        );
-                    })}
-                </Grid>
-            ) : (
-                <Grid container className="no-data">
-                    {stt.text}
-                </Grid>
-            );
-        } else {
-            return (
-                <Grid container className="no-data">
-                    You have no any job!
-                </Grid>
-            );
+                            );
+                        })}
+                    </Grid>
+                ) : (
+                    <Grid container className="no-data">
+                        {stt.text}
+                    </Grid>
+                );
+            } else {
+                return (
+                    <Grid container className="no-data">
+                        You have no any job!
+                    </Grid>
+                );
+            }
         }
     };
 
