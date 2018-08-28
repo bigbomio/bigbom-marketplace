@@ -364,15 +364,15 @@ class JobDetail extends Component {
         if (jobData.status.canceled) {
             disabled = true;
         }
-        if (jobData.status.bidAccepted) {
+        if (jobData.status.bidding) {
             return (
-                <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" disabled>
-                    <FontAwesomeIcon icon="check" /> Accepted
+                <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" onClick={() => this.confirmAccept(freelancer)} disabled={disabled}>
+                    <FontAwesomeIcon icon="check" /> Accept
                 </ButtonBase>
             );
         } else {
             return (
-                <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" onClick={() => this.confirmAccept(freelancer)} disabled={disabled}>
+                <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" disabled>
                     <FontAwesomeIcon icon="check" /> Accept
                 </ButtonBase>
             );
