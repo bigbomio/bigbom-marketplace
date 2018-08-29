@@ -32,7 +32,7 @@ class Login extends Component {
                     <Grid container className="home-content">
                         <Grid container>
                             <h2>Your have disconnected your account!</h2>
-                            <p className="note">Please choise a method to Login again</p>
+                            <p className="note">Please choose a method to Login again</p>
                         </Grid>
                     </Grid>
                 </div>

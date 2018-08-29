@@ -104,6 +104,7 @@ class Utils {
             bidAccepted: bidAccepted,
             bidding: this.getBiddingStt(jobStatusLog),
             expired: false,
+            waiting: !this.getBiddingStt(jobStatusLog) && !bidAccepted,
         };
         if (stt.started || stt.completed || stt.claimed || stt.reject || stt.paymentAccepted) {
             stt.bidAccepted = false;
@@ -130,7 +131,7 @@ class Utils {
             return ['Rejected'];
         } else if (all.claimed) {
             return ['Claimed'];
-        } else if (!all.bidding && !all.bidAccepted) {
+        } else if (all.waiting) {
             return ['Waiting'];
         }
     };
@@ -167,7 +168,7 @@ class Utils {
             throw new Error(
                 JSON.stringify({
                     code: 'INSTALL',
-                    message: 'Please install Metamask!',
+                    message: 'You need to install Metamask first!',
                 })
             );
         } else {

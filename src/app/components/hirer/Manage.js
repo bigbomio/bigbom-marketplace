@@ -183,7 +183,6 @@ class HirerDashboard extends Component {
         if (jobsFiltered) {
             jobFilterData = jobsFiltered;
         }
-        console.log(filterStatus);
         if (!allCheck) {
             if (!this.unCheckAll(filterStatus)) {
                 Object.entries(filterStatus).forEach(([key, value]) => {

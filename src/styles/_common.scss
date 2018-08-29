@@ -143,6 +143,12 @@ $orange: #f99a0c;
             background: #ccc;
             color: #666;
         }
+        &.create-btn {
+            &:disabled {
+                background: rgb(92, 157, 187);
+                color: #fff;
+            }
+        }
     }
     .btn-small {
         font-size: 12px;

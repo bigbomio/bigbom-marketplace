@@ -455,7 +455,7 @@ class JobDetail extends Component {
                                                 <div className="ct">${jobData.budget.max_sum}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
-                                                <div className="name">Estimate time</div>
+                                                <div className="name">Estimated time</div>
                                                 <div className="ct">
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'

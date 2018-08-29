@@ -38,6 +38,7 @@ class HirerPostJob extends Component {
             selectedBudget: budgetsSource[2],
             isLoading: false,
             open: false,
+            submitEnable: false,
         };
     }
 
@@ -89,44 +90,56 @@ class HirerPostJob extends Component {
             expiredTimePrepare,
             selectedCategory,
         } = this.state;
-        const title = this.validate(namePrepare, 'title');
-        const des = this.validate(desPrepare, 'description');
-        const skills = this.validate(selectedSkill, 'skills');
-        const category = this.validate(selectedCategory, 'category');
-        const estimatedTime = this.validate(estimatedTimePrepare, 'estimatedTime');
-        const expiredTime = this.validate(expiredTimePrepare, 'expiredTime');
+
+        let expiredTimeSet = new Date();
+        expiredTimeSet.setDate(expiredTimeSet.getDate() + expiredTimePrepare);
+        const jobPostData = {
+            title: namePrepare,
+            description: desPrepare,
+            budget: selectedBudget,
+            currency: selectedCurrency,
+            skills: selectedSkill,
+            category: selectedCategory,
+            estimatedTime: estimatedTimePrepare,
+            expiredTime: expiredTimeSet,
+        };
+        this.setState({ isLoading: true, open: true });
+        ipfs.addJSON(jobPostData, (err, jobHash) => {
+            if (err) {
+                return console.log(err);
+            }
+            this.newJobInit(jobHash);
+        });
+    };
+
+    validateAll = () => {
+        const { namePrepare, desPrepare, selectedSkill, estimatedTimePrepare, expiredTimePrepare, selectedCategory } = this.state;
+        const title = this.validate(namePrepare, 'title', false);
+        const des = this.validate(desPrepare, 'description', false);
+        const skills = this.validate(selectedSkill, 'skills', false);
+        const category = this.validate(selectedCategory, 'category', false);
+        const estimatedTime = this.validate(estimatedTimePrepare, 'estimatedTime', false);
+        const expiredTime = this.validate(expiredTimePrepare, 'expiredTime', false);
         if (title && des && skills && category && estimatedTime && expiredTime) {
-            let expiredTimeSet = new Date();
-            expiredTimeSet.setDate(expiredTimeSet.getDate() + expiredTimePrepare);
-            const jobPostData = {
-                title: namePrepare,
-                description: desPrepare,
-                budget: selectedBudget,
-                currency: selectedCurrency,
-                skills: selectedSkill,
-                category: selectedCategory,
-                estimatedTime: estimatedTimePrepare,
-                expiredTime: expiredTimeSet,
-            };
-            this.setState({ isLoading: true, open: true });
-            ipfs.addJSON(jobPostData, (err, jobHash) => {
-                if (err) {
-                    return console.log(err);
-                }
-                this.newJobInit(jobHash);
-            });
+            this.setState({ submitEnable: true });
+        } else {
+            this.setState({ submitEnable: false });
         }
     };
 
-    validate = (val, field) => {
+    validate = (val, field, setState) => {
         let min = 10;
         let max = 255;
         if (field === 'title') {
             if (val.length < min) {
-                this.setState({ nameErr: 'Please enter at least 10 characters.' });
+                if (setState) {
+                    this.setState({ nameErr: `Please enter at least  ${min}  characters.` });
+                }
                 return false;
             } else if (val.length > max) {
-                this.setState({ nameErr: 'Please enter at most 255 characters.' });
+                if (setState) {
+                    this.setState({ nameErr: `Please enter at most ${max} characters.` });
+                }
                 return false;
             }
             return true;
@@ -134,59 +147,87 @@ class HirerPostJob extends Component {
             min = 30;
             max = 4000;
             if (val.length < min) {
-                this.setState({ desErr: 'Please enter at least 30 characters.' });
+                if (setState) {
+                    this.setState({ desErr: `Please enter at least ${min} characters.` });
+                }
                 return false;
             } else if (val.length > max) {
-                this.setState({ desErr: 'Please enter at most 4000 characters.' });
+                if (setState) {
+                    this.setState({ desErr: `Please enter at most ${max} characters.` });
+                }
                 return false;
             }
             return true;
         } else if (field === 'skills') {
             if (val.length <= 0) {
-                this.setState({ skillsErr: 'Please select at least 1 skill.' });
+                if (setState) {
+                    this.setState({ skillsErr: 'Please select at least 1 skill.' });
+                }
                 return false;
             } else if (val.length > 5) {
-                this.setState({ skillsErr: 'Please select at most 5 skills.' });
+                if (setState) {
+                    this.setState({ skillsErr: 'Please select at most 5 skills.' });
+                }
                 return false;
             }
             return true;
         } else if (field === 'category') {
             if (!val.value) {
-                this.setState({ categoryErr: 'Please select a category.' });
+                if (setState) {
+                    this.setState({ categoryErr: 'Please select a category.' });
+                }
                 return false;
             }
             return true;
         } else if (field === 'estimatedTime') {
             if (val.length <= 0) {
-                this.setState({
-                    estimatedTimeErr: 'Please enter your estimated time for freelancer complete this job',
-                });
+                if (setState) {
+                    this.setState({
+                        estimatedTimeErr: 'Please enter your estimated time for freelancer complete this job',
+                    });
+                }
                 return false;
             } else {
                 if (Number(val) < 1) {
-                    this.setState({
-                        estimatedTimeErr: 'Please enter your estimated time least 1 hour',
-                    });
+                    if (setState) {
+                        this.setState({
+                            estimatedTimeErr: 'Please enter your estimated time least 1 hour',
+                        });
+                    }
                     return false;
                 }
             }
             return true;
         } else if (field === 'expiredTime') {
-            if (val.length <= 0) {
-                this.setState({
-                    expiredTimeErr: 'Please set your expired time for your job',
-                });
+            if (!Number.isInteger(Number(val))) {
+                if (setState) {
+                    this.setState({
+                        expiredTimeErr: 'Must be an integer number.',
+                    });
+                }
+                return false;
+            }
+            if (Number(val) <= 0) {
+                if (setState) {
+                    this.setState({
+                        expiredTimeErr: 'Please set your expired time for your job',
+                    });
+                }
                 return false;
             } else {
                 if (Number(val) < 1) {
-                    this.setState({
-                        expiredTimeErr: 'Please enter your expired time least 1 day',
-                    });
+                    if (setState) {
+                        this.setState({
+                            expiredTimeErr: 'Please enter your expired time least 1 day',
+                        });
+                    }
                     return false;
                 } else if (Number(val) > 30) {
-                    this.setState({
-                        expiredTimeErr: 'Please enter your expired time most 30 days',
-                    });
+                    if (setState) {
+                        this.setState({
+                            expiredTimeErr: 'Please enter your expired time most 30 days',
+                        });
+                    }
                     return false;
                 }
             }
@@ -197,40 +238,43 @@ class HirerPostJob extends Component {
     inputOnChange = (e, field) => {
         const val = e.target.value;
         if (field === 'title') {
-            if (!this.validate(val, 'title')) {
-                return;
-            }
             this.setState({ namePrepare: val, nameErr: null });
+            if (!this.validate(val, 'title', true)) {
+                return;
+            }
         } else if (field === 'description') {
-            if (!this.validate(val, 'description')) {
-                return;
-            }
             this.setState({ desPrepare: val, desErr: null });
+            if (!this.validate(val, 'description', true)) {
+                return;
+            }
         } else if (field === 'estimatedTime') {
-            if (!this.validate(val, 'estimatedTime')) {
-                return;
-            }
             this.setState({ estimatedTimePrepare: Number(val), estimatedTimeErr: null });
-        } else if (field === 'expiredTime') {
-            if (!this.validate(val, 'expiredTime')) {
+            if (!this.validate(val, 'estimatedTime', true)) {
                 return;
             }
+        } else if (field === 'expiredTime') {
             this.setState({ expiredTimePrepare: Number(val), expiredTimeErr: null });
+            if (!this.validate(val, 'expiredTime', true)) {
+                return;
+            }
         }
+        this.validateAll();
     };
 
     handleChangeSkills = selectedOption => {
-        if (!this.validate(selectedOption, 'skills')) {
+        if (!this.validate(selectedOption, 'skills', true)) {
             return;
         }
         this.setState({ selectedSkill: selectedOption, skillsErr: null });
+        this.validateAll();
     };
 
     handleChangeCategory = selectedOption => {
-        if (!this.validate(selectedOption, 'category')) {
+        if (!this.validate(selectedOption, 'category', true)) {
             return;
         }
         this.setState({ selectedCategory: selectedOption, categoryErr: null });
+        this.validateAll();
     };
 
     handleChangeCurrency = selectedOption => {
@@ -239,10 +283,12 @@ class HirerPostJob extends Component {
             budget.currency = selectedOption.label;
         }
         this.setState({ selectedCurrency: selectedOption, budgets: budgets });
+        this.validateAll();
     };
 
     handleChangeBudget = selectedOption => {
         this.setState({ selectedBudget: selectedOption });
+        this.validateAll();
     };
 
     handleClose = () => {
@@ -257,8 +303,16 @@ class HirerPostJob extends Component {
                 selectedSkill: [],
                 selectedCategory: {},
                 selectedCurrency: currencies[0],
-                budgets: budgetsSource,
                 selectedBudget: budgetsSource[2],
+                submitEnable: false,
+            });
+            document.getElementById('name-ip').value = '';
+            document.getElementById('des-ip').value = '';
+            document.getElementById('expiredTime').value = '';
+            document.getElementById('estimatedTime').value = '';
+        } else {
+            this.setState({
+                open: false,
             });
         }
     };
@@ -279,6 +333,9 @@ class HirerPostJob extends Component {
             status,
             open,
             isLoading,
+            submitEnable,
+            namePrepare,
+            desPrepare,
         } = this.state;
         return (
             <div className="container-wrp">
@@ -342,7 +399,13 @@ class HirerPostJob extends Component {
                             <Grid item xs={12} className="mkp-form-row">
                                 <span className="mkp-form-row-label">Job title</span>
                                 <span className="mkp-form-row-description">From 10 to 255 characters</span>
-                                <input type="text" className={nameErr ? 'input-err' : ''} onBlur={e => this.inputOnChange(e, 'title')} />
+                                <input
+                                    type="text"
+                                    id="name-ip"
+                                    defaultValue={namePrepare}
+                                    className={nameErr ? 'input-err' : ''}
+                                    onBlur={e => this.inputOnChange(e, 'title')}
+                                />
                                 {nameErr && <span className="err">{nameErr}</span>}
                             </Grid>
                             <Grid item xs={12} className="mkp-form-row">
@@ -350,7 +413,13 @@ class HirerPostJob extends Component {
                                 <span className="mkp-form-row-description">
                                     Start with a bit about yourself or your business, and include an overview of what you need done.
                                 </span>
-                                <textarea rows="5" className={desErr ? 'input-err' : ''} onBlur={e => this.inputOnChange(e, 'description')} />
+                                <textarea
+                                    defaultValue={desPrepare}
+                                    id="des-ip"
+                                    rows="5"
+                                    className={desErr ? 'input-err' : ''}
+                                    onBlur={e => this.inputOnChange(e, 'description')}
+                                />
                                 {desErr && <span className="err">{desErr}</span>}
                             </Grid>
                             <Grid container className="mkp-form-row">
@@ -361,6 +430,7 @@ class HirerPostJob extends Component {
                                         className={categoryErr ? 'react-select input-err' : ''}
                                         value={selectedCategory}
                                         onChange={this.handleChangeCategory}
+                                        placeholder="Select..."
                                         options={categories}
                                     />
                                     {categoryErr && <span className="err">{categoryErr}</span>}
@@ -373,6 +443,7 @@ class HirerPostJob extends Component {
                                         value={selectedSkill}
                                         onChange={this.handleChangeSkills}
                                         options={skills}
+                                        isClearable={false}
                                         isMulti
                                     />
                                     {skillsErr && <span className="err">{skillsErr}</span>}
@@ -416,7 +487,7 @@ class HirerPostJob extends Component {
                                 </Grid>
                             </Grid>
                             <Grid container className="mkp-form-row">
-                                <ButtonBase className="btn btn-medium btn-blue" onClick={this.creatJob}>
+                                <ButtonBase className="btn btn-medium btn-blue create-btn" disabled={!submitEnable} onClick={this.creatJob}>
                                     Create Job
                                 </ButtonBase>
                             </Grid>

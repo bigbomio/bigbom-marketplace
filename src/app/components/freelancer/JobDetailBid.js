@@ -37,7 +37,6 @@ class JobDetailBid extends Component {
         super(props);
         this.state = {
             bidAccepted: false,
-            bidStt: false,
             stt: { err: false, text: null },
             isOwner: false,
             checkedBid: false,
@@ -95,74 +94,78 @@ class JobDetailBid extends Component {
 
     actions = () => {
         const { web3 } = this.props;
-        const { jobData, bidAccepted, bidStt, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone } = this.state;
+        const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone } = this.state;
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
-        if (!bidAccepted) {
-            if (bidStt) {
-                if (mybid.length > 0) {
-                    if (mybid[0].canceled) {
+        if (!isOwner) {
+            if (!jobData.status.paymentAccepted || !jobData.status.claimed) {
+                if (jobData.status.bidding) {
+                    if (mybid.length > 0) {
+                        if (mybid[0].canceled) {
+                            return (
+                                <span className="note">
+                                    <span className="bold">Sorry, you have canceled this job</span>, you can not bid again
+                                </span>
+                            );
+                        }
                         return (
                             <span className="note">
-                                <span className="bold">Sorry, you have canceled this job</span>, you can not bid again
+                                <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
+                                from job owner.
+                                <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
+                                    Cancel Bid
+                                </ButtonBase>
+                            </span>
+                        );
+                    } else {
+                        return (
+                            <ButtonBase
+                                className="btn btn-normal btn-green btn-back btn-bid"
+                                onClick={() => this.bidSwitched(true)}
+                                aria-label="Collapse"
+                                checked={checkedBid}
+                                disabled={bidDone}
+                            >
+                                Bid On This Job
+                            </ButtonBase>
+                        );
+                    }
+                } else if (!jobData.status.waiting) {
+                    if (mybid.length > 0) {
+                        return (
+                            <span>
+                                {!jobData.status.started ? (
+                                    <ButtonBase
+                                        className="btn btn-normal btn-green btn-back btn-bid"
+                                        onClick={this.confirmStartJob}
+                                        disabled={startJobDone}
+                                    >
+                                        Start Job
+                                    </ButtonBase>
+                                ) : (
+                                    !jobData.status.completed && (
+                                        <ButtonBase
+                                            className="btn btn-normal btn-blue btn-back btn-bid"
+                                            onClick={this.confirmCompleteJob}
+                                            disabled={completeJobDone}
+                                        >
+                                            Complete
+                                        </ButtonBase>
+                                    )
+                                )}
+                                <ButtonBase
+                                    className="btn btn-normal btn-orange btn-back btn-bid"
+                                    onClick={this.confirmClaimPayment}
+                                    disabled={claimPaymentDone}
+                                >
+                                    Claim Payment
+                                </ButtonBase>
                             </span>
                         );
                     }
-                    return (
-                        <span className="note">
-                            <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
-                            from job owner.
-                            <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
-                                Cancel Bid
-                            </ButtonBase>
-                        </span>
-                    );
-                } else {
-                    return null;
                 }
-            } else {
-                if (isOwner) {
-                    return null;
-                } else {
-                    return (
-                        <ButtonBase
-                            className="btn btn-normal btn-green btn-back btn-bid"
-                            onClick={() => this.bidSwitched(true)}
-                            aria-label="Collapse"
-                            checked={checkedBid}
-                            disabled={bidDone}
-                        >
-                            Bid On This Job
-                        </ButtonBase>
-                    );
-                }
-            }
-        } else {
-            if (mybid.length > 0) {
-                return (
-                    <span>
-                        {!jobData.status.started && !jobData.status.completed && !jobData.status.paymentAccepted ? (
-                            <ButtonBase className="btn btn-normal btn-green btn-back btn-bid" onClick={this.confirmStartJob} disabled={startJobDone}>
-                                Start Job
-                            </ButtonBase>
-                        ) : (
-                            !jobData.status.completed &&
-                            !jobData.status.paymentAccepted && (
-                                <ButtonBase
-                                    className="btn btn-normal btn-blue btn-back btn-bid"
-                                    onClick={this.confirmCompleteJob}
-                                    disabled={completeJobDone}
-                                >
-                                    Complete
-                                </ButtonBase>
-                            )
-                        )}
-                        <ButtonBase className="btn btn-normal btn-orange btn-back btn-bid">Claim Payment</ButtonBase>
-                    </span>
-                );
-            } else {
-                return null;
             }
         }
+        return null;
     };
 
     jobDataInit = async () => {
@@ -226,18 +229,11 @@ class JobDetailBid extends Component {
 
     JobsInit = jobData => {
         const { web3 } = this.props;
-        let bidStt = false;
-        for (let freelancer of jobData.data.bid) {
-            if (freelancer.address === myAddress) {
-                bidStt = true;
-            }
-        }
 
         if (this.mounted) {
             this.setState({
                 bidAccepted: jobData.data.status.bidAccepted,
                 jobData: jobData.data,
-                bidStt,
                 isOwner: web3.eth.defaultAccount === jobData.data.owner,
                 isLoading: false,
             });
@@ -362,6 +358,32 @@ class JobDetailBid extends Component {
         console.log('joblog finish: ', jobLog);
     };
 
+    claimPayment = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        this.setState({ dialogLoading: true });
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                claimPaymentDone: false,
+                dialogLoading: false,
+                actStt: { err: true, text: 'Can not claim payment!, please try again :(' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            claimPaymentDone: true,
+            dialogLoading: false,
+            actStt: { err: false, text: 'You have claimed! Please waiting for confirm from your network.' },
+        });
+        console.log('claim payment log: ', jobLog);
+    };
+
     confirmBid = () => {
         const { time, award } = this.state;
         const timeValid = this.validate(time, 'time');
@@ -415,6 +437,18 @@ class JobDetailBid extends Component {
         });
     };
 
+    confirmClaimPayment = () => {
+        this.setState({
+            open: true,
+            dialogData: {
+                title: 'Do you want to claim payment this job?',
+                actionText: 'Claim',
+                actions: this.claimPayment,
+                actStt: { err: false, text: null },
+            },
+        });
+    };
+
     validate = (val, field) => {
         const { jobData } = this.state;
         const avg = Utils.avgBid(jobData.bid);
@@ -422,7 +456,7 @@ class JobDetailBid extends Component {
         let max = jobData.estimatedTime; // need set to totaltime of job jobData.totalTime
         if (field === 'time') {
             if (val < min) {
-                this.setState({ timeErr: 'Please enter your estimate time at least 1 hour' });
+                this.setState({ timeErr: 'Please enter your estimated time at least 1 hour' });
                 return false;
             } else if (val > max) {
                 this.setState({ timeErr: 'Please do not enter longer job period' });
@@ -563,7 +597,7 @@ class JobDetailBid extends Component {
                                                 <div className="ct">${jobData.budget.max_sum}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
-                                                <div className="name">Estimate time</div>
+                                                <div className="name">Estimated time</div>
                                                 <div className="ct">
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'

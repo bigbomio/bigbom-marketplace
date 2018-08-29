@@ -249,6 +249,9 @@ body {
   #bigbomMarketplace .btn:disabled {
     background: #ccc;
     color: #666; }
+  #bigbomMarketplace .btn.create-btn:disabled {
+    background: #5c9dbb;
+    color: #fff; }
 
 #bigbomMarketplace .btn-small {
   font-size: 12px;
