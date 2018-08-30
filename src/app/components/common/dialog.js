@@ -10,14 +10,11 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 class DialogPopup extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            actionRun: false,
-        };
+        this.state = {};
     }
 
     runAction = () => {
         const { actions } = this.props;
-        this.setState({ actionRun: true });
         actions();
     };
 
@@ -27,8 +24,7 @@ class DialogPopup extends Component {
     };
 
     render() {
-        const { dialogLoading, stt, title, actionText, open } = this.props;
-        const { actionRun } = this.state;
+        const { dialogLoading, stt, title, actionText, open, btnStt } = this.props;
         return (
             <Dialog
                 open={open}
@@ -65,7 +61,7 @@ class DialogPopup extends Component {
                         </ButtonBase>
                     )}
                     {actionText && (
-                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={actionRun}>
+                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={btnStt}>
                             {actionText}
                         </ButtonBase>
                     )}
@@ -83,12 +79,14 @@ DialogPopup.propTypes = {
     title: PropTypes.string,
     actionText: PropTypes.string,
     actClose: PropTypes.func.isRequired,
+    btnStt: PropTypes.bool.isRequired,
 };
 
 DialogPopup.defaultProps = {
     actions: null,
     title: null,
     actionText: null,
+    btnStt: false,
 };
 
 export default DialogPopup;

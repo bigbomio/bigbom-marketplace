@@ -40,6 +40,7 @@ class JobDetail extends Component {
                 actionText: null,
                 actions: null,
             },
+            btnStt: false,
         };
     }
 
@@ -213,6 +214,7 @@ class JobDetail extends Component {
             actStt: { err: false, text: 'Your job has been accepted! Please waiting for confirm from your network.' },
             acceptDone: true,
             dialogLoading: false,
+            btnStt: true,
         });
     };
 
@@ -238,6 +240,7 @@ class JobDetail extends Component {
             actStt: { err: false, text: 'Your job has been canceled! Please waiting for confirm from your network.' },
             cancelDone: true,
             dialogLoading: false,
+            btnStt: true,
         });
         console.log('jobLog cancel: ', cancelLog);
     };
@@ -264,6 +267,7 @@ class JobDetail extends Component {
             actStt: { err: false, text: 'Payment success! Please waiting for confirm from your network.' },
             paymentDone: true,
             dialogLoading: false,
+            btnStt: true,
         });
         console.log('payment log: ', paymentLog);
     };
@@ -290,6 +294,7 @@ class JobDetail extends Component {
             actStt: { err: false, text: 'Reject payment success! Please waiting for confirm from your network.' },
             rejectPaymentDone: true,
             dialogLoading: false,
+            btnStt: true,
         });
         console.log('payment log: ', paymentLog);
     };
@@ -305,6 +310,7 @@ class JobDetail extends Component {
                 actions: this.acceptBidInit,
             },
             actStt: { err: false, text: null },
+            btnStt: false,
         });
     };
 
@@ -317,6 +323,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { err: false, text: null },
+            btnStt: false,
         });
     };
 
@@ -329,6 +336,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { err: false, text: null },
+            btnStt: false,
         });
     };
 
@@ -341,6 +349,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { err: false, text: null },
+            btnStt: false,
         });
     };
 
@@ -409,7 +418,7 @@ class JobDetail extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData } = this.state;
+        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
         let jobTplRender;
 
         if (stt.err) {
@@ -564,6 +573,7 @@ class JobDetail extends Component {
                     title={dialogData.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
+                    btnStt={btnStt}
                 />
                 <div id="hirer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">

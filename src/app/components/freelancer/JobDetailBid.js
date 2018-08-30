@@ -50,6 +50,7 @@ class JobDetailBid extends Component {
                 actionText: null,
                 actions: null,
             },
+            btnStt: false,
         };
     }
 
@@ -95,6 +96,7 @@ class JobDetailBid extends Component {
     actions = () => {
         const { web3 } = this.props;
         const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone } = this.state;
+        console.log(jobData);
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
         if (!isOwner) {
             if (!jobData.status.paymentAccepted || !jobData.status.claimed) {
@@ -129,11 +131,11 @@ class JobDetailBid extends Component {
                             </ButtonBase>
                         );
                     }
-                } else if (!jobData.status.waiting) {
+                } else if (!jobData.status.waiting && !jobData.status.reject) {
                     if (mybid.length > 0) {
                         return (
                             <span>
-                                {!jobData.status.started ? (
+                                {!jobData.status.started && !jobData.status.completed ? (
                                     <ButtonBase
                                         className="btn btn-normal btn-green btn-back btn-bid"
                                         onClick={this.confirmStartJob}
@@ -141,24 +143,23 @@ class JobDetailBid extends Component {
                                     >
                                         Start Job
                                     </ButtonBase>
+                                ) : !jobData.status.completed ? (
+                                    <ButtonBase
+                                        className="btn btn-normal btn-blue btn-back btn-bid"
+                                        onClick={this.confirmCompleteJob}
+                                        disabled={completeJobDone}
+                                    >
+                                        Complete
+                                    </ButtonBase>
                                 ) : (
-                                    !jobData.status.completed && (
-                                        <ButtonBase
-                                            className="btn btn-normal btn-blue btn-back btn-bid"
-                                            onClick={this.confirmCompleteJob}
-                                            disabled={completeJobDone}
-                                        >
-                                            Complete
-                                        </ButtonBase>
-                                    )
+                                    <ButtonBase
+                                        className="btn btn-normal btn-orange btn-back btn-bid"
+                                        onClick={this.confirmClaimPayment}
+                                        disabled={claimPaymentDone}
+                                    >
+                                        Claim Payment
+                                    </ButtonBase>
                                 )}
-                                <ButtonBase
-                                    className="btn btn-normal btn-orange btn-back btn-bid"
-                                    onClick={this.confirmClaimPayment}
-                                    disabled={claimPaymentDone}
-                                >
-                                    Claim Payment
-                                </ButtonBase>
                             </span>
                         );
                     }
@@ -225,6 +226,7 @@ class JobDetailBid extends Component {
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
         abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
+        this.checkPayment();
     };
 
     JobsInit = jobData => {
@@ -238,6 +240,28 @@ class JobDetailBid extends Component {
                 isLoading: false,
             });
         }
+    };
+
+    checkPayment = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.checkPayment)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                //claim: false,
+            });
+            console.log(err);
+            return;
+        }
+
+        this.setState({
+            // claim: true,
+        });
+        console.log('claim payment log: ', paymentLog[0].toString(), paymentLog[1].toString());
     };
 
     bidSwitched = open => {
@@ -268,6 +292,7 @@ class JobDetailBid extends Component {
                 bidDone: false,
                 dialogLoading: false,
                 actStt: { err: true, text: 'Can not create bid! :(' },
+                btnStt: false,
             });
             console.log(err);
             return;
@@ -276,6 +301,7 @@ class JobDetailBid extends Component {
             bidDone: true,
             dialogLoading: false,
             actStt: { err: false, text: 'Your bid has been created! Please waiting for confirm from your network.' },
+            btnStt: true,
         });
         console.log('joblog bid: ', jobLog);
     };
@@ -294,6 +320,7 @@ class JobDetailBid extends Component {
                 cancelBidDone: false,
                 dialogLoading: false,
                 actStt: { err: true, text: 'Can not cancel bid! :(' },
+                btnStt: false,
             });
             console.log(err);
             return;
@@ -302,6 +329,7 @@ class JobDetailBid extends Component {
             cancelBidDone: true,
             dialogLoading: false,
             actStt: { err: false, text: 'Your bid has been canceled! Please waiting for confirm from your network.' },
+            btnStt: true,
         });
         console.log('joblog cancel bid: ', jobLog);
     };
@@ -320,6 +348,7 @@ class JobDetailBid extends Component {
                 startJobDone: false,
                 dialogLoading: false,
                 actStt: { err: true, text: 'Can not start job! :(' },
+                btnStt: false,
             });
             console.log(err);
             return;
@@ -328,6 +357,7 @@ class JobDetailBid extends Component {
             startJobDone: true,
             dialogLoading: false,
             actStt: { err: false, text: 'This job has been started! Please waiting for confirm from your network.' },
+            btnStt: true,
         });
         console.log('joblog start: ', jobLog);
     };
@@ -346,6 +376,7 @@ class JobDetailBid extends Component {
                 completeJobDone: false,
                 dialogLoading: false,
                 actStt: { err: true, text: 'Can not complete job! :(' },
+                btnStt: false,
             });
             console.log(err);
             return;
@@ -354,6 +385,7 @@ class JobDetailBid extends Component {
             completeJobDone: true,
             dialogLoading: false,
             actStt: { err: false, text: 'This job has been completed! Please waiting for confirm from your network.' },
+            btnStt: true,
         });
         console.log('joblog finish: ', jobLog);
     };
@@ -372,6 +404,7 @@ class JobDetailBid extends Component {
                 claimPaymentDone: false,
                 dialogLoading: false,
                 actStt: { err: true, text: 'Can not claim payment!, please try again :(' },
+                btnStt: false,
             });
             console.log(err);
             return;
@@ -380,6 +413,7 @@ class JobDetailBid extends Component {
             claimPaymentDone: true,
             dialogLoading: false,
             actStt: { err: false, text: 'You have claimed! Please waiting for confirm from your network.' },
+            btnStt: true,
         });
         console.log('claim payment log: ', jobLog);
     };
@@ -395,8 +429,9 @@ class JobDetailBid extends Component {
                     title: 'Do you want to bid this job?',
                     actionText: 'Bid',
                     actions: this.createBid,
-                    actStt: { err: false, text: null },
+                    btnStt: false,
                 },
+                actStt: { err: false, text: null },
             });
         }
     };
@@ -408,8 +443,9 @@ class JobDetailBid extends Component {
                 title: 'Do you want to cancel bid this job?',
                 actionText: 'Cancel',
                 actions: this.cancelBid,
-                actStt: { err: false, text: null },
             },
+            btnStt: false,
+            actStt: { err: false, text: null },
         });
     };
 
@@ -420,8 +456,9 @@ class JobDetailBid extends Component {
                 title: 'Do you want to start this job?',
                 actionText: 'Start',
                 actions: this.startJob,
-                actStt: { err: false, text: null },
+                btnStt: false,
             },
+            actStt: { err: false, text: null },
         });
     };
 
@@ -432,8 +469,9 @@ class JobDetailBid extends Component {
                 title: 'Do you want to complete this job?',
                 actionText: 'Complete',
                 actions: this.completeJob,
-                actStt: { err: false, text: null },
             },
+            btnStt: false,
+            actStt: { err: false, text: null },
         });
     };
 
@@ -444,8 +482,9 @@ class JobDetailBid extends Component {
                 title: 'Do you want to claim payment this job?',
                 actionText: 'Claim',
                 actions: this.claimPayment,
-                actStt: { err: false, text: null },
             },
+            btnStt: false,
+            actStt: { err: false, text: null },
         });
     };
 
@@ -509,7 +548,7 @@ class JobDetailBid extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData } = this.state;
+        const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
         //console.log(jobData);
         let jobTplRender;
 
@@ -703,6 +742,7 @@ class JobDetailBid extends Component {
                     title={dialogData.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
+                    btnStt={btnStt}
                 />
                 <div id="freelancer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
