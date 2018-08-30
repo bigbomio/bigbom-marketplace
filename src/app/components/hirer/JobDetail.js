@@ -118,6 +118,7 @@ class JobDetail extends Component {
                         jobTpl.category = result.category;
                         jobTpl.estimatedTime = result.estimatedTime;
                         jobTpl.expiredTime = result.expiredTime;
+                        jobTpl.created = result.created;
                         this.BidCreatedInit(jobTpl);
                     },
                     error => {
@@ -390,7 +391,7 @@ class JobDetail extends Component {
 
     jobActions = () => {
         const { jobData, cancelDone, paymentDone, rejectPaymentDone } = this.state;
-        console.log(jobData);
+        //console.log(jobData);
         if (jobData.status.bidding) {
             return (
                 <span>
@@ -457,11 +458,13 @@ class JobDetail extends Component {
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                <div className="ct">${jobData.bid.length > 0 ? Utils.avgBid(jobData.bid) : 'NaN'}</div>
+                                                <div className="ct">
+                                                    ${jobData.bid.length > 0 ? Utils.currencyFormat(Utils.avgBid(jobData.bid)) : 'NaN'}
+                                                </div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Job budget ({jobData.currency.label})</div>
-                                                <div className="ct">${jobData.budget.max_sum}</div>
+                                                <div className="ct">${Utils.currencyFormat(jobData.budget.max_sum)}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Estimated time</div>
@@ -523,7 +526,7 @@ class JobDetail extends Component {
                                                                 {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
                                                             </Grid>
                                                             <Grid item xs={2}>
-                                                                <span className="bold">{freelancer.award + ' '}</span>
+                                                                <span className="bold">{Utils.currencyFormat(freelancer.award) + ' '}</span>
                                                                 &nbsp;
                                                                 {jobData.currency.label}
                                                             </Grid>

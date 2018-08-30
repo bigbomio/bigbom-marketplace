@@ -18,10 +18,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
+import CircleProgress from '../common/circleProgress';
 
 let jobs = [];
 
-const options = ['Latest', 'Oldest', 'Lowest Budget', 'Highest Budget', 'Most Bids', 'Fewest Bids'];
+const options = ['Latest', 'Oldest', 'Highest Budget', 'Lowest Budget', 'Most Bids', 'Fewest Bids'];
 const KEYS_TO_FILTERS = ['owner', 'title', 'description'];
 
 class JobBrowser extends Component {
@@ -29,12 +30,12 @@ class JobBrowser extends Component {
         super(props);
         this.state = {
             anchorEl: null,
-            selectedIndex: 1,
+            selectedIndex: 0,
             searchTerm: '',
             isLoading: false,
             Jobs: [],
             stt: { err: false, text: null },
-            completed: 0,
+            circleProgressRender: false,
         };
         this.timer = null;
     }
@@ -46,19 +47,17 @@ class JobBrowser extends Component {
             if (!isLoading) {
                 this.getJobs();
                 this.mounted = true;
-                this.timer = setInterval(this.progress, 1000);
             }
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
-        clearInterval(this.timer);
     }
 
     getJobs = () => {
         const { web3 } = this.props;
-        this.setState({ isLoading: true, Jobs: [], completed: 0 });
+        this.setState({ isLoading: true, Jobs: [], circleProgressRender: false });
         jobs = [];
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
@@ -104,6 +103,7 @@ class JobBrowser extends Component {
                                 result.description.length > maxLength ? result.description.slice(0, maxLength) + '...' : result.description;
                             jobTpl.currency = result.currency;
                             jobTpl.budget = result.budget;
+                            jobTpl.created = result.created;
                             this.BidCreatedInit(jobTpl);
                         },
                         error => {
@@ -134,15 +134,19 @@ class JobBrowser extends Component {
     };
 
     JobsInit = jobData => {
+        const { selectedIndex } = this.state;
         jobs.push(jobData.data);
+        this.handleMenuItemSort(null, selectedIndex);
+        const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
-            this.setState({ Jobs: jobs, isLoading: false });
+            this.setState({ Jobs: uqJobs, isLoading: false, circleProgressRender: true });
         }
     };
 
     jobsRender() {
         const { Jobs } = this.state;
         const filteredJobs = Jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
+        //console.log(jobs);
         return (
             <Grid container className="job-item-list">
                 {filteredJobs &&
@@ -156,7 +160,7 @@ class JobBrowser extends Component {
                                         </Grid>
                                         <Grid item xs={3} className="budget">
                                             <span className="bold">
-                                                {job.budget.max_sum}
+                                                {Utils.currencyFormat(job.budget.max_sum)}
                                                 {' ( ' + job.currency.label + ' ) '}
                                             </span>
                                         </Grid>
@@ -167,10 +171,9 @@ class JobBrowser extends Component {
                                         </Grid>
                                         <Grid item xs={12} className="status">
                                             <span className="status green bold">{Utils.getStatusJob(job.status)}</span>
-                                            <span>
-                                                {' - ' + job.bid.length + ' '}
-                                                bids
-                                            </span>
+                                            <span className="status stt-date-time">{' - Created: ' + Utils.convertDateTime(job.created)}</span>
+                                            <span className="bold">{' - ' + job.bid.length + ' '}</span>
+                                            bids
                                         </Grid>
                                         <Grid item xs={12} className="category">
                                             <span className="bold">Skill Required: </span>
@@ -206,27 +209,60 @@ class JobBrowser extends Component {
         }
     }
 
-    progress = () => {
-        const { completed } = this.state;
-        if (completed >= 100) {
-            if (this.mounted) {
-                this.getJobs();
-            }
-        } else {
-            this.setState({ completed: completed >= 100 ? 0 : completed + 100 / (60 * 2) }); // each 2 minutes that reload data
-        }
-    };
-
     searchUpdated(term) {
         this.setState({ searchTerm: term });
     }
 
-    handleClickListItem = event => {
+    handleClickListItemSort = event => {
         this.setState({ anchorEl: event.currentTarget });
     };
 
-    handleMenuItemClick = (event, index) => {
+    handleMenuItemSort = (event, index) => {
         this.setState({ selectedIndex: index, anchorEl: null });
+        const { Jobs } = this.state;
+        switch (index) {
+            case 0:
+                //Latest
+                Jobs.sort((a, b) => {
+                    return b.created - a.created;
+                });
+                break;
+            case 1:
+                // Oldest
+                Jobs.sort((a, b) => {
+                    return a.created - b.created;
+                });
+                break;
+            case 2:
+                // Highest Budget
+                Jobs.sort((a, b) => {
+                    return b.budget.max_sum - a.budget.max_sum;
+                });
+                break;
+            case 3:
+                // Lowest Budget
+                Jobs.sort((a, b) => {
+                    return a.budget.max_sum - b.budget.max_sum;
+                });
+                break;
+            case 4:
+                // Most Bids
+                Jobs.sort((a, b) => {
+                    return b.bid.length - a.bid.length;
+                });
+                break;
+            case 5:
+                // Fewest Bids
+                Jobs.sort((a, b) => {
+                    return a.bid.length - b.bid.length;
+                });
+                break;
+            default:
+                // Latest
+                Jobs.sort((a, b) => {
+                    return b.created - a.created;
+                });
+        }
     };
 
     handleClose = () => {
@@ -239,7 +275,7 @@ class JobBrowser extends Component {
     };
 
     render() {
-        const { selectedCategory, anchorEl, isLoading, stt } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender } = this.state;
         const categories = settingsApi.getCategories();
 
         return (
@@ -255,11 +291,9 @@ class JobBrowser extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid className="top-actions">
-                            <div className="action timerReload">
-                                <CircularProgress variant="static" value={this.state.completed} />
-                            </div>
+                            <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getJobs} />}</div>
 
-                            <Grid className="action">
+                            <Grid className="action reload-btn">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
                                     <FontAwesomeIcon icon="sync-alt" />
                                     Refresh
@@ -292,7 +326,7 @@ class JobBrowser extends Component {
                                             aria-haspopup="true"
                                             aria-controls="lock-menu"
                                             aria-label="Sort by"
-                                            onClick={this.handleClickListItem}
+                                            onClick={this.handleClickListItemSort}
                                         >
                                             <ListItemText
                                                 className="select-item-text"
@@ -307,7 +341,7 @@ class JobBrowser extends Component {
                                             <MenuItem
                                                 key={option}
                                                 selected={index === this.state.selectedIndex}
-                                                onClick={event => this.handleMenuItemClick(event, index)}
+                                                onClick={event => this.handleMenuItemSort(event, index)}
                                             >
                                                 {option}
                                             </MenuItem>

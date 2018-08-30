@@ -438,6 +438,9 @@ $orange: #f99a0c;
             &:last-child {
                 padding-right: 0;
             }
+            &.reload-btn {
+                float: right;
+            }
         }
     }
     .top-action {
@@ -481,6 +484,7 @@ $orange: #f99a0c;
         margin-right: 20px;
     }
     .timerReload {
+        margin-top: -1px;
         & > div {
             border: 3px solid #eee;
             border-radius: 50%;

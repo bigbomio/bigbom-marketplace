@@ -237,6 +237,41 @@ class Utils {
         }
         return str;
     }
-}
 
+    currencyFormat(value) {
+        value = Number(value);
+        if (!Number.isInteger(value)) {
+            value = value.toFixed(2);
+        }
+        return value.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
+    }
+
+    convertDateTime(timestamp) {
+        const dateTime = new Date(timestamp);
+        // Create an array with the current month, day and time
+        const date = [dateTime.getMonth() + 1, dateTime.getDate(), dateTime.getFullYear()];
+        // Create an array with the current hour, minute and second
+        const time = [dateTime.getHours(), dateTime.getMinutes(), dateTime.getSeconds()];
+        // Determine AM or PM suffix based on the hour
+        const suffix = time[0] < 12 ? 'AM' : 'PM';
+        // Convert hour from military time
+        time[0] = time[0] < 12 ? time[0] : time[0] - 12;
+        // If hour is 0, set it to 12
+        time[0] = time[0] || 12;
+        // If seconds and minutes are less than 10, add a zero
+        for (let i = 1; i < 3; i++) {
+            if (time[i] < 10) {
+                time[i] = '0' + time[i];
+            }
+        }
+        // Return the formatted string
+        return date.join('/') + ' ' + time.join(':') + ' ' + suffix;
+    }
+
+    removeDuplicates(myArr, prop) {
+        return myArr.filter((obj, pos, arr) => {
+            return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
+        });
+    }
+}
 export default new Utils();

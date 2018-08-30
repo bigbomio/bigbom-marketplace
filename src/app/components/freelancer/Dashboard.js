@@ -109,6 +109,7 @@ class FreelancerDashboard extends Component {
                         jobTpl.description = result.description;
                         jobTpl.currency = result.currency;
                         jobTpl.budget = result.budget;
+                        jobTpl.created = result.created;
                         this.BidCreatedInit(jobTpl);
                     },
                     error => {
@@ -144,8 +145,9 @@ class FreelancerDashboard extends Component {
                 jobs.push(jobData.data);
             }
         }
+        const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
-            this.setState({ Jobs: jobs, isLoading: false });
+            this.setState({ Jobs: uqJobs, isLoading: false });
         }
     };
 
@@ -245,7 +247,7 @@ class FreelancerDashboard extends Component {
                                 <Grid item xs={2}>
                                     {job.budget && (
                                         <span className="bold">
-                                            {job.budget.max_sum}
+                                            {Utils.currencyFormat(job.budget.max_sum)}
                                             {' ( ' + job.currency.label + ' ) '}
                                         </span>
                                     )}

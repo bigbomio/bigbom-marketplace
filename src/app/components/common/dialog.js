@@ -86,7 +86,6 @@ DialogPopup.defaultProps = {
     actions: null,
     title: null,
     actionText: null,
-    btnStt: false,
 };
 
 export default DialogPopup;

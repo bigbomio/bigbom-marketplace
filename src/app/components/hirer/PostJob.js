@@ -75,7 +75,7 @@ class HirerPostJob extends Component {
             });
             setTimeout(() => {
                 this.handleClose();
-            }, 2000);
+            }, 4000);
         }
     }
 
@@ -102,6 +102,7 @@ class HirerPostJob extends Component {
             category: selectedCategory,
             estimatedTime: estimatedTimePrepare,
             expiredTime: expiredTimeSet,
+            created: new Date().getTime(),
         };
         this.setState({ isLoading: true, open: true });
         ipfs.addJSON(jobPostData, (err, jobHash) => {

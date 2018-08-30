@@ -36,7 +36,6 @@ class JobDetailBid extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            bidAccepted: false,
             stt: { err: false, text: null },
             isOwner: false,
             checkedBid: false,
@@ -51,6 +50,7 @@ class JobDetailBid extends Component {
                 actions: null,
             },
             btnStt: false,
+            claim: false,
         };
     }
 
@@ -95,9 +95,9 @@ class JobDetailBid extends Component {
 
     actions = () => {
         const { web3 } = this.props;
-        const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone } = this.state;
-        console.log(jobData);
-        const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
+        const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
+        //console.log(jobData);
+        const mybid = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!isOwner) {
             if (!jobData.status.paymentAccepted || !jobData.status.claimed) {
                 if (jobData.status.bidding) {
@@ -135,7 +135,7 @@ class JobDetailBid extends Component {
                     if (mybid.length > 0) {
                         return (
                             <span>
-                                {!jobData.status.started && !jobData.status.completed ? (
+                                {!jobData.status.started && !jobData.status.completed && !jobData.status.claimed ? (
                                     <ButtonBase
                                         className="btn btn-normal btn-green btn-back btn-bid"
                                         onClick={this.confirmStartJob}
@@ -143,7 +143,7 @@ class JobDetailBid extends Component {
                                     >
                                         Start Job
                                     </ButtonBase>
-                                ) : !jobData.status.completed ? (
+                                ) : !jobData.status.completed && !jobData.status.claimed ? (
                                     <ButtonBase
                                         className="btn btn-normal btn-blue btn-back btn-bid"
                                         onClick={this.confirmCompleteJob}
@@ -152,13 +152,16 @@ class JobDetailBid extends Component {
                                         Complete
                                     </ButtonBase>
                                 ) : (
-                                    <ButtonBase
-                                        className="btn btn-normal btn-orange btn-back btn-bid"
-                                        onClick={this.confirmClaimPayment}
-                                        disabled={claimPaymentDone}
-                                    >
-                                        Claim Payment
-                                    </ButtonBase>
+                                    !jobData.status.claimed &&
+                                    (claim && (
+                                        <ButtonBase
+                                            className="btn btn-normal btn-orange btn-back btn-bid"
+                                            onClick={this.confirmClaimPayment}
+                                            disabled={claimPaymentDone}
+                                        >
+                                            Claim Payment
+                                        </ButtonBase>
+                                    ))
                                 )}
                             </span>
                         );
@@ -204,6 +207,7 @@ class JobDetailBid extends Component {
                         jobTpl.category = result.category;
                         jobTpl.estimatedTime = result.estimatedTime;
                         jobTpl.expiredTime = result.expiredTime;
+                        jobTpl.created = result.created;
                         this.BidCreatedInit(jobTpl);
                     },
                     error => {
@@ -234,7 +238,6 @@ class JobDetailBid extends Component {
 
         if (this.mounted) {
             this.setState({
-                bidAccepted: jobData.data.status.bidAccepted,
                 jobData: jobData.data,
                 isOwner: web3.eth.defaultAccount === jobData.data.owner,
                 isLoading: false,
@@ -246,22 +249,22 @@ class JobDetailBid extends Component {
         const { jobHash } = this.state;
         const { web3 } = this.props;
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const now = Date.now();
         const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.checkPayment)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
         if (err) {
-            this.setState({
-                //claim: false,
-            });
             console.log(err);
             return;
         }
-
-        this.setState({
-            // claim: true,
-        });
-        console.log('claim payment log: ', paymentLog[0].toString(), paymentLog[1].toString());
+        if (paymentLog) {
+            if (paymentLog[1].toString() * 1000 <= now) {
+                this.setState({
+                    claim: true,
+                });
+            }
+        }
     };
 
     bidSwitched = open => {
@@ -548,7 +551,7 @@ class JobDetailBid extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, bidAccepted, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
+        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
         //console.log(jobData);
         let jobTplRender;
 
@@ -629,11 +632,11 @@ class JobDetailBid extends Component {
                                             {this.getMyBid()}
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                <div className="ct">${Utils.avgBid(jobData.bid)}</div>
+                                                <div className="ct">${Utils.currencyFormat(Utils.avgBid(jobData.bid))}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Job budget ({jobData.currency.label})</div>
-                                                <div className="ct">${jobData.budget.max_sum}</div>
+                                                <div className="ct">${Utils.currencyFormat(jobData.budget.max_sum)}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Estimated time</div>
@@ -664,7 +667,7 @@ class JobDetailBid extends Component {
                                         {skillShow(jobData)}
                                     </Grid>
                                 </Grid>
-                                {!bidAccepted && (
+                                {jobData.status.bidding && (
                                     <Grid container className="freelancer-bidding">
                                         <h2>Freelancer bidding</h2>
                                         <Grid container className="list-container">
@@ -693,7 +696,7 @@ class JobDetailBid extends Component {
                                                                 </Grid>
                                                                 <Grid item xs={2}>
                                                                     <span className="bold">
-                                                                        {freelancer.award}
+                                                                        {Utils.currencyFormat(freelancer.award)}
                                                                         &nbsp;
                                                                     </span>
                                                                     {jobData.currency.label}

@@ -491,6 +491,8 @@ body {
       margin-top: 3px; }
     #bigbomMarketplace .top-actions .action:last-child {
       padding-right: 0; }
+    #bigbomMarketplace .top-actions .action.reload-btn {
+      float: right; }
 
 #bigbomMarketplace .top-action {
   width: 100%; }
@@ -528,12 +530,13 @@ body {
 #bigbomMarketplace .e-left {
   margin-right: 20px; }
 
-#bigbomMarketplace .timerReload > div {
-  border: 3px solid #eee;
-  border-radius: 50%; }
-
-#bigbomMarketplace .timerReload svg {
-  color: #0ca1f9; }
+#bigbomMarketplace .timerReload {
+  margin-top: -1px; }
+  #bigbomMarketplace .timerReload > div {
+    border: 3px solid #eee;
+    border-radius: 50%; }
+  #bigbomMarketplace .timerReload svg {
+    color: #0ca1f9; }
 
 #header {
   background: #fff; }
@@ -808,7 +811,8 @@ body {
       color: #115c8d;
       font-size: 20px;
       font-weight: bold;
-      padding: 20px 0; }
+      padding: 20px 0;
+      line-height: 30px; }
     #freelancer .job-item-list .job-item > div .header .budget {
       font-size: 20px;
       display: flex;
@@ -821,6 +825,9 @@ body {
       line-height: 1.5; }
     #freelancer .job-item-list .job-item > div .content .status {
       padding-bottom: 20px; }
+    #freelancer .job-item-list .job-item > div .content .stt-date-time {
+      color: #777;
+      font-size: 14px; }
     #freelancer .job-item-list .job-item > div .content .category {
       padding-bottom: 20px; }
 

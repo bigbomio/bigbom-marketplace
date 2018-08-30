@@ -81,7 +81,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3900115, // should use recent number
+            fromBlock: 3938000, // should use recent number
             toBlock: 'latest',
         });
 
@@ -102,7 +102,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: 3900115, // should use recent number
+            fromBlock: 3938000, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, bidCanceledEvents) {
@@ -131,7 +131,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3900115, // should use recent number
+            fromBlock: 3938000, // should use recent number
             toBlock: 'latest',
         });
         events.get((error, events) => {
@@ -169,7 +169,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3900115, // should use recent number
+            fromBlock: 3938000, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, events) {
@@ -178,10 +178,11 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
+            //console.log('event bid accepted  -------', events);
             for (let e of events) {
                 if (jobData.bid.length > 0) {
                     for (let bid of jobData.bid) {
-                        if (bid.id === e.args.jobHash) {
+                        if (bid.address === e.args.freelancer) {
                             bid.accepted = true;
                         }
                     }
@@ -217,18 +218,18 @@ class abiConfigs {
         contractInstance.instance[event](
             filter,
             {
-                fromBlock: 3900115, // should use recent number
+                fromBlock: 3938000, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
-                //console.log(eventResult);
+                //console.log('job single event -----', eventResult);
                 resultsInit(error, eventResult);
             }
         );
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3900115, // should use recent number
+            fromBlock: 3938000, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {

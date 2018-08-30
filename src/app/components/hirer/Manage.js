@@ -97,6 +97,7 @@ class HirerDashboard extends Component {
                 jobHash: jobHash,
                 category: Utils.toAscii(event.args.category),
                 expired: event.args.expired.toString(),
+                blockNumber: event.blockNumber,
                 status: jobStatus,
                 bid: [],
             };
@@ -109,6 +110,7 @@ class HirerDashboard extends Component {
                         jobTpl.description = result.description;
                         jobTpl.currency = result.currency;
                         jobTpl.budget = result.budget;
+                        jobTpl.created = result.created;
                         this.BidCreatedInit(jobTpl);
                     },
                     error => {
@@ -139,8 +141,9 @@ class HirerDashboard extends Component {
 
     JobsInit = jobData => {
         jobs.push(jobData.data);
+        const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
-            this.setState({ Jobs: jobs, isLoading: false });
+            this.setState({ Jobs: uqJobs, isLoading: false });
         }
     };
 
@@ -229,6 +232,7 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match } = this.props;
         const { Jobs, stt } = this.state;
+        // console.log(Jobs);
         if (Jobs) {
             if (Jobs.length > 0) {
                 return !stt.err ? (
@@ -242,7 +246,7 @@ class HirerDashboard extends Component {
                                     <Grid item xs={2}>
                                         {job.budget && (
                                             <span className="bold">
-                                                {job.budget.max_sum}
+                                                {Utils.currencyFormat(job.budget.max_sum)}
                                                 {' ( ' + job.currency.label + ' ) '}
                                             </span>
                                         )}
