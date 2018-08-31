@@ -35,6 +35,8 @@ class Hirer extends Component {
         // // would stop and uninstall the filter
         // events.stopWatching();
 
+        console.log('account ', contractInstance.defaultAccount);
+
         contractInstance.instance[event](
             {},
             {
@@ -56,6 +58,7 @@ class Hirer extends Component {
     async getJob(jobHash) {
         this.setState({ isLoading: true });
         const jobInstance = await this.contractInstanceGenerator('BBFreelancerJob');
+        console.log(jobInstance.defaultAccount);
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),

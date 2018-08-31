@@ -60,6 +60,7 @@
                         font-size: 20px;
                         font-weight: bold;
                         padding: 20px 0;
+                        line-height: 30px;
                     }
                     .budget {
                         font-size: 20px;
@@ -78,6 +79,10 @@
                     .status {
                         padding-bottom: 20px;
                     }
+                    .stt-date-time {
+                        color: #777;
+                        font-size: 14px;
+                    }
                     .category {
                         padding-bottom: 20px;
                     }
@@ -85,28 +90,13 @@
             }
         }
     }
-    .top-action {
-        width: 100%;
-        .btn-bid {
-            float: right;
-            text-transform: uppercase;
-            font-weight: bold;
-            margin-left: 15px;
-        }
-        .note {
-            margin-top: -20px;
-            margin-bottom: 30px;
-            display: inline-block;
-            float: right;
-            svg {
-                height: 17px;
-                width: 17px;
-                margin-right: 3px;
-                color: $green;
-            }
-        }
-    }
     .job-detail-description {
         padding-bottom: 30px;
+    }
+    .bid-form {
+        background: #f9f9f9;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: $thinShadow;
     }
 }

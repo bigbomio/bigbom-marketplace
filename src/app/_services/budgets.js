@@ -6,8 +6,11 @@ export default [
         max_sum: '30',
         currency: 'BBO',
         get label() {
-            return 'Micro Project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Micro Project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
+        // get label() {
+        //     return 'Micro Project ( $'+ this.max_sum + ' ' + this.currency + ')';
+        // },
     },
     {
         value: '2',
@@ -16,7 +19,7 @@ export default [
         max_sum: '250',
         currency: 'BBO',
         get label() {
-            return 'Simple project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Simple project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -26,7 +29,7 @@ export default [
         max_sum: '750',
         currency: 'BBO',
         get label() {
-            return 'Very small project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Very small project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -36,7 +39,7 @@ export default [
         max_sum: '1500',
         currency: 'BBO',
         get label() {
-            return 'Small project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Small project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -46,7 +49,7 @@ export default [
         max_sum: '3000',
         currency: 'BBO',
         get label() {
-            return 'Medium project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Medium project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -56,7 +59,7 @@ export default [
         max_sum: '5000',
         currency: 'BBO',
         get label() {
-            return 'Large project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Large project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -66,7 +69,7 @@ export default [
         max_sum: '10000',
         currency: 'BBO',
         get label() {
-            return 'Larger project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Larger project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -76,7 +79,7 @@ export default [
         max_sum: '20000',
         currency: 'BBO',
         get label() {
-            return 'Very Large project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Very Large project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {
@@ -86,7 +89,7 @@ export default [
         max_sum: '50000',
         currency: 'BBO',
         get label() {
-            return 'Huge project ( $' + this.min_sum + ' - ' + this.max_sum + ' ' + this.currency + ')';
+            return 'Huge project ( $' + this.max_sum + ' ' + this.currency + ')';
         },
     },
     {

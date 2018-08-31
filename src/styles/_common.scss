@@ -80,8 +80,9 @@ $orange: #f99a0c;
             display: inline-block;
         }
         input[type='text'],
+        input[type='number'],
         textarea {
-            padding: 10px;
+            padding: 7px 10px;
             width: 100%;
             border: 1px solid #ccc;
             font-size: 16px;
@@ -95,15 +96,20 @@ $orange: #f99a0c;
         .creatable-select {
             padding: 0 0 10px 0;
         }
-        .left {
-            padding-right: 20px;
-        }
         .err {
             padding: 5px 0;
             font-size: 12px;
             color: $red;
         }
     }
+    .react-select {
+        &.input-err {
+            & > div {
+                border-color: $red;
+            }
+        }
+    }
+
     .account-info {
         padding: 4px 10px;
         width: 30%;
@@ -132,6 +138,16 @@ $orange: #f99a0c;
             margin-right: 5px;
             width: 18px;
             height: 18px;
+        }
+        &:disabled {
+            background: #ccc;
+            color: #666;
+        }
+        &.create-btn {
+            &:disabled {
+                background: rgb(92, 157, 187);
+                color: #fff;
+            }
         }
     }
     .btn-small {
@@ -223,6 +239,9 @@ $orange: #f99a0c;
                             color: $red;
                         }
                     }
+                    &.status {
+                        text-transform: capitalize;
+                    }
                 }
             }
         }
@@ -234,6 +253,14 @@ $orange: #f99a0c;
         box-sizing: border-box;
         .list-filter-body {
             padding: 20px;
+            .allDisabled {
+                span {
+                    color: #11cb5f !important;
+                    &:first-child {
+                        color: #8ecaa7 !important;
+                    }
+                }
+            }
         }
         legend {
             font-size: 18px;
@@ -264,7 +291,14 @@ $orange: #f99a0c;
                 &.status {
                     align-items: center;
                     display: flex;
+                    padding: 0;
                     flex-direction: column;
+                    .ct {
+                        font-size: 16px;
+                        font-weight: bold;
+                        text-align: center;
+                        color: $darkGreen;
+                    }
                 }
                 &:last-child {
                     border: none;
@@ -272,7 +306,7 @@ $orange: #f99a0c;
                 .name {
                     font-size: 14px;
                     color: #777;
-                    padding-bottom: 10px;
+                    padding-bottom: 3px;
                 }
                 .ct {
                     font-size: 20px;
@@ -292,6 +326,7 @@ $orange: #f99a0c;
             }
             .ct {
                 line-height: 1.6;
+                white-space: pre-wrap;
                 .skill {
                     width: 100%;
                     padding-top: 20px;
@@ -373,6 +408,7 @@ $orange: #f99a0c;
             padding: 30px;
             font-size: 18px;
             text-align: center;
+            line-height: 24px;
             .success {
                 font-weight: bold;
                 .icon {
@@ -382,6 +418,79 @@ $orange: #f99a0c;
                     margin-right: 5px;
                 }
             }
+        }
+    }
+    .top-actions {
+        float: right;
+        padding-right: 30px;
+
+        .action {
+            padding-right: 20px;
+            float: left;
+            &.filter {
+                min-width: 400px;
+                z-index: 999;
+                position: relative;
+            }
+            .btn {
+                margin-top: 3px;
+            }
+            &:last-child {
+                padding-right: 0;
+            }
+            &.reload-btn {
+                float: right;
+            }
+        }
+    }
+    .top-action {
+        width: 100%;
+        .btn-bid {
+            float: right;
+            margin-left: 15px;
+        }
+        .note {
+            margin-top: -20px;
+            margin-bottom: 30px;
+            display: inline-block;
+            float: right;
+            svg {
+                height: 17px;
+                width: 17px;
+                margin-right: 3px;
+                color: $green;
+            }
+            button {
+                margin-top: -10px;
+            }
+        }
+    }
+    .show-block {
+        display: block;
+    }
+    .show-flex {
+        display: flex;
+    }
+    .show-inline-block {
+        display: inline-block;
+    }
+    .hide {
+        display: none;
+    }
+    .left {
+        padding-right: 20px;
+    }
+    .e-left {
+        margin-right: 20px;
+    }
+    .timerReload {
+        margin-top: -1px;
+        & > div {
+            border: 3px solid #eee;
+            border-radius: 50%;
+        }
+        svg {
+            color: $blue;
         }
     }
 }

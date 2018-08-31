@@ -1,25 +1,25 @@
 image: docker:latest
 
 services:
-  - docker:dind
+    - docker:dind
 
 variables:
-  DOCKER_HOST: tcp://localhost:2375
-  BUCKET_URL_production: "gs://marketplace.bigbom.com"
-  BUCKET_URL_staging: "gs://staging-marketplace.bigbom.net"
+    DOCKER_HOST: tcp://localhost:2375
+    BUCKET_URL_production: 'gs://marketplace.bigbom.com'
+    BUCKET_URL_staging: 'gs://staging-marketplace.bigbom.net'
 
 stages:
-  - test
-  - deploy
+    - test
+    - deploy
 
 test:
-  stage: test
-  script: echo "unit test"
-  only:
-  - /^release-/
-  - /^hotfix-/
-  - /^staging-/
-  - master
+    stage: test
+    script: echo "unit test"
+    only:
+        - /^release-/
+        - /^hotfix-/
+        - /^staging-/
+        - master
 
 k8s-deploy-staging:
   stage: deploy
@@ -37,17 +37,17 @@ k8s-deploy-staging:
   - master
 
 k8s-deploy-production:
-  stage: deploy
-  image: google/cloud-sdk
-  script:
-  - BUCKET_URL=$BUCKET_URL_production
-  - echo "$GOOGLE_STORAGE" > key.json
-  - gcloud auth activate-service-account --key-file key.json
-  - docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && npm run build:${CI_ENVIRONMENT_NAME}"
-  - gsutil cp -r ./build/* ${BUCKET_URL}
-  environment:
-    name: production
-  when: manual
-  only:
-  - /^release-/
-  - /^hotfix-/
+    stage: deploy
+    image: google/cloud-sdk
+    script:
+        - BUCKET_URL=$BUCKET_URL_production
+        - echo "$GOOGLE_STORAGE" > key.json
+        - gcloud auth activate-service-account --key-file key.json
+        - docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && npm run build:${CI_ENVIRONMENT_NAME}"
+        - gsutil -h "Cache-Control:public, max-age=604800" cp -r ./build/* ${BUCKET_URL}
+    environment:
+        name: production
+    when: manual
+    only:
+        - /^release-/
+        - /^hotfix-/
