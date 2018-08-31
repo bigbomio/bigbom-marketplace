@@ -29,7 +29,7 @@ k8s-deploy-staging:
   - echo "$GOOGLE_STORAGE" > key.json
   - gcloud auth activate-service-account --key-file key.json
   - docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && npm run build:${CI_ENVIRONMENT_NAME}"
-  - gsutil cp -r ./build/* ${BUCKET_URL}
+  - gsutil -h "Cache-Control:public, max-age=604800" cp -r ./build/* ${BUCKET_URL}
   environment:
     name: staging
   only:
