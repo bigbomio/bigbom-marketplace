@@ -51,6 +51,8 @@ class JobBrowser extends Component {
         }
     }
 
+    componentDidUpdate() {}
+
     componentWillUnmount() {
         this.mounted = false;
     }
