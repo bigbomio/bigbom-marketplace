@@ -2,6 +2,10 @@
 #hirer {
     .home-wrp {
         .home-intro {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            box-sizing: border-box;
             h1 {
                 font-size: 34px;
                 font-weight: bold;
@@ -17,7 +21,7 @@
                 }
             }
             .connect-item-wrp {
-                padding: 35px;
+                padding: 10px 35px;
                 &:first-child {
                     .connect-item {
                         box-shadow: 5px -5px #2eae3b;
@@ -36,7 +40,7 @@
                 .connect-item {
                     background: url('/images/bg-connect.png') center center no-repeat;
                     background-size: cover;
-                    padding: 100px 70px 70px 70px;
+                    padding: 60px 70px 40px 70px;
                     border-radius: 10px;
                     align-items: center;
                     display: flex;
@@ -51,7 +55,7 @@
                         font-size: 20px;
                     }
                     .btn {
-                        margin: 100px 0 0 0;
+                        margin: 70px 0 0 0;
                         font-size: 16px;
                         padding: 8px 35px 9px 35px;
                     }
@@ -66,6 +70,10 @@
             text-align: center;
             width: 100%;
             padding: 40px 0;
+        }
+        .note {
+            text-align: center;
+            width: 100%;
         }
         .home-content-item {
             color: #444;

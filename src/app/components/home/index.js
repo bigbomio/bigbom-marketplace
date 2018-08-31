@@ -1,23 +1,26 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import posed from 'react-pose';
+
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
-const connects = [
-    {
-        logo: '/images/metamask.png',
-        name: 'Metamask',
-    },
-    {
-        logo: '/images/trezor.png',
-        name: 'Trezor',
-    },
-    {
-        logo: '/images/ledger.png',
-        name: 'Ledger',
-    },
-];
+import LoginMethods from '../login/loginMethods';
 
+const ContainerProps = {
+    open: {
+        x: '0%',
+        delayChildren: 300,
+        staggerChildren: 50,
+    },
+    closed: {
+        delay: 500,
+        staggerChildren: 20,
+    },
+};
+
+const Container = posed.div(ContainerProps);
 const Square = posed.div({
     idle: {
         y: 0,
@@ -26,68 +29,80 @@ const Square = posed.div({
         y: -10,
         transition: { duration: 400 },
     },
+    open: { opacity: 1, x: 0 },
+    closed: { opacity: 0, x: 300 },
 });
-class Home extends PureComponent {
-    state = {
-        hovering1: false,
-        hovering2: false,
-        hovering3: false,
-    };
-    disconnectRender() {
+
+class Home extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isLogout: false,
+            isLogin: false,
+            homeAction: '',
+        };
+    }
+
+    componentDidMount() {
+        this.setState({ isLogout: true });
+        document.getElementById('login').style.display = 'none';
+    }
+
+    disconnectRender = () => {
+        const { isLogout } = this.state;
         return (
-            <Grid container className="home-intro">
-                <Grid item xs={6}>
+            <Container id="intro" className="home-intro sidebar" pose={isLogout ? 'open' : 'closed'}>
+                <Square className="col-6">
                     <h1>Hire expert freelancers for any job</h1>
                     <div className="buttons">
-                        <ButtonBase className="btn btn-medium btn-white left">Find a Freelancer</ButtonBase>
-                        <ButtonBase className="btn btn-medium btn-white">Find a Job</ButtonBase>
+                        <ButtonBase className="btn btn-medium btn-white left" onClick={() => this.HomeAction('postJobAction')}>
+                            Find a Freelancer
+                        </ButtonBase>
+                        <ButtonBase className="btn btn-medium btn-white" onClick={() => this.HomeAction('findJobAction')}>
+                            Find a Job
+                        </ButtonBase>
                     </div>
-                </Grid>
-                <Grid item xs={6}>
+                </Square>
+                <Square className="col-6">
                     <img src="/images/homebanner.png" alt="" />
-                </Grid>
-            </Grid>
+                </Square>
+            </Container>
         );
-    }
+    };
 
-    connectRender() {
-        return (
-            <Grid container className="home-intro">
-                {connects.map((cn, i) => {
-                    const hoverName = 'hovering' + i;
-                    return (
-                        <Square
-                            pose={this.state[hoverName] ? 'popped' : 'idle'}
-                            onMouseEnter={() => this.setState({ [hoverName]: true })}
-                            onMouseLeave={() => this.setState({ [hoverName]: false })}
-                            key={i}
-                            className="connect-item-wrp"
-                        >
-                            <div className="connect-item">
-                                <div className="logo">
-                                    <img src={cn.logo} alt="" />
-                                </div>
-                                <div className="name">{cn.name}</div>
-                                <ButtonBase className="btn btn-normal btn-white">Connect</ButtonBase>
-                            </div>
-                        </Square>
-                    );
-                })}
-            </Grid>
-        );
-    }
+    HomeAction = action => {
+        const { isConnected, history } = this.props;
+        if (isConnected) {
+            if (action === 'postJobAction') {
+                history.push('/hirer');
+            } else {
+                history.push('/freelancer');
+            }
+        } else {
+            this.setState({ isLogout: false, homeAction: action });
+            setTimeout(() => {
+                document.getElementById('intro').style.display = 'none';
+                document.getElementById('login').style.display = 'flex';
+                this.setState({ isLogin: true });
+            }, 300);
+        }
+    };
 
     render() {
+        const { isLogin, homeAction } = this.state;
+        const { history } = this.props;
         return (
             <div id="home" className="container-wrp">
                 <div className="container-wrp home-wrp full-top-wrp">
-                    {/* <div className="container wrapper">{this.disconnectRender()}</div> */}
-                    <div className="container wrapper">{this.connectRender()}</div>
+                    <div className="container wrapper">
+                        {this.disconnectRender()}
+                        <LoginMethods history={history} isLogin={isLogin} home homeAction={homeAction} />
+                    </div>
                 </div>
                 <div className="container wrapper">
                     <Grid container className="home-content">
                         <Grid container>
-                            <h2>Get your job start now...</h2>
+                            <h2>Pick your job right now </h2>
                         </Grid>
                         <Grid container>
                             <Grid item xs className="home-content-item">
@@ -106,7 +121,7 @@ class Home extends PureComponent {
                                 <div className="home-content-img">
                                     <img src="/images/cate3.png" alt="" />
                                 </div>
-                                <p>Content Marketer</p>
+                                <p>Content Writer</p>
                             </Grid>
                             <Grid item xs className="home-content-item">
                                 <div className="home-content-img">
@@ -125,4 +140,20 @@ class Home extends PureComponent {
     }
 }
 
-export default Home;
+Home.propTypes = {
+    history: PropTypes.object.isRequired,
+    isConnected: PropTypes.bool.isRequired,
+};
+
+const mapStateToProps = state => {
+    return {
+        isConnected: state.homeReducer.isConnected,
+    };
+};
+
+const mapDispatchToProps = {};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Home);
