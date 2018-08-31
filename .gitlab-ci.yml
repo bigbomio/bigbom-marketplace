@@ -34,6 +34,7 @@ k8s-deploy-staging:
     name: staging
   only:
   - /^staging-/
+  - master
 
 k8s-deploy-production:
   stage: deploy
