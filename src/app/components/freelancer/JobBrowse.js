@@ -20,6 +20,8 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 import CircleProgress from '../common/circleProgress';
 
+import { saveJobs } from '../hirer/actions';
+
 let jobs = [];
 
 const options = ['Latest', 'Oldest', 'Highest Budget', 'Lowest Budget', 'Most Bids', 'Fewest Bids'];
@@ -94,17 +96,17 @@ class JobBrowser extends Component {
                     status: jobStatus,
                     bid: [],
                 };
-                const maxLength = 400; // max length characters show on description
                 fetch(URl)
                     .then(res => res.json())
                     .then(
                         result => {
                             jobTpl.title = result.title;
                             jobTpl.skills = result.skills;
-                            jobTpl.description =
-                                result.description.length > maxLength ? result.description.slice(0, maxLength) + '...' : result.description;
+                            jobTpl.description = result.description;
                             jobTpl.currency = result.currency;
                             jobTpl.budget = result.budget;
+                            jobTpl.estimatedTime = result.estimatedTime;
+                            jobTpl.expiredTime = result.expiredTime;
                             jobTpl.created = result.created;
                             this.BidCreatedInit(jobTpl);
                         },
@@ -137,10 +139,12 @@ class JobBrowser extends Component {
 
     JobsInit = jobData => {
         const { selectedIndex } = this.state;
+        const { saveJobs } = this.props;
         jobs.push(jobData.data);
         this.handleMenuItemSort(null, selectedIndex);
         const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
+            saveJobs(uqJobs);
             this.setState({ Jobs: uqJobs, isLoading: false, circleProgressRender: true });
         }
     };
@@ -153,6 +157,8 @@ class JobBrowser extends Component {
             <Grid container className="job-item-list">
                 {filteredJobs &&
                     filteredJobs.map((job, i) => {
+                        const maxLength = 400; // max length characters show on description
+                        const description = job.description.length > maxLength ? job.description.slice(0, maxLength) + '...' : job.description;
                         return (
                             <Link to={'freelancer/jobs/' + job.jobHash} key={i} className="job-item">
                                 <Grid item xs={12}>
@@ -169,7 +175,7 @@ class JobBrowser extends Component {
                                     </Grid>
                                     <Grid item xs={12} className="content">
                                         <Grid item xs={12} className="description">
-                                            {job.description}
+                                            {description}
                                         </Grid>
                                         <Grid item xs={12} className="status">
                                             <span className="status green bold">{Utils.getStatusJob(job.status)}</span>
@@ -374,6 +380,7 @@ class JobBrowser extends Component {
 JobBrowser.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    saveJobs: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -382,7 +389,7 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = { saveJobs };
 
 export default connect(
     mapStateToProps,

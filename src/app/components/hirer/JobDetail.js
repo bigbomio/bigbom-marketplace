@@ -76,8 +76,14 @@ class JobDetail extends Component {
     }
 
     jobDataInit = async () => {
-        const { match, web3 } = this.props;
+        const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
+        this.setState({ isLoading: true });
+        if (jobs.length > 0) {
+            const jobData = jobs.filter(job => job.jobHash === jobHash);
+            this.setState({ jobData: jobData[0], isLoading: false });
+            return;
+        }
         this.setState({ isLoading: true, jobHash });
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
@@ -618,11 +624,13 @@ JobDetail.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    jobs: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
+        jobs: state.hirerReducer.jobs,
     };
 };
 

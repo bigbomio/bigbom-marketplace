@@ -15,6 +15,8 @@ import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
+import { saveJobs } from './actions';
+
 const categories = settingsApi.getCategories();
 
 let jobs = [];
@@ -110,6 +112,8 @@ class HirerDashboard extends Component {
                         jobTpl.description = result.description;
                         jobTpl.currency = result.currency;
                         jobTpl.budget = result.budget;
+                        jobTpl.estimatedTime = result.estimatedTime;
+                        jobTpl.expiredTime = result.expiredTime;
                         jobTpl.created = result.created;
                         this.BidCreatedInit(jobTpl);
                     },
@@ -140,9 +144,11 @@ class HirerDashboard extends Component {
     };
 
     JobsInit = jobData => {
+        const { saveJobs } = this.props;
         jobs.push(jobData.data);
         const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
+            saveJobs(uqJobs);
             this.setState({ Jobs: uqJobs, isLoading: false });
         }
     };
@@ -232,7 +238,7 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match } = this.props;
         const { Jobs, stt } = this.state;
-        // console.log(Jobs);
+        console.log(Jobs);
         if (Jobs) {
             if (Jobs.length > 0) {
                 return !stt.err ? (
@@ -447,6 +453,7 @@ HirerDashboard.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    saveJobs: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -455,7 +462,9 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    saveJobs,
+};
 
 export default connect(
     mapStateToProps,

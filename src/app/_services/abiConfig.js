@@ -130,16 +130,19 @@ class abiConfigs {
         let results = {
             data: {},
         };
+
         const events = contractInstance.instance[event](filter, {
             fromBlock: 3938000, // should use recent number
             toBlock: 'latest',
         });
+
         events.get((error, events) => {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
+            let bidAddr = '';
             for (let event of events) {
                 //console.log('event created bid  -------', event);
                 const bidTpl = {
@@ -151,9 +154,21 @@ class abiConfigs {
                     jobHash: mergeData.jobHash,
                     accepted: false,
                     canceled: false,
+                    blockNumber: event.blockNumber,
                 };
                 if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
-                    mergeData.bid.push(bidTpl);
+                    // get latest bid for each address
+                    if (bidTpl.address !== bidAddr) {
+                        bidAddr = bidTpl.address;
+                        mergeData.bid.push(bidTpl);
+                    } else {
+                        mergeData.bid.map((b, i) => {
+                            if (b.address === bidTpl.address) {
+                                mergeData.bid[i] = bidTpl;
+                            }
+                            return mergeData;
+                        });
+                    }
                 }
             }
             results.data = mergeData;
