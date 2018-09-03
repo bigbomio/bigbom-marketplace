@@ -230,7 +230,7 @@ class abiConfigs {
             }
         }
 
-        contractInstance.instance[event](
+        const getSingleEvent = contractInstance.instance[event](
             filter,
             {
                 fromBlock: 3938000, // should use recent number
@@ -241,6 +241,8 @@ class abiConfigs {
                 resultsInit(error, eventResult);
             }
         );
+
+        getSingleEvent.stopWatching();
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {

@@ -238,7 +238,7 @@ class HirerDashboard extends Component {
     jobsRender = () => {
         const { match } = this.props;
         const { Jobs, stt } = this.state;
-        console.log(Jobs);
+        //console.log(Jobs);
         if (Jobs) {
             if (Jobs.length > 0) {
                 return !stt.err ? (

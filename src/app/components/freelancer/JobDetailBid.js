@@ -61,7 +61,7 @@ class JobDetailBid extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                this.jobDataInit();
+                this.jobDataInit(false);
             }
         }
     }
@@ -97,7 +97,8 @@ class JobDetailBid extends Component {
         const { web3 } = this.props;
         const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
         //console.log(jobData);
-        const mybid = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
+        const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
+        const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!isOwner) {
             if (!jobData.status.paymentAccepted || !jobData.status.claimed) {
                 if (jobData.status.bidding) {
@@ -132,7 +133,7 @@ class JobDetailBid extends Component {
                         );
                     }
                 } else if (!jobData.status.waiting && !jobData.status.reject) {
-                    if (mybid.length > 0) {
+                    if (mybidAccepted.length > 0) {
                         return (
                             <span>
                                 {!jobData.status.started && !jobData.status.completed && !jobData.status.claimed ? (
@@ -172,14 +173,17 @@ class JobDetailBid extends Component {
         return null;
     };
 
-    jobDataInit = async () => {
+    jobDataInit = async refresh => {
         const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash: jobHash });
-        if (jobs.length > 0) {
-            const jobData = jobs.filter(job => job.jobHash === jobHash);
-            this.setState({ jobData: jobData[0], isLoading: false, isOwner: web3.eth.defaultAccount === jobData[0].owner });
-            return;
+        if (!refresh) {
+            if (jobs.length > 0) {
+                const jobData = jobs.filter(job => job.jobHash === jobHash);
+                this.checkPayment(jobHash);
+                this.setState({ jobData: jobData[0], isLoading: false, isOwner: web3.eth.defaultAccount === jobData[0].owner });
+                return;
+            }
         }
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
@@ -234,13 +238,13 @@ class JobDetailBid extends Component {
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
+        const { jobHash } = this.state;
         abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
-        this.checkPayment();
+        this.checkPayment(jobHash);
     };
 
     JobsInit = jobData => {
         const { web3 } = this.props;
-
         if (this.mounted) {
             this.setState({
                 jobData: jobData.data,
@@ -250,8 +254,7 @@ class JobDetailBid extends Component {
         }
     };
 
-    checkPayment = async () => {
-        const { jobHash } = this.state;
+    checkPayment = async jobHash => {
         const { web3 } = this.props;
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const now = Date.now();
@@ -579,7 +582,7 @@ class JobDetailBid extends Component {
                                         <FontAwesomeIcon icon="angle-left" />
                                         Back
                                     </ButtonBase>
-                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
+                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
                                         <FontAwesomeIcon icon="sync-alt" />
                                         Refresh
                                     </ButtonBase>
