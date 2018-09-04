@@ -1,4 +1,4 @@
-import cloneDeep from 'clone-deep';
+import cloneDeep from 'lodash.clonedeep';
 import * as nameActList from './consts';
 
 const data = {
