@@ -50,7 +50,7 @@ class JobDetail extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                this.jobDataInit();
+                this.jobDataInit(false);
             }
         }
     }
@@ -75,10 +75,24 @@ class JobDetail extends Component {
         return result;
     }
 
-    jobDataInit = async () => {
-        const { match, web3 } = this.props;
+    jobDataInit = async refresh => {
+        const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash });
+        if (!refresh) {
+            if (jobs.length > 0) {
+                const jobData = jobs.filter(job => job.jobHash === jobHash);
+                if (jobData[0].owner !== web3.eth.defaultAccount) {
+                    this.setState({
+                        stt: { err: true, text: 'You are not permission to view this page' },
+                        isLoading: false,
+                    });
+                    return;
+                }
+                this.setState({ jobData: jobData[0], isLoading: false });
+                return;
+            }
+        }
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
@@ -441,7 +455,7 @@ class JobDetail extends Component {
                                         <FontAwesomeIcon icon="angle-left" />
                                         View all Job
                                     </ButtonBase>
-                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
+                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
                                         <FontAwesomeIcon icon="sync-alt" />
                                         Refresh
                                     </ButtonBase>
@@ -618,11 +632,13 @@ JobDetail.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    jobs: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
+        jobs: state.hirerReducer.jobs,
     };
 };
 

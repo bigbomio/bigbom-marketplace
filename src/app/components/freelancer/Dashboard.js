@@ -14,6 +14,7 @@ import Select from 'react-select';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
+import { saveJobs } from '../hirer/actions';
 
 const categories = settingsApi.getCategories();
 
@@ -109,6 +110,8 @@ class FreelancerDashboard extends Component {
                         jobTpl.description = result.description;
                         jobTpl.currency = result.currency;
                         jobTpl.budget = result.budget;
+                        jobTpl.estimatedTime = result.estimatedTime;
+                        jobTpl.expiredTime = result.expiredTime;
                         jobTpl.created = result.created;
                         this.BidCreatedInit(jobTpl);
                     },
@@ -139,7 +142,7 @@ class FreelancerDashboard extends Component {
     };
 
     JobsInit = jobData => {
-        const { web3 } = this.props;
+        const { web3, saveJobs } = this.props;
         for (let freelancer of jobData.data.bid) {
             if (freelancer.address === web3.eth.defaultAccount) {
                 jobs.push(jobData.data);
@@ -147,6 +150,7 @@ class FreelancerDashboard extends Component {
         }
         const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
+            saveJobs(uqJobs);
             this.setState({ Jobs: uqJobs, isLoading: false });
         }
     };
@@ -446,6 +450,7 @@ FreelancerDashboard.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    saveJobs: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -454,7 +459,7 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = { saveJobs };
 
 export default connect(
     mapStateToProps,
