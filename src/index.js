@@ -11,7 +11,7 @@ import { fab } from '@fortawesome/free-brands-svg-icons';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 
 // Service Worker
-import registerServiceWorker from './registerServiceWorker';
+import { unregister } from './registerServiceWorker';
 
 // Store
 import store, { browserHistory } from './app/stores';
@@ -41,4 +41,4 @@ ReactDOM.render(
     </div>,
     document.getElementById('root')
 );
-registerServiceWorker();
+unregister();
