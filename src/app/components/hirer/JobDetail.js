@@ -385,7 +385,7 @@ class JobDetail extends Component {
     bidActions = freelancer => {
         const { acceptDone, jobData } = this.state;
         let disabled = acceptDone;
-        if (jobData.status.canceled) {
+        if (jobData.status.canceled || freelancer.canceled) {
             disabled = true;
         }
         if (jobData.status.bidding) {
@@ -532,12 +532,13 @@ class JobDetail extends Component {
                                                 {jobData.bid.map(freelancer => {
                                                     return (
                                                         <Grid key={freelancer.address} container className="list-body-row">
-                                                            <Grid item xs={6} className="title">
+                                                            <Grid item xs={6} className={freelancer.accepted ? 'title bold' : 'title'}>
                                                                 <span className="avatar">
                                                                     <FontAwesomeIcon icon="user-circle" />
                                                                 </span>
                                                                 {freelancer.address}
-                                                                {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
+                                                                {freelancer.canceled && <span className="bold">&nbsp;(Canceled)</span>}
+                                                                {freelancer.accepted && <span className="bold">&nbsp;(Accepted)</span>}
                                                             </Grid>
                                                             <Grid item xs={2}>
                                                                 <span className="bold">{Utils.currencyFormat(freelancer.award) + ' '}</span>

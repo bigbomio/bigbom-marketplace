@@ -95,6 +95,7 @@ class JobBrowser extends Component {
                     expired: event.args.expired.toString(),
                     status: jobStatus,
                     bid: [],
+                    blockNumber: event.blockNumber,
                 };
                 fetch(URl)
                     .then(res => res.json())
@@ -141,8 +142,8 @@ class JobBrowser extends Component {
         const { selectedIndex } = this.state;
         const { saveJobs } = this.props;
         jobs.push(jobData.data);
-        this.handleMenuItemSort(null, selectedIndex);
         const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
+        this.handleMenuItemSort(null, selectedIndex, jobs);
         if (this.mounted) {
             saveJobs(uqJobs);
             this.setState({ Jobs: uqJobs, isLoading: false, circleProgressRender: true });
@@ -225,9 +226,9 @@ class JobBrowser extends Component {
         this.setState({ anchorEl: event.currentTarget });
     };
 
-    handleMenuItemSort = (event, index) => {
+    handleMenuItemSort = (event, index, Jobs) => {
         this.setState({ selectedIndex: index, anchorEl: null });
-        const { Jobs } = this.state;
+        //onst { Jobs } = this.state;
         switch (index) {
             case 0:
                 //Latest
@@ -283,7 +284,7 @@ class JobBrowser extends Component {
     };
 
     render() {
-        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender, Jobs } = this.state;
         const categories = settingsApi.getCategories();
 
         return (
@@ -300,7 +301,6 @@ class JobBrowser extends Component {
                     <div className="container wrapper">
                         <Grid className="top-actions">
                             <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getJobs} />}</div>
-
                             <Grid className="action reload-btn">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
                                     <FontAwesomeIcon icon="sync-alt" />
@@ -349,7 +349,7 @@ class JobBrowser extends Component {
                                             <MenuItem
                                                 key={option}
                                                 selected={index === this.state.selectedIndex}
-                                                onClick={event => this.handleMenuItemSort(event, index)}
+                                                onClick={event => this.handleMenuItemSort(event, index, Jobs)}
                                             >
                                                 {option}
                                             </MenuItem>

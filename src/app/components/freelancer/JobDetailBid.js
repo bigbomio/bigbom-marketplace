@@ -293,8 +293,9 @@ class JobDetailBid extends Component {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
         this.setState({ dialogLoading: true });
+        const awardSend = web3.toWei(award, 'ether');
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, award, time, {
+        const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
             from: instanceBid.defaultAccount,
             gasPrice: +instanceBid.gasPrice.toString(10),
         });
@@ -560,7 +561,7 @@ class JobDetailBid extends Component {
 
     render() {
         const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
-        //console.log(jobData);
+        console.log(jobData);
         let jobTplRender;
 
         if (stt.err) {

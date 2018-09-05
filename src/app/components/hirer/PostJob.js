@@ -45,7 +45,7 @@ class HirerPostJob extends Component {
     async newJobInit(jobHash) {
         const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
         const { web3 } = this.props;
-        const budget = web3.toWei(selectedBudget.min_sum, 'ether');
+        const budget = web3.toWei(selectedBudget.max_sum, 'ether');
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
