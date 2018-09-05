@@ -147,7 +147,7 @@ class abiConfigs {
                 //console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
-                    award: event.args.bid.toString(),
+                    award: web3.fromWei(event.args.bid.toString(), 'ether'),
                     created: event.args.created.toString(),
                     timeDone: event.args.timeDone.toString(),
                     id: event.args.jobHash,

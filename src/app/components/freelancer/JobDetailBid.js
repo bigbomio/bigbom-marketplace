@@ -132,7 +132,7 @@ class JobDetailBid extends Component {
                             </ButtonBase>
                         );
                     }
-                } else if (!jobData.status.waiting && !jobData.status.reject) {
+                } else if (!jobData.status.waiting && !jobData.status.reject && !jobData.status.paymentAccepted) {
                     if (mybidAccepted.length > 0) {
                         return (
                             <span>
@@ -144,7 +144,7 @@ class JobDetailBid extends Component {
                                     >
                                         Start Job
                                     </ButtonBase>
-                                ) : !jobData.status.completed && !jobData.status.claimed ? (
+                                ) : !jobData.status.completed && !jobData.status.claimed && !jobData.status.paymentAccepted ? (
                                     <ButtonBase
                                         className="btn btn-normal btn-blue btn-back btn-bid"
                                         onClick={this.confirmCompleteJob}
@@ -561,7 +561,7 @@ class JobDetailBid extends Component {
 
     render() {
         const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
-        console.log(jobData);
+        //console.log(jobData);
         let jobTplRender;
 
         if (stt.err) {
