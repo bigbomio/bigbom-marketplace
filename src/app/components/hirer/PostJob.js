@@ -35,10 +35,17 @@ class HirerPostJob extends Component {
             selectedCategory: {},
             selectedCurrency: currencies[0],
             budgets: budgetsSource,
+            isCustomBudget: false,
             selectedBudget: budgetsSource[2],
             isLoading: false,
             open: false,
             submitDisabled: true,
+            status: {
+                title: '',
+                err: false,
+                text: '',
+                link: '',
+            },
         };
     }
 
@@ -63,7 +70,7 @@ class HirerPostJob extends Component {
         if (err) {
             this.setState({
                 isLoading: false,
-                status: { err: true, text: 'something went wrong! Can not create job :(' },
+                status: { title: 'Create New Job: ', err: true, text: 'something went wrong! Can not create job :(', link: '' },
             });
             console.log(err);
         }
@@ -71,15 +78,35 @@ class HirerPostJob extends Component {
         if (jobLog) {
             this.setState({
                 isLoading: false,
-                status: { err: false, text: 'Your job has been created! Please waiting for confirm from your network.' },
+                status: {
+                    title: 'Create New Job: ',
+                    err: false,
+                    text: 'Your job has been created! Please waiting for confirm from your network.',
+                    link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                },
             });
             setTimeout(() => {
                 this.handleClose();
-            }, 4000);
+            }, 10000);
         }
     }
 
     creatJob = () => {
+        const { balances } = this.props;
+        //console.log(balances);
+        if (balances.ETH <= 0) {
+            this.setState({
+                open: true,
+                status: {
+                    title: 'Error: ',
+                    err: true,
+                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+                    link: '',
+                },
+            });
+            return;
+        }
+
         const {
             namePrepare,
             desPrepare,
@@ -114,17 +141,35 @@ class HirerPostJob extends Component {
     };
 
     validateAll = () => {
-        const { namePrepare, desPrepare, selectedSkill, estimatedTimePrepare, expiredTimePrepare, selectedCategory } = this.state;
+        const {
+            namePrepare,
+            desPrepare,
+            selectedSkill,
+            estimatedTimePrepare,
+            expiredTimePrepare,
+            selectedCategory,
+            isCustomBudget,
+            selectedBudget,
+        } = this.state;
         const title = this.validate(namePrepare, 'title', false);
         const des = this.validate(desPrepare, 'description', false);
         const skills = this.validate(selectedSkill, 'skills', false);
         const category = this.validate(selectedCategory, 'category', false);
         const estimatedTime = this.validate(estimatedTimePrepare, 'estimatedTime', false);
         const expiredTime = this.validate(expiredTimePrepare, 'expiredTime', false);
-        if (title && des && skills && category && estimatedTime && expiredTime) {
-            this.setState({ submitDisabled: false });
+        if (isCustomBudget) {
+            const customBudget = this.validate(selectedBudget.max_sum, 'customBudget', false);
+            if (title && des && skills && category && estimatedTime && expiredTime && customBudget) {
+                this.setState({ submitDisabled: false });
+            } else {
+                this.setState({ submitDisabled: true });
+            }
         } else {
-            this.setState({ submitDisabled: true });
+            if (title && des && skills && category && estimatedTime && expiredTime) {
+                this.setState({ submitDisabled: false });
+            } else {
+                this.setState({ submitDisabled: true });
+            }
         }
     };
 
@@ -234,6 +279,32 @@ class HirerPostJob extends Component {
                 }
             }
             return true;
+        } else if (field === 'customBudget') {
+            if (!val) {
+                if (setState) {
+                    this.setState({
+                        customBudgetErr: 'Please enter your custom budget!',
+                    });
+                }
+                return false;
+            } else {
+                if (Number(val) < 200000) {
+                    if (setState) {
+                        this.setState({
+                            customBudgetErr: 'Please enter your custom budget least 200.000 BBO',
+                        });
+                    }
+                    return false;
+                } else if (Number(val) > 999999999) {
+                    if (setState) {
+                        this.setState({
+                            customBudgetErr: 'Please enter your custom budget most 999.9999.999 BBO',
+                        });
+                    }
+                    return false;
+                }
+            }
+            return true;
         }
     };
 
@@ -260,6 +331,22 @@ class HirerPostJob extends Component {
         } else if (field === 'expiredTime') {
             this.setState({ expiredTimePrepare: Number(val), expiredTimeErr: null });
             if (!this.validate(val, 'expiredTime', true)) {
+                this.setState({ submitDisabled: true });
+                return;
+            }
+        } else if (field === 'customBudget') {
+            const customBudget = {
+                value: new Date().getTime(),
+                id: new Date().getTime(),
+                min_sum: null,
+                max_sum: val,
+                currency: 'BBO',
+                get label() {
+                    return 'Custom budget ( ' + this.max_sum + '+ ' + this.currency + ')';
+                },
+            };
+            this.setState({ selectedBudget: customBudget, customBudgetErr: null });
+            if (!this.validate(val, 'customBudget', true)) {
                 this.setState({ submitDisabled: true });
                 return;
             }
@@ -294,6 +381,13 @@ class HirerPostJob extends Component {
     };
 
     handleChangeBudget = selectedOption => {
+        //console.log(selectedOption);
+        if (selectedOption.id === 'custom') {
+            this.setState({ isCustomBudget: true });
+            setTimeout(() => {
+                this.validateAll();
+            }, 200);
+        }
         this.setState({ selectedBudget: selectedOption });
     };
 
@@ -329,6 +423,8 @@ class HirerPostJob extends Component {
             selectedCurrency,
             selectedBudget,
             selectedCategory,
+            estimatedTimePrepare,
+            expiredTimePrepare,
             nameErr,
             categoryErr,
             estimatedTimeErr,
@@ -337,6 +433,8 @@ class HirerPostJob extends Component {
             skillsErr,
             budgets,
             status,
+            isCustomBudget,
+            customBudgetErr,
             open,
             isLoading,
             submitDisabled,
@@ -356,7 +454,7 @@ class HirerPostJob extends Component {
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                 >
-                    <DialogTitle id="alert-dialog-title">Create New Job:</DialogTitle>
+                    <DialogTitle id="alert-dialog-title">{status.title}</DialogTitle>
                     <DialogContent>
                         {isLoading ? (
                             <div className="loading">
@@ -373,6 +471,14 @@ class HirerPostJob extends Component {
                                             <div className="success">
                                                 <FontAwesomeIcon className="icon" icon="check" />
                                                 {status.text}
+                                                {status.link && (
+                                                    <p>
+                                                        View your transaction status{' '}
+                                                        <a className="bold link" href={status.link} target="_blank" rel="noopener noreferrer">
+                                                            HERE
+                                                        </a>
+                                                    </p>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -461,34 +567,60 @@ class HirerPostJob extends Component {
                                     <Select value={selectedCurrency} onChange={this.handleChangeCurrency} options={currencies} />
                                 </Grid>
                                 <Grid item xs={9}>
-                                    <Select value={selectedBudget} onChange={this.handleChangeBudget} options={budgets} />
+                                    {!isCustomBudget ? (
+                                        <Select value={selectedBudget} onChange={this.handleChangeBudget} options={budgets} />
+                                    ) : (
+                                        <span>
+                                            <input
+                                                className={customBudgetErr ? 'input-err' : ''}
+                                                type="number"
+                                                id="customBudget"
+                                                name="customBudget"
+                                                placeholder="Enter your custom budget..."
+                                                onChange={e => this.inputOnChange(e, 'customBudget')}
+                                            />
+                                            {customBudgetErr && <span className="err">{customBudgetErr}</span>}
+                                        </span>
+                                    )}
                                 </Grid>
                             </Grid>
                             <Grid container className="mkp-form-row">
                                 <Grid item xs={4} className="mkp-form-row-sub left">
                                     <span className="mkp-form-row-label">Estimated Time</span>
-                                    <span className="mkp-form-row-description">Estimated Time (Hour unit)</span>
-                                    <input
-                                        className={estimatedTimeErr ? 'input-err' : ''}
-                                        type="number"
-                                        id="estimatedTime"
-                                        name="estimatedTime"
-                                        min="1"
-                                        onChange={e => this.inputOnChange(e, 'estimatedTime')}
-                                    />
+                                    <span className="mkp-form-row-description">Time estimated for completing this job</span>
+                                    <span className="input-unit">
+                                        <input
+                                            className={estimatedTimeErr ? 'input-err' : ''}
+                                            type="number"
+                                            id="estimatedTime"
+                                            name="estimatedTime"
+                                            min="1"
+                                            onChange={e => this.inputOnChange(e, 'estimatedTime')}
+                                        />
+                                        <span>
+                                            Hour
+                                            {estimatedTimePrepare > 1 ? 's' : ''}
+                                        </span>
+                                    </span>
                                     {estimatedTimeErr && <span className="err">{estimatedTimeErr}</span>}
                                 </Grid>
                                 <Grid item xs={5} className="mkp-form-row-sub">
                                     <span className="mkp-form-row-label">Expired time</span>
-                                    <span className="mkp-form-row-description">After this time freelancer can not bid (Day unit)</span>
-                                    <input
-                                        className={expiredTimeErr ? 'input-err' : ''}
-                                        type="number"
-                                        id="expiredTime"
-                                        name="expiredTime"
-                                        min="1"
-                                        onChange={e => this.inputOnChange(e, 'expiredTime')}
-                                    />
+                                    <span className="mkp-form-row-description">Maximum bid period</span>
+                                    <span className="input-unit">
+                                        <input
+                                            className={expiredTimeErr ? 'input-err' : ''}
+                                            type="number"
+                                            id="expiredTime"
+                                            name="expiredTime"
+                                            min="1"
+                                            onChange={e => this.inputOnChange(e, 'expiredTime')}
+                                        />
+                                        <span>
+                                            Day
+                                            {expiredTimePrepare > 1 ? 's' : ''}
+                                        </span>
+                                    </span>
                                     {expiredTimeErr && <span className="err">{expiredTimeErr}</span>}
                                 </Grid>
                             </Grid>
@@ -507,10 +639,12 @@ class HirerPostJob extends Component {
 
 HirerPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
+    balances: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        balances: state.commonReducer.balances,
     };
 };
 

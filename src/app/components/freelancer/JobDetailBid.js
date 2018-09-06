@@ -42,7 +42,7 @@ class JobDetailBid extends Component {
             time: 0,
             award: 0,
             open: false,
-            actStt: { err: false, text: null },
+            actStt: { err: false, text: null, link: '' },
             dialogLoading: false,
             dialogData: {
                 title: null,
@@ -292,7 +292,7 @@ class JobDetailBid extends Component {
     createBid = async () => {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnStt: false });
         const awardSend = web3.toWei(award, 'ether');
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
@@ -303,8 +303,7 @@ class JobDetailBid extends Component {
             this.setState({
                 bidDone: false,
                 dialogLoading: false,
-                actStt: { err: true, text: 'Can not create bid! :(' },
-                btnStt: false,
+                actStt: { title: 'Error: ', err: true, text: 'Can not create bid! :(', link: '' },
             });
             console.log(err);
             return;
@@ -312,8 +311,12 @@ class JobDetailBid extends Component {
         this.setState({
             bidDone: true,
             dialogLoading: false,
-            actStt: { err: false, text: 'Your bid has been created! Please waiting for confirm from your network.' },
-            btnStt: true,
+            actStt: {
+                title: '',
+                err: false,
+                text: 'Your bid has been created! Please waiting for confirm from your network.',
+                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+            },
         });
         console.log('joblog bid: ', jobLog);
     };
@@ -321,7 +324,7 @@ class JobDetailBid extends Component {
     cancelBid = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnStt: false });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -331,8 +334,7 @@ class JobDetailBid extends Component {
             this.setState({
                 cancelBidDone: false,
                 dialogLoading: false,
-                actStt: { err: true, text: 'Can not cancel bid! :(' },
-                btnStt: false,
+                actStt: { title: 'Error: ', err: true, text: 'Can not cancel bid! :(', link: '' },
             });
             console.log(err);
             return;
@@ -340,8 +342,11 @@ class JobDetailBid extends Component {
         this.setState({
             cancelBidDone: true,
             dialogLoading: false,
-            actStt: { err: false, text: 'Your bid has been canceled! Please waiting for confirm from your network.' },
-            btnStt: true,
+            actStt: {
+                err: false,
+                text: 'Your bid has been canceled! Please waiting for confirm from your network.',
+                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+            },
         });
         console.log('joblog cancel bid: ', jobLog);
     };
@@ -349,7 +354,7 @@ class JobDetailBid extends Component {
     startJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnStt: false });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -359,8 +364,7 @@ class JobDetailBid extends Component {
             this.setState({
                 startJobDone: false,
                 dialogLoading: false,
-                actStt: { err: true, text: 'Can not start job! :(' },
-                btnStt: false,
+                actStt: { title: 'Error: ', err: true, text: 'Can not start job! :(', link: '' },
             });
             console.log(err);
             return;
@@ -368,8 +372,12 @@ class JobDetailBid extends Component {
         this.setState({
             startJobDone: true,
             dialogLoading: false,
-            actStt: { err: false, text: 'This job has been started! Please waiting for confirm from your network.' },
-            btnStt: true,
+            actStt: {
+                title: '',
+                err: false,
+                text: 'This job has been started! Please waiting for confirm from your network.',
+                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+            },
         });
         console.log('joblog start: ', jobLog);
     };
@@ -377,7 +385,7 @@ class JobDetailBid extends Component {
     completeJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnStt: false });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -387,8 +395,7 @@ class JobDetailBid extends Component {
             this.setState({
                 completeJobDone: false,
                 dialogLoading: false,
-                actStt: { err: true, text: 'Can not complete job! :(' },
-                btnStt: false,
+                actStt: { title: 'Error: ', err: true, text: 'Can not complete job! :(', link: '' },
             });
             console.log(err);
             return;
@@ -396,8 +403,12 @@ class JobDetailBid extends Component {
         this.setState({
             completeJobDone: true,
             dialogLoading: false,
-            actStt: { err: false, text: 'This job has been completed! Please waiting for confirm from your network.' },
-            btnStt: true,
+            actStt: {
+                title: '',
+                err: false,
+                text: 'This job has been completed! Please waiting for confirm from your network.',
+                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+            },
         });
         console.log('joblog finish: ', jobLog);
     };
@@ -415,7 +426,7 @@ class JobDetailBid extends Component {
             this.setState({
                 claimPaymentDone: false,
                 dialogLoading: false,
-                actStt: { err: true, text: 'Can not claim payment!, please try again :(' },
+                actStt: { title: 'Error: ', err: true, text: 'Can not claim payment!, please try again :(', link: '' },
                 btnStt: false,
             });
             console.log(err);
@@ -424,8 +435,13 @@ class JobDetailBid extends Component {
         this.setState({
             claimPaymentDone: true,
             dialogLoading: false,
-            actStt: { err: false, text: 'You have claimed! Please waiting for confirm from your network.' },
-            btnStt: true,
+            actStt: {
+                title: '',
+                err: false,
+                text: 'You have claimed! Please waiting for confirm from your network.',
+                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+            },
+            btnStt: false,
         });
         console.log('claim payment log: ', jobLog);
     };
@@ -438,12 +454,11 @@ class JobDetailBid extends Component {
             this.setState({
                 open: true,
                 dialogData: {
-                    title: 'Do you want to bid this job?',
                     actionText: 'Bid',
                     actions: this.createBid,
-                    btnStt: false,
                 },
-                actStt: { err: false, text: null },
+                btnStt: true,
+                actStt: { title: 'Do you want to bid this job?', err: false, text: null, link: '' },
             });
         }
     };
@@ -452,12 +467,11 @@ class JobDetailBid extends Component {
         this.setState({
             open: true,
             dialogData: {
-                title: 'Do you want to cancel bid this job?',
                 actionText: 'Cancel',
                 actions: this.cancelBid,
             },
-            btnStt: false,
-            actStt: { err: false, text: null },
+            btnStt: true,
+            actStt: { title: 'Do you want to cancel bid this job?', err: false, text: null, link: '' },
         });
     };
 
@@ -465,12 +479,11 @@ class JobDetailBid extends Component {
         this.setState({
             open: true,
             dialogData: {
-                title: 'Do you want to start this job?',
                 actionText: 'Start',
                 actions: this.startJob,
-                btnStt: false,
+                btnStt: true,
             },
-            actStt: { err: false, text: null },
+            actStt: { title: 'Do you want to start this job?', err: false, text: null, link: '' },
         });
     };
 
@@ -478,12 +491,11 @@ class JobDetailBid extends Component {
         this.setState({
             open: true,
             dialogData: {
-                title: 'Do you want to complete this job?',
                 actionText: 'Complete',
                 actions: this.completeJob,
             },
-            btnStt: false,
-            actStt: { err: false, text: null },
+            btnStt: true,
+            actStt: { title: 'Do you want to complete this job?', err: false, text: null, link: '' },
         });
     };
 
@@ -491,12 +503,11 @@ class JobDetailBid extends Component {
         this.setState({
             open: true,
             dialogData: {
-                title: 'Do you want to claim payment this job?',
                 actionText: 'Claim',
                 actions: this.claimPayment,
             },
-            btnStt: false,
-            actStt: { err: false, text: null },
+            btnStt: true,
+            actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
         });
     };
 
@@ -701,7 +712,15 @@ class JobDetailBid extends Component {
                                                                         <FontAwesomeIcon icon="user-circle" />
                                                                     </span>
                                                                     {freelancer.address}
-                                                                    {freelancer.canceled && <span className="bold">&nbsp;(canceled)</span>}
+                                                                    {freelancer.canceled && (
+                                                                        <span className="bold">
+                                                                            <span className="text-stt-unsuccess">
+                                                                                &nbsp;
+                                                                                <FontAwesomeIcon icon="times-circle" />
+                                                                                Canceled
+                                                                            </span>
+                                                                        </span>
+                                                                    )}
                                                                 </Grid>
                                                                 <Grid item xs={2}>
                                                                     <span className="bold">
@@ -751,7 +770,7 @@ class JobDetailBid extends Component {
                     open={open}
                     stt={actStt}
                     actions={dialogData.actions}
-                    title={dialogData.title}
+                    title={actStt.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
                     btnStt={btnStt}

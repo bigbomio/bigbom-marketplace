@@ -19,4 +19,9 @@ export default [
         value: 'seo',
         label: 'SEO',
     },
+    {
+        id: 5,
+        value: 'other',
+        label: 'Other',
+    },
 ];

@@ -165,7 +165,9 @@ class LoginMethods extends Component {
                                         Connect
                                     </ButtonBase>
                                 ) : (
-                                    <ButtonBase className="btn btn-normal btn-white">Connect</ButtonBase>
+                                    <ButtonBase className="btn btn-normal btn-white" disabled>
+                                        Connect
+                                    </ButtonBase>
                                 )}
                             </div>
                         </Square>

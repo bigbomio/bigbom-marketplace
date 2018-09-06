@@ -8,6 +8,8 @@ import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 
 import Utils from '../../_utils/utils';
+import abiConfig from '../../_services/abiConfig';
+import { setBalances } from './actions';
 
 const styles = theme => ({
     lightTooltip: {
@@ -28,6 +30,7 @@ class UserInfoNav extends Component {
         const { isConnected } = this.props;
         if (isConnected) {
             this.getNetwork();
+            this.getBalance();
         }
     }
 
@@ -40,16 +43,39 @@ class UserInfoNav extends Component {
         }
     };
 
+    getBalance = async () => {
+        const { web3, setBalances } = this.props;
+        let balances = {
+            ETH: 0,
+            BBO: 0,
+        };
+        web3.eth.getBalance(web3.eth.defaultAccount, (err, balance) => {
+            const ethBalance = Number(web3.fromWei(balance, 'ether').toString(10)).toFixed(3);
+            balances.ETH = ethBalance;
+            //console.log(ethBalance, 'ETH');
+        });
+
+        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(BBOinstance.defaultAccount, {
+            from: BBOinstance.defaultAccount,
+            gasPrice: +BBOinstance.gasPrice.toString(10),
+        });
+
+        if (!errBalance) {
+            const BBOBalance = Number(web3.fromWei(balance, 'ether').toString(10)).toFixed(3);
+            balances.BBO = BBOBalance;
+            //console.log(BBOBalance, 'BBO');
+        }
+        setBalances(balances);
+    };
+
     render() {
         const { defaultAccount, isConnected, classes } = this.props;
         const { yourNetwork } = this.state;
         return (
             <Grid container className="account-info">
                 {isConnected && (
-                    <Tooltip
-                        title={defaultAccount}
-                        classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}
-                    >
+                    <Tooltip title={defaultAccount} classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}>
                         <Grid item xs={7} className="account-info-item" aria-label={defaultAccount}>
                             <div>Your Wallet Address</div>
                             {Utils.truncate(defaultAccount, 22)}
@@ -72,6 +98,7 @@ UserInfoNav.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
+    setBalances: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -82,7 +109,9 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    setBalances,
+};
 
 export default withStyles(styles)(
     withRouter(

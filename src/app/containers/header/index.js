@@ -30,7 +30,7 @@ class Header extends PureComponent {
                     <header>
                         <div className="logo">
                             <Link to="/">
-                                <img src="/images/logo.png" alt="" />
+                                <img src="/images/logo.svg" alt="" />
                             </Link>
                         </div>
                         {routes.length && (
@@ -50,11 +50,7 @@ class Header extends PureComponent {
                                 })}
                                 {!isConnected && (
                                     <li>
-                                        <ButtonBase
-                                            variant="contained"
-                                            className="btn btn-normal btn-green"
-                                            onClick={() => this.login()}
-                                        >
+                                        <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.login()}>
                                             Login
                                         </ButtonBase>
                                     </li>
