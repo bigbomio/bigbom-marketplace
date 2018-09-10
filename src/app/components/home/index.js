@@ -101,7 +101,7 @@ class Home extends Component {
                 </div>
                 <div className="container wrapper">
                     <Grid container className="home-content">
-                        <Grid container>
+                        {/* <Grid container>
                             <h2>Pick your job right now </h2>
                         </Grid>
                         <Grid container>
@@ -132,7 +132,7 @@ class Home extends Component {
                             <Grid item xs className="home-content-item ">
                                 <div className="home-content-img view-all">View all category</div>
                             </Grid>
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                 </div>
             </div>

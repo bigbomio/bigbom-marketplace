@@ -81,7 +81,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3938000, // should use recent number
+            fromBlock: 3970636, // should use recent number
             toBlock: 'latest',
         });
 
@@ -102,7 +102,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: 3938000, // should use recent number
+            fromBlock: 3970636, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, bidCanceledEvents) {
@@ -132,7 +132,7 @@ class abiConfigs {
         };
 
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3938000, // should use recent number
+            fromBlock: 3970636, // should use recent number
             toBlock: 'latest',
         });
 
@@ -147,7 +147,7 @@ class abiConfigs {
                 //console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
-                    award: event.args.bid.toString(),
+                    award: Utils.WeiToBBO(web3, event.args.bid.toString()),
                     created: event.args.created.toString(),
                     timeDone: event.args.timeDone.toString(),
                     id: event.args.jobHash,
@@ -184,7 +184,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3938000, // should use recent number
+            fromBlock: 3970636, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, events) {
@@ -233,7 +233,7 @@ class abiConfigs {
         const getSingleEvent = contractInstance.instance[event](
             filter,
             {
-                fromBlock: 3938000, // should use recent number
+                fromBlock: 3970636, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
@@ -246,7 +246,7 @@ class abiConfigs {
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3938000, // should use recent number
+            fromBlock: 3970636, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {

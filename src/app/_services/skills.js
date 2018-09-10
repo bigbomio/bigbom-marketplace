@@ -1,32 +1,38 @@
 export default [
     {
         id: 1,
-        value: 'html',
+        value: 'HTML',
         label: 'HTML',
     },
     {
         id: 2,
-        value: 'css',
+        value: 'CSS',
         label: 'CSS',
     },
     {
         id: 3,
-        value: 'social',
-        label: 'Social',
+        value: 'Javascript',
+        label: 'Javascript',
     },
     {
         id: 4,
-        value: 'seo',
-        label: 'SEO',
+        value: 'Photoshop',
+        label: 'Photoshop',
     },
     {
         id: 5,
-        value: 'flash',
-        label: 'Flash',
+        value: 'Animation',
+        label: 'Animation',
     },
     {
         id: 6,
-        value: 'javascript',
-        label: 'Javascript',
+        value: 'Video',
+        label: 'Video',
+    },
+
+    {
+        id: 7,
+        value: 'Flash',
+        label: 'Flash',
     },
 ];

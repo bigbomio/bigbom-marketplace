@@ -372,7 +372,7 @@ class FreelancerDashboard extends Component {
                                                         value="started"
                                                     />
                                                 }
-                                                label="Started"
+                                                label="In Progress"
                                             />
                                         </Grid>
                                         <Grid item xs={2}>

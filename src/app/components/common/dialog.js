@@ -24,7 +24,7 @@ class DialogPopup extends Component {
     };
 
     render() {
-        const { dialogLoading, stt, title, actionText, open, btnStt } = this.props;
+        const { dialogLoading, stt, title, actionText, open, btnSttDisabled } = this.props;
         return (
             <Dialog
                 open={open}
@@ -48,7 +48,21 @@ class DialogPopup extends Component {
                         <div className="alert-dialog-description">
                             {stt && (
                                 <div className="dialog-result">
-                                    {stt.err ? <div className="err">{stt.text}</div> : <div className="success">{stt.text}</div>}
+                                    {stt.err ? (
+                                        <div className="err">{stt.text}</div>
+                                    ) : (
+                                        <div className="success">
+                                            {stt.text}
+                                            {stt.link && (
+                                                <p>
+                                                    View your transaction status{' '}
+                                                    <a className="bold link" href={stt.link} target="_blank" rel="noopener noreferrer">
+                                                        HERE
+                                                    </a>
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -61,7 +75,7 @@ class DialogPopup extends Component {
                         </ButtonBase>
                     )}
                     {actionText && (
-                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={btnStt}>
+                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={btnSttDisabled}>
                             {actionText}
                         </ButtonBase>
                     )}
@@ -79,7 +93,7 @@ DialogPopup.propTypes = {
     title: PropTypes.string,
     actionText: PropTypes.string,
     actClose: PropTypes.func.isRequired,
-    btnStt: PropTypes.bool.isRequired,
+    btnSttDisabled: PropTypes.bool.isRequired,
 };
 
 DialogPopup.defaultProps = {

@@ -4,7 +4,8 @@ import { Router, Route, Switch } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Eth from 'ethjs';
 import { connect } from 'react-redux';
-
+import { isMobile } from 'react-device-detect';
+//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import asyncComponent from '../components/_asynComponent';
 import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';
@@ -69,7 +70,7 @@ class Routers extends PureComponent {
                     setNetwork(network);
                     if (defaultAccount) {
                         logoutMetamask();
-                        console.log('logout');
+                        //console.log('logout');
                         history.push('/login');
                     }
                 }
@@ -82,25 +83,39 @@ class Routers extends PureComponent {
     render() {
         const { history } = this.props;
         const { routes } = this.state;
-        return (
-            <Router history={history}>
-                <ScrollToTop>
-                    <div className="main-container">
-                        <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
-                            <meta name="description" content="Bigbom Marketplace" />
-                        </Helmet>
-                        <Header history={history} />
-                        <Switch>
-                            <Route exact path="/" component={Home} />
-                            <Route path="/login" component={Login} />
-                            {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
-                            <Route component={NotFound} />
-                        </Switch>
-                        <Footer />
+        if (isMobile) {
+            return (
+                <div className="not-support-err">
+                    <h1>Not Supported!</h1>
+                    <div className="ct">
+                        <img src="/images/phonelock.png" alt="" />
+                        <p className="bold">We are sorry!</p>
+                        <p>This App requires use on PC browser, which is not supported by your device.</p>
+                        <p>We will update in the next version.</p>
                     </div>
-                </ScrollToTop>
-            </Router>
-        );
+                </div>
+            );
+        } else {
+            return (
+                <Router history={history}>
+                    <ScrollToTop>
+                        <div className="main-container">
+                            <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
+                                <meta name="description" content="Bigbom Marketplace" />
+                            </Helmet>
+                            <Header history={history} />
+                            <Switch>
+                                <Route exact path="/" component={Home} />
+                                <Route path="/login" component={Login} />
+                                {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
+                                <Route component={NotFound} />
+                            </Switch>
+                            <Footer />
+                        </div>
+                    </ScrollToTop>
+                </Router>
+            );
+        }
     }
 }
 

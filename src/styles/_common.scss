@@ -10,6 +10,22 @@ $transition: all 0.3s ease-in;
 $red: red;
 $orange: #f99a0c;
 #bigbomMarketplace {
+    .not-support-err {
+        line-height: 30px;
+        background: #fff;
+        margin: 20px;
+        box-shadow: $thinShadow;
+        text-align: center;
+        h1 {
+            background: $blue;
+            color: #fff;
+            font-size: 20px;
+            padding: 20px 30px;
+        }
+        .ct {
+            padding: 20px;
+        }
+    }
     .container-wrp {
         float: left;
         width: 100%;
@@ -79,6 +95,16 @@ $orange: #f99a0c;
             padding: 0 0 10px 0;
             display: inline-block;
         }
+        .input-unit {
+            display: flex;
+            align-items: center;
+            span {
+                color: #888;
+                padding-left: 5px;
+                padding-right: 20px;
+                font-size: 14px;
+            }
+        }
         input[type='text'],
         input[type='number'],
         textarea {
@@ -112,7 +138,7 @@ $orange: #f99a0c;
 
     .account-info {
         padding: 4px 10px;
-        width: 30%;
+        width: 38%;
         float: right;
         border-right: 1px solid rgba(0, 0, 0, 0.3);
         border-left: 1px solid rgba(0, 0, 0, 0.3);
@@ -124,7 +150,7 @@ $orange: #f99a0c;
             font-size: 14px;
             line-height: 19px;
             &.right {
-                padding-left: 10px;
+                padding-left: 15px;
             }
             div {
                 color: #999;
@@ -492,5 +518,28 @@ $orange: #f99a0c;
         svg {
             color: $blue;
         }
+    }
+    .link {
+        color: $blue;
+    }
+    .text-stt-success {
+        color: $green;
+        svg {
+            margin-right: 5px;
+            margin-left: 10px;
+        }
+    }
+    .text-stt-unsuccess {
+        color: $red;
+        svg {
+            margin-right: 5px;
+            margin-left: 10px;
+        }
+    }
+}
+
+@media (max-width: 1023px) {
+    .root {
+        width: 100%;
     }
 }

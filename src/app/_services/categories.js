@@ -1,22 +1,22 @@
 export default [
     {
         id: 1,
-        value: 'design',
-        label: 'Design',
+        value: 'SearchAdvertising',
+        label: 'Search Advertising',
     },
     {
         id: 2,
-        value: 'marketing',
-        label: 'Marketing',
+        value: 'SocialAdvertising',
+        label: 'Social Advertising',
     },
     {
         id: 3,
-        value: 'social',
-        label: 'Social',
+        value: 'Design',
+        label: 'Design',
     },
     {
         id: 4,
-        value: 'seo',
-        label: 'SEO',
+        value: 'Others',
+        label: 'Others',
     },
 ];
