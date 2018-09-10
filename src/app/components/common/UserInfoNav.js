@@ -50,7 +50,7 @@ class UserInfoNav extends Component {
             BBO: 0,
         };
         web3.eth.getBalance(web3.eth.defaultAccount, (err, balance) => {
-            const ethBalance = Number(web3.fromWei(balance, 'ether').toString(10)).toFixed(3);
+            const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
             balances.ETH = ethBalance;
             //console.log(ethBalance, 'ETH');
         });
@@ -62,7 +62,7 @@ class UserInfoNav extends Component {
         });
 
         if (!errBalance) {
-            const BBOBalance = Number(web3.fromWei(balance, 'ether').toString(10)).toFixed(3);
+            const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
             balances.BBO = BBOBalance;
             //console.log(BBOBalance, 'BBO');
         }

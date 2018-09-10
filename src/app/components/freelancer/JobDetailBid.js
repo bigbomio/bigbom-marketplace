@@ -293,7 +293,7 @@ class JobDetailBid extends Component {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
         this.setState({ dialogLoading: true, btnStt: false });
-        const awardSend = web3.toWei(award, 'ether');
+        const awardSend = Utils.BBOToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
             from: instanceBid.defaultAccount,
@@ -668,7 +668,7 @@ class JobDetailBid extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            <Countdown expiredTime={jobData.expiredTime} />
+                                            {jobData.status.bidding && <Countdown expiredTime={jobData.expiredTime} />}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -696,7 +696,7 @@ class JobDetailBid extends Component {
                                                     Bid Address
                                                 </Grid>
                                                 <Grid item xs={2}>
-                                                    Awarded Bid
+                                                    Bid Amount
                                                 </Grid>
                                                 <Grid item xs={2}>
                                                     Time

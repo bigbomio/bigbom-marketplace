@@ -186,9 +186,10 @@ class JobDetail extends Component {
                 actStt: { title: 'Error: ', err: true, text: 'Can not accept bid! :(', link: '' },
             });
             console.log('errApprove: ', errApprove);
-            return;
+            return false;
         }
         console.log('approve: ', approve);
+        return true;
     }
 
     acceptBid = async () => {
@@ -223,8 +224,8 @@ class JobDetail extends Component {
 
     acceptBidInit = async () => {
         const { bidValue } = this.state;
-        const { balances } = this.props;
-        if (balances.ETH <= 0) {
+        const { web3, balances } = this.props;
+        if (Number(balances.ETH) <= 0) {
             this.setState({
                 actStt: {
                     title: 'Error: ',
@@ -235,7 +236,7 @@ class JobDetail extends Component {
                 btnStt: false,
             });
             return;
-        } else if (balances.BBO <= 0) {
+        } else if (Utils.BBOToWei(web3, balances.BBO) < Number(bidValue)) {
             this.setState({
                 actStt: {
                     title: 'Error: ',
@@ -249,16 +250,21 @@ class JobDetail extends Component {
         }
         this.setState({ dialogLoading: true, btnStt: false });
         const allowance = await this.getAllowance();
-        //console.log(Number(allowance.toString(10)), Number(bidValue));
         if (Number(allowance.toString(10)) === 0) {
-            await this.approve(Math.pow(2, 255));
-            await this.acceptBid();
+            const apprv = await this.approve(Math.pow(2, 255));
+            if (apprv) {
+                await this.acceptBid();
+            }
         } else if (Number(allowance.toString(10)) > Number(bidValue)) {
             await this.acceptBid();
         } else {
-            await this.approve(0);
-            await this.approve(Math.pow(2, 255));
-            await this.acceptBid();
+            const apprv = await this.approve(0);
+            if (apprv) {
+                const apprv2 = await this.approve(Math.pow(2, 255));
+                if (apprv2) {
+                    await this.acceptBid();
+                }
+            }
         }
     };
 
@@ -360,7 +366,7 @@ class JobDetail extends Component {
         this.setState({
             open: true,
             bidAddress: bid.address,
-            bidValue: web3.toWei(bid.award, 'ether'), // convert bbo to eth wei
+            bidValue: Utils.BBOToWei(web3, bid.award), // convert bbo to eth wei
             dialogData: {
                 actionText: 'Accept',
                 actions: this.acceptBidInit,
@@ -528,7 +534,7 @@ class JobDetail extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            <Countdown expiredTime={jobData.expiredTime} />
+                                            {jobData.status.bidding && <Countdown expiredTime={jobData.expiredTime} />}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={1}>
@@ -556,7 +562,7 @@ class JobDetail extends Component {
                                                 Bid Address
                                             </Grid>
                                             <Grid item xs={2}>
-                                                Awarded Bid
+                                                Bid Amount
                                             </Grid>
                                             <Grid item xs={2}>
                                                 Time

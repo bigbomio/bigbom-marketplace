@@ -122,7 +122,7 @@ class Utils {
         } else if (all.bidAccepted) {
             return ['Bid Accepted'];
         } else if (all.started) {
-            return ['Started'];
+            return ['In Progress'];
         } else if (all.completed) {
             return ['Completed'];
         } else if (all.paymentAccepted) {
@@ -140,7 +140,7 @@ class Utils {
         // [owner, expired, budget, cancel, status, freelancer]
         if (stts[3]) {
             return false;
-        } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000) ? true : false) {
+        } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000)) {
             return false;
         } else if (stts[5] !== '0x0000000000000000000000000000000000000000') {
             return false;
@@ -272,6 +272,14 @@ class Utils {
         return myArr.filter((obj, pos, arr) => {
             return arr.map(mapObj => mapObj[prop]).indexOf(obj[prop]) === pos;
         });
+    }
+
+    BBOToWei(web3, value) {
+        return Number(web3.toWei(value, 'ether'));
+    }
+
+    WeiToBBO(web3, value) {
+        return Number(web3.fromWei(value, 'ether'));
     }
 }
 export default new Utils();

@@ -52,7 +52,7 @@ class HirerPostJob extends Component {
     async newJobInit(jobHash) {
         const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
         const { web3 } = this.props;
-        const budget = web3.toWei(selectedBudget.max_sum, 'ether');
+        const budget = Utils.BBOToWei(web3, selectedBudget.max_sum);
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
@@ -585,7 +585,7 @@ class HirerPostJob extends Component {
                                 </Grid>
                             </Grid>
                             <Grid container className="mkp-form-row">
-                                <Grid item xs={4} className="mkp-form-row-sub left">
+                                <Grid item xs={5} className="mkp-form-row-sub left">
                                     <span className="mkp-form-row-label">Estimated Time</span>
                                     <span className="mkp-form-row-description">Time estimated for completing this job</span>
                                     <span className="input-unit">
