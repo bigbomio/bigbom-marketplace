@@ -40,7 +40,7 @@ class JobDetail extends Component {
                 actionText: null,
                 actions: null,
             },
-            btnStt: false,
+            btnSttDisabled: false,
         };
     }
 
@@ -62,7 +62,8 @@ class JobDetail extends Component {
     async getAllowance() {
         const { web3 } = this.props;
         const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(BBOinstance.defaultAccount, BBOinstance.address);
+        const BidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(BidInstance.defaultAccount, BidInstance.address);
         if (err) {
             this.setState({
                 acceptDone: false,
@@ -233,7 +234,7 @@ class JobDetail extends Component {
                     text: 'Sorry, you have insufficient funds! You can not create a job if your ETH balance less than fee.',
                     link: '',
                 },
-                btnStt: false,
+                btnSttDisabled: true,
             });
             return;
         } else if (Utils.BBOToWei(web3, balances.BBO) < Number(bidValue)) {
@@ -244,11 +245,11 @@ class JobDetail extends Component {
                     text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than fee.',
                     link: '',
                 },
-                btnStt: false,
+                btnSttDisabled: true,
             });
             return;
         }
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const allowance = await this.getAllowance();
         if (Number(allowance.toString(10)) === 0) {
             const apprv = await this.approve(Math.pow(2, 255));
@@ -271,7 +272,7 @@ class JobDetail extends Component {
     cancelJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [cancelErr, cancelLog] = await Utils.callMethod(jobInstance.instance.cancelJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -302,7 +303,7 @@ class JobDetail extends Component {
     payment = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.acceptPayment)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -333,7 +334,7 @@ class JobDetail extends Component {
     rejectPayment = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.rejectPayment)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -372,7 +373,7 @@ class JobDetail extends Component {
                 actions: this.acceptBidInit,
             },
             actStt: { title: 'Do you want to accept bid?', err: false, text: null, link: '' },
-            btnStt: true,
+            btnSttDisabled: false,
         });
     };
 
@@ -384,7 +385,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to cancel this job?', err: false, text: null, link: '' },
-            btnStt: true,
+            btnSttDisabled: false,
         });
     };
 
@@ -396,7 +397,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to payment for this job?', err: false, text: null, link: '' },
-            btnStt: true,
+            btnSttDisabled: false,
         });
     };
 
@@ -408,7 +409,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to reject payment this job?', err: false, text: null, link: '' },
-            btnStt: true,
+            btnSttDisabled: false,
         });
     };
 
@@ -477,7 +478,7 @@ class JobDetail extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
+        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData, btnSttDisabled } = this.state;
         let jobTplRender;
 
         if (stt.err) {
@@ -508,7 +509,7 @@ class JobDetail extends Component {
                             </Grid>
                             <Grid container>
                                 <Grid container className="job-detail-row">
-                                    <Grid item xs={11}>
+                                    <Grid item xs={10}>
                                         <Grid container>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Bid</div>
@@ -517,12 +518,12 @@ class JobDetail extends Component {
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Avg Bid ({jobData.currency.label})</div>
                                                 <div className="ct">
-                                                    ${jobData.bid.length > 0 ? Utils.currencyFormat(Utils.avgBid(jobData.bid)) : 'NaN'}
+                                                    {jobData.bid.length > 0 ? Utils.currencyFormat(Utils.avgBid(jobData.bid)) : 'NaN'}
                                                 </div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Job budget ({jobData.currency.label})</div>
-                                                <div className="ct">${Utils.currencyFormat(jobData.budget.max_sum)}</div>
+                                                <div className="ct">{Utils.currencyFormat(jobData.budget.max_sum)}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Estimated time</div>
@@ -537,7 +538,7 @@ class JobDetail extends Component {
                                             {jobData.status.bidding && <Countdown expiredTime={jobData.expiredTime} />}
                                         </Grid>
                                     </Grid>
-                                    <Grid item xs={1}>
+                                    <Grid item xs={2}>
                                         <Grid item xs className="job-detail-col status">
                                             <div className="name">Status</div>
                                             <div className="ct">{Utils.getStatusJob(jobData.status)}</div>
@@ -653,7 +654,7 @@ class JobDetail extends Component {
                     title={actStt.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
-                    btnStt={btnStt}
+                    btnSttDisabled={btnSttDisabled}
                 />
                 <div id="hirer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">

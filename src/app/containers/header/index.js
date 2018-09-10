@@ -16,6 +16,10 @@ class Header extends PureComponent {
         };
     }
 
+    getBBO = () => {
+        window.open('https://faucet.ropsten.bigbom.net/', '_blank');
+    };
+
     login = () => {
         const { history } = this.props;
         history.push('/login');
@@ -23,14 +27,14 @@ class Header extends PureComponent {
 
     render() {
         const { routes } = this.state;
-        const { isConnected } = this.props;
+        //const { isConnected } = this.props;
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
                     <header>
                         <div className="logo">
                             <Link to="/">
-                                <img src="/images/logo.svg" alt="" />
+                                <img src="/images/logo_alpha.svg" alt="" />
                             </Link>
                         </div>
                         {routes.length && (
@@ -48,13 +52,18 @@ class Header extends PureComponent {
                                         </Route>
                                     );
                                 })}
-                                {!isConnected && (
+                                {/* {!isConnected && (
                                     <li>
                                         <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.login()}>
                                             Login
                                         </ButtonBase>
                                     </li>
-                                )}
+                                )} */}
+                                <li>
+                                    <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.getBBO()}>
+                                        Get Free BBO
+                                    </ButtonBase>
+                                </li>
                             </ul>
                         )}
                     </header>
@@ -66,7 +75,7 @@ class Header extends PureComponent {
 
 Header.propTypes = {
     history: PropTypes.object.isRequired,
-    isConnected: PropTypes.bool.isRequired,
+    // isConnected: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {

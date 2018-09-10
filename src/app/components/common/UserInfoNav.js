@@ -24,6 +24,10 @@ const styles = theme => ({
 class UserInfoNav extends Component {
     state = {
         yourNetwork: '',
+        balances: {
+            ETH: 0,
+            BBO: 0,
+        },
     };
 
     componentDidMount() {
@@ -66,29 +70,32 @@ class UserInfoNav extends Component {
             balances.BBO = BBOBalance;
             //console.log(BBOBalance, 'BBO');
         }
+        this.setState({ balances });
         setBalances(balances);
     };
 
     render() {
         const { defaultAccount, isConnected, classes } = this.props;
-        const { yourNetwork } = this.state;
+        const { yourNetwork, balances } = this.state;
         return (
-            <Grid container className="account-info">
-                {isConnected && (
+            isConnected && (
+                <Grid container className="account-info">
+                    <Grid item xs={3} className="account-info-item" aria-label={defaultAccount}>
+                        <div>Your Balance</div>
+                        {Utils.currencyFormat(balances.BBO)} BBO
+                    </Grid>
                     <Tooltip title={defaultAccount} classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}>
-                        <Grid item xs={7} className="account-info-item" aria-label={defaultAccount}>
+                        <Grid item xs={6} className="account-info-item" aria-label={defaultAccount}>
                             <div>Your Wallet Address</div>
-                            {Utils.truncate(defaultAccount, 22)}
+                            {Utils.truncate(defaultAccount, 26)}
                         </Grid>
                     </Tooltip>
-                )}
-                {isConnected && (
-                    <Grid item xs={5} className="account-info-item right">
+                    <Grid item xs={3} className="account-info-item right">
                         <div>Your Network</div>
                         <span>{yourNetwork}</span>
                     </Grid>
-                )}
-            </Grid>
+                </Grid>
+            )
         );
     }
 }

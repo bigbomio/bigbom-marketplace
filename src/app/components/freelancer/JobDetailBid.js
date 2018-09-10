@@ -49,7 +49,7 @@ class JobDetailBid extends Component {
                 actionText: null,
                 actions: null,
             },
-            btnStt: false,
+            btnSttDisabled: false,
             claim: false,
         };
     }
@@ -78,7 +78,7 @@ class JobDetailBid extends Component {
                     return (
                         <Grid item className="job-detail-col">
                             <div className="name">Your Bid ({jobData.currency.label})</div>
-                            <div className="ct">${freelancer.award}</div>
+                            <div className="ct">{Utils.currencyFormat(freelancer.award)}</div>
                         </Grid>
                     );
                 }
@@ -87,7 +87,7 @@ class JobDetailBid extends Component {
             return (
                 <Grid item className="job-detail-col">
                     <div className="name">Your Bid ({jobData.currency.label})</div>
-                    <div className="ct">$NaN</div>
+                    <div className="ct">NaN</div>
                 </Grid>
             );
         }
@@ -292,7 +292,7 @@ class JobDetailBid extends Component {
     createBid = async () => {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const awardSend = Utils.BBOToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
@@ -324,7 +324,7 @@ class JobDetailBid extends Component {
     cancelBid = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -354,7 +354,7 @@ class JobDetailBid extends Component {
     startJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -385,7 +385,7 @@ class JobDetailBid extends Component {
     completeJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnStt: false });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -426,8 +426,8 @@ class JobDetailBid extends Component {
             this.setState({
                 claimPaymentDone: false,
                 dialogLoading: false,
-                actStt: { title: 'Error: ', err: true, text: 'Can not claim payment!, please try again :(', link: '' },
-                btnStt: false,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not claim payment! :(', link: '' },
+                btnSttDisabled: true,
             });
             console.log(err);
             return;
@@ -441,7 +441,7 @@ class JobDetailBid extends Component {
                 text: 'You have claimed! Please waiting for confirm from your network.',
                 link: 'https://ropsten.etherscan.io/tx/' + jobLog,
             },
-            btnStt: false,
+            btnSttDisabled: true,
         });
         console.log('claim payment log: ', jobLog);
     };
@@ -457,7 +457,7 @@ class JobDetailBid extends Component {
                     actionText: 'Bid',
                     actions: this.createBid,
                 },
-                btnStt: true,
+                btnSttDisabled: false,
                 actStt: { title: 'Do you want to bid this job?', err: false, text: null, link: '' },
             });
         }
@@ -470,7 +470,7 @@ class JobDetailBid extends Component {
                 actionText: 'Cancel',
                 actions: this.cancelBid,
             },
-            btnStt: true,
+            btnSttDisabled: false,
             actStt: { title: 'Do you want to cancel bid this job?', err: false, text: null, link: '' },
         });
     };
@@ -481,7 +481,7 @@ class JobDetailBid extends Component {
             dialogData: {
                 actionText: 'Start',
                 actions: this.startJob,
-                btnStt: true,
+                btnSttDisabled: false,
             },
             actStt: { title: 'Do you want to start this job?', err: false, text: null, link: '' },
         });
@@ -494,7 +494,7 @@ class JobDetailBid extends Component {
                 actionText: 'Complete',
                 actions: this.completeJob,
             },
-            btnStt: true,
+            btnSttDisabled: false,
             actStt: { title: 'Do you want to complete this job?', err: false, text: null, link: '' },
         });
     };
@@ -506,7 +506,7 @@ class JobDetailBid extends Component {
                 actionText: 'Claim',
                 actions: this.claimPayment,
             },
-            btnStt: true,
+            btnSttDisabled: false,
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
         });
     };
@@ -571,7 +571,7 @@ class JobDetailBid extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnStt } = this.state;
+        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnSttDisabled } = this.state;
         //console.log(jobData);
         let jobTplRender;
 
@@ -652,11 +652,11 @@ class JobDetailBid extends Component {
                                             {this.getMyBid()}
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Avg Bid ({jobData.currency.label})</div>
-                                                <div className="ct">${Utils.currencyFormat(Utils.avgBid(jobData.bid))}</div>
+                                                <div className="ct">{Utils.currencyFormat(Utils.avgBid(jobData.bid))}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Job budget ({jobData.currency.label})</div>
-                                                <div className="ct">${Utils.currencyFormat(jobData.budget.max_sum)}</div>
+                                                <div className="ct">{Utils.currencyFormat(jobData.budget.max_sum)}</div>
                                             </Grid>
                                             <Grid item className="job-detail-col">
                                                 <div className="name">Estimated time</div>
@@ -773,7 +773,7 @@ class JobDetailBid extends Component {
                     title={actStt.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
-                    btnStt={btnStt}
+                    btnSttDisabled={btnSttDisabled}
                 />
                 <div id="freelancer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">

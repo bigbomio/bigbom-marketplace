@@ -138,6 +138,7 @@ class Utils {
 
     getBiddingStt(stts) {
         // [owner, expired, budget, cancel, status, freelancer]
+
         if (stts[3]) {
             return false;
         } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000)) {

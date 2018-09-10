@@ -245,7 +245,7 @@ body {
 
 #bigbomMarketplace .account-info {
   padding: 4px 10px;
-  width: 30%;
+  width: 38%;
   float: right;
   border-right: 1px solid rgba(0, 0, 0, 0.3);
   border-left: 1px solid rgba(0, 0, 0, 0.3);
@@ -257,7 +257,7 @@ body {
     font-size: 14px;
     line-height: 19px; }
     #bigbomMarketplace .account-info .account-info-item.right {
-      padding-left: 10px; }
+      padding-left: 15px; }
     #bigbomMarketplace .account-info .account-info-item div {
       color: #999;
       font-size: 12px; }

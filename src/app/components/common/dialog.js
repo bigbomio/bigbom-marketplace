@@ -24,7 +24,7 @@ class DialogPopup extends Component {
     };
 
     render() {
-        const { dialogLoading, stt, title, actionText, open, btnStt } = this.props;
+        const { dialogLoading, stt, title, actionText, open, btnSttDisabled } = this.props;
         return (
             <Dialog
                 open={open}
@@ -75,7 +75,7 @@ class DialogPopup extends Component {
                         </ButtonBase>
                     )}
                     {actionText && (
-                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={!btnStt}>
+                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={btnSttDisabled}>
                             {actionText}
                         </ButtonBase>
                     )}
@@ -93,7 +93,7 @@ DialogPopup.propTypes = {
     title: PropTypes.string,
     actionText: PropTypes.string,
     actClose: PropTypes.func.isRequired,
-    btnStt: PropTypes.bool.isRequired,
+    btnSttDisabled: PropTypes.bool.isRequired,
 };
 
 DialogPopup.defaultProps = {
