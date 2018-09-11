@@ -80,14 +80,14 @@ class UserInfoNav extends Component {
         return (
             isConnected && (
                 <Grid container className="account-info">
-                    <Grid item xs={3} className="account-info-item" aria-label={defaultAccount}>
+                    <Grid item xs={4} className="account-info-item">
                         <div>Your Balance</div>
                         {Utils.currencyFormat(balances.BBO)} BBO
                     </Grid>
                     <Tooltip title={defaultAccount} classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}>
-                        <Grid item xs={6} className="account-info-item" aria-label={defaultAccount}>
+                        <Grid item xs={5} className="account-info-item" aria-label={defaultAccount}>
                             <div>Your Wallet Address</div>
-                            {Utils.truncate(defaultAccount, 26)}
+                            {Utils.truncate(defaultAccount, 22)}
                         </Grid>
                     </Tooltip>
                     <Grid item xs={3} className="account-info-item right">

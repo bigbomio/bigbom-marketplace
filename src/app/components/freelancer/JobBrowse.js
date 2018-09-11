@@ -114,7 +114,7 @@ class JobBrowser extends Component {
                         error => {
                             console.log(error);
                             jobTpl.err = 'Can not fetch data from server';
-                            this.BidCreatedInit(jobTpl);
+                            // this.BidCreatedInit(jobTpl); // dont push if data can not fetch
                         }
                     );
             }

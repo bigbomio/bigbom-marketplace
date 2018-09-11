@@ -96,7 +96,6 @@ class JobDetailBid extends Component {
     actions = () => {
         const { web3 } = this.props;
         const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
-        //console.log(jobData);
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!isOwner) {

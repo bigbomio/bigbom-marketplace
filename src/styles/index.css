@@ -245,7 +245,7 @@ body {
 
 #bigbomMarketplace .account-info {
   padding: 4px 10px;
-  width: 38%;
+  width: 40%;
   float: right;
   border-right: 1px solid rgba(0, 0, 0, 0.3);
   border-left: 1px solid rgba(0, 0, 0, 0.3);
@@ -864,7 +864,8 @@ body {
     #freelancer .job-item-list .job-item > div .content .description {
       font-size: 14px;
       padding-bottom: 20px;
-      line-height: 1.5; }
+      line-height: 1.5;
+      word-wrap: break-word; }
     #freelancer .job-item-list .job-item > div .content .status {
       padding-bottom: 20px; }
     #freelancer .job-item-list .job-item > div .content .stt-date-time {
