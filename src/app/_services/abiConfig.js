@@ -193,12 +193,15 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            //console.log('event bid accepted  -------', events);
+            // console.log('event bid accepted  -------', events);
             for (let e of events) {
+                const jobHashE = e.args.jobHash;
                 if (jobData.bid.length > 0) {
                     for (let bid of jobData.bid) {
-                        if (bid.address === e.args.freelancer) {
-                            bid.accepted = true;
+                        if (web3.sha3(jobData.jobHash) === jobHashE) {
+                            if (bid.address === e.args.freelancer) {
+                                bid.accepted = true;
+                            }
                         }
                     }
                 } else {
