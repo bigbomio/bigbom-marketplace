@@ -391,6 +391,10 @@ class HirerPostJob extends Component {
         this.setState({ selectedBudget: selectedOption });
     };
 
+    backToCustom = () => {
+        this.setState({ isCustomBudget: false, selectedBudget: budgetsSource[2] });
+    };
+
     handleClose = () => {
         const { status } = this.state;
         if (!status.err) {
@@ -570,7 +574,10 @@ class HirerPostJob extends Component {
                                     {!isCustomBudget ? (
                                         <Select value={selectedBudget} onChange={this.handleChangeBudget} options={budgets} />
                                     ) : (
-                                        <span>
+                                        <span className="custom-budget">
+                                            <ButtonBase className="btn btn-medium btn-gray medium-rectangle" onClick={this.backToCustom}>
+                                                <FontAwesomeIcon icon="long-arrow-alt-left" />
+                                            </ButtonBase>
                                             <input
                                                 className={customBudgetErr ? 'input-err' : ''}
                                                 type="number"

@@ -200,6 +200,15 @@ $orange: #f99a0c;
         background-color: $red;
         color: #fff;
     }
+    .btn-gray {
+        background-color: #eee;
+        box-shadow: $thinShadow;
+        color: #888;
+        &:hover {
+            background: #5ca16a;
+            color: #fff;
+        }
+    }
     .btn-blue {
         background-color: $blue;
         color: #fff;
@@ -220,6 +229,13 @@ $orange: #f99a0c;
     }
     .green {
         color: $green;
+    }
+    .medium-circle {
+        border-radius: 50%;
+        padding: 10px 8px;
+    }
+    .medium-rectangle {
+        border-radius: 0;
     }
     .list-container {
         padding: 0;

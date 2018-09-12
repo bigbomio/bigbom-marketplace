@@ -70,7 +70,19 @@
         padding: 20px;
         text-align: center;
         background: #f9f9f9;
-        width:100%;
-        box-sizing:border-box;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .custom-budget {
+        display: flex;
+        button {
+            margin-right: -90px;
+            box-shadow: none;
+            border: solid 1px #ccc;
+            padding: 9px 25px;
+        }
+        input {
+            margin-left: 89px !important;
+        }
     }
 }

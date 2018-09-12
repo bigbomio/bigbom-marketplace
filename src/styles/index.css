@@ -298,6 +298,14 @@ body {
   background-color: red;
   color: #fff; }
 
+#bigbomMarketplace .btn-gray {
+  background-color: #eee;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  color: #888; }
+  #bigbomMarketplace .btn-gray:hover {
+    background: #5ca16a;
+    color: #fff; }
+
 #bigbomMarketplace .btn-blue {
   background-color: #0ca1f9;
   color: #fff; }
@@ -318,6 +326,13 @@ body {
 
 #bigbomMarketplace .green {
   color: #40bd56; }
+
+#bigbomMarketplace .medium-circle {
+  border-radius: 50%;
+  padding: 10px 8px; }
+
+#bigbomMarketplace .medium-rectangle {
+  border-radius: 0; }
 
 #bigbomMarketplace .list-container {
   padding: 0; }
@@ -809,6 +824,16 @@ body {
   background: #f9f9f9;
   width: 100%;
   box-sizing: border-box; }
+
+#bigbomMarketplace .custom-budget {
+  display: flex; }
+  #bigbomMarketplace .custom-budget button {
+    margin-right: -90px;
+    box-shadow: none;
+    border: solid 1px #ccc;
+    padding: 9px 25px; }
+  #bigbomMarketplace .custom-budget input {
+    margin-left: 89px !important; }
 
 #freelancer .filter {
   padding-bottom: 30px; }
