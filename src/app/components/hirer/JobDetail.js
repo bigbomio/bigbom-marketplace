@@ -151,7 +151,7 @@ class JobDetail extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = async jobData => {

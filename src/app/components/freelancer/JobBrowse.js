@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
@@ -20,6 +19,8 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 import CircleProgress from '../common/circleProgress';
 
+import JobsRender from './JobsRender';
+
 import { saveJobs } from '../hirer/actions';
 
 let jobs = [];
@@ -35,11 +36,11 @@ class JobBrowser extends Component {
             selectedIndex: 0,
             searchTerm: '',
             isLoading: false,
-            Jobs: [],
             stt: { err: false, text: null },
             circleProgressRender: false,
         };
         this.timer = null;
+        this.mounted = false;
     }
 
     componentDidMount() {
@@ -47,13 +48,11 @@ class JobBrowser extends Component {
         const { isLoading } = this.state;
         if (isConnected) {
             if (!isLoading) {
-                this.getJobs();
                 this.mounted = true;
+                this.getJobs();
             }
         }
     }
-
-    componentDidUpdate() {}
 
     componentWillUnmount() {
         this.mounted = false;
@@ -61,12 +60,13 @@ class JobBrowser extends Component {
 
     getJobs = () => {
         const { web3 } = this.props;
-        this.setState({ isLoading: true, Jobs: [], circleProgressRender: false });
+        this.setState({ isLoading: true, circleProgressRender: false });
         jobs = [];
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
 
     JobCreatedInit = async eventLog => {
+        //console.log('getPastSingleEvent success: ', eventLog);
         const { web3 } = this.props;
         const event = eventLog.data;
         if (!eventLog.data) {
@@ -95,7 +95,7 @@ class JobBrowser extends Component {
                     expired: event.args.expired.toString(),
                     status: jobStatus,
                     bid: [],
-                    blockNumber: event.blockNumber,
+                    jobBlockNumber: event.blockNumber,
                 };
                 fetch(URl)
                     .then(res => res.json())
@@ -122,11 +122,13 @@ class JobBrowser extends Component {
     };
 
     BidCreatedInit = job => {
+        //console.log('BidCreatedInit success: ', job);
         const { web3 } = this.props;
-        abiConfig.getPastEventsMerge(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = jobData => {
+        //console.log('BidAcceptedInit success: ', jobData);
         const { web3 } = this.props;
         abiConfig.getPastEventsBidAccepted(
             web3,
@@ -146,74 +148,22 @@ class JobBrowser extends Component {
         this.handleMenuItemSort(null, selectedIndex, jobs);
         if (this.mounted) {
             saveJobs(uqJobs);
-            this.setState({ Jobs: uqJobs, isLoading: false, circleProgressRender: true });
+            this.setState({ isLoading: false, circleProgressRender: true });
         }
     };
 
-    jobsRender() {
-        const { Jobs } = this.state;
-        const filteredJobs = Jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
-        //console.log(jobs);
-        return (
-            <Grid container className="job-item-list">
-                {filteredJobs &&
-                    filteredJobs.map((job, i) => {
-                        const maxLength = 400; // max length characters show on description
-                        const description = job.description.length > maxLength ? job.description.slice(0, maxLength) + '...' : job.description;
-                        return (
-                            <Link to={'freelancer/jobs/' + job.jobHash} key={i} className="job-item">
-                                <Grid item xs={12}>
-                                    <Grid container className="header">
-                                        <Grid item xs={9} className="title">
-                                            {job.title}
-                                        </Grid>
-                                        <Grid item xs={3} className="budget">
-                                            <span className="bold">
-                                                {Utils.currencyFormat(job.budget.max_sum)}
-                                                {' ( ' + job.currency.label + ' ) '}
-                                            </span>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid item xs={12} className="content">
-                                        <Grid item xs={12} className="description">
-                                            {description}
-                                        </Grid>
-                                        <Grid item xs={12} className="status">
-                                            <span className="status green bold">{Utils.getStatusJob(job.status)}</span>
-                                            <span className="status stt-date-time">{' - Created: ' + Utils.convertDateTime(job.created)}</span>
-                                            <span className="bold">{' - ' + job.bid.length + ' '}</span>
-                                            bids
-                                        </Grid>
-                                        <Grid item xs={12} className="category">
-                                            <span className="bold">Skill Required: </span>
-                                            {job.skills.map((skill, key) => {
-                                                return (
-                                                    <span className="tag" key={key}>
-                                                        {skill.label}
-                                                    </span>
-                                                );
-                                            })}
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
-                            </Link>
-                        );
-                    })}
-            </Grid>
-        );
-    }
-
     jobsFilterByCategory(filterData) {
         let jobsFilter = [];
+        const { saveJobs } = this.props;
         if (filterData) {
             if (filterData.length > 0) {
                 for (let category of filterData) {
                     const jobsFilterSelected = jobs.filter(job => job.category === category.value);
                     jobsFilter = [...jobsFilter, ...jobsFilterSelected];
-                    this.setState({ Jobs: jobsFilter });
+                    saveJobs(jobsFilter);
                 }
             } else {
-                this.setState({ Jobs: jobs });
+                saveJobs(jobs);
             }
         }
     }
@@ -227,8 +177,9 @@ class JobBrowser extends Component {
     };
 
     handleMenuItemSort = (event, index, Jobs) => {
-        this.setState({ selectedIndex: index, anchorEl: null });
-        //onst { Jobs } = this.state;
+        if (this.mounted) {
+            this.setState({ selectedIndex: index, anchorEl: null });
+        }
         switch (index) {
             case 0:
                 //Latest
@@ -284,9 +235,10 @@ class JobBrowser extends Component {
     };
 
     render() {
-        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender, Jobs } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender } = this.state;
+        const { jobs } = this.props;
+        const filteredJobs = jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         const categories = settingsApi.getCategories();
-
         return (
             <div id="freelancer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
@@ -349,7 +301,7 @@ class JobBrowser extends Component {
                                             <MenuItem
                                                 key={option}
                                                 selected={index === this.state.selectedIndex}
-                                                onClick={event => this.handleMenuItemSort(event, index, Jobs)}
+                                                onClick={event => this.handleMenuItemSort(event, index, jobs)}
                                             >
                                                 {option}
                                             </MenuItem>
@@ -359,7 +311,7 @@ class JobBrowser extends Component {
                             </Grid>
                             {!isLoading ? (
                                 !stt.err ? (
-                                    this.jobsRender()
+                                    <JobsRender Jobs={filteredJobs} />
                                 ) : (
                                     <div className="no-data">{stt.text}</div>
                                 )
@@ -381,11 +333,13 @@ JobBrowser.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     saveJobs: PropTypes.func.isRequired,
+    jobs: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
+        jobs: state.hirerReducer.jobs,
     };
 };
 

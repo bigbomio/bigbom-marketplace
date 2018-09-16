@@ -11,17 +11,17 @@ class abiConfigs {
         switch (type) {
             case 'BBFreelancerJob':
                 return {
-                    address: '0x62aa93f9dffec25daf9d2955d468194e996e8c87',
+                    address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
                     abi: BBFreelancerJob.abi,
                 };
             case 'BBFreelancerBid':
                 return {
-                    address: '0x0ff11890ef301dfd0fb37e423930b391836c69c9',
+                    address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
                     abi: BBFreelancerBid.abi,
                 };
             case 'BBFreelancerPayment':
                 return {
-                    address: '0x7b7e6f2b02a48bd24b5b1554fafff5f70547ab0a',
+                    address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
                     abi: BBFreelancerPayment.abi,
                 };
             case 'BigbomTokenExtended':
@@ -31,7 +31,7 @@ class abiConfigs {
                 };
             default:
                 return {
-                    address: '0x62aa93f9dffec25daf9d2955d468194e996e8c87',
+                    address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
                     abi: BBFreelancerJob.abi,
                 };
         }
@@ -81,7 +81,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
 
@@ -102,7 +102,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, bidCanceledEvents) {
@@ -111,10 +111,11 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            for (let bidEvents of bidCanceledEvents) {
+            for (let bidEvent of bidCanceledEvents) {
                 for (let bid of mergeData.bid) {
-                    if (bid.address === bidEvents.args.owner) {
+                    if (bid.address === bidEvent.args.owner) {
                         bid.canceled = true;
+                        bid.canceledBlockNumber = bidEvent.blockNumber;
                     }
                 }
             }
@@ -125,18 +126,18 @@ class abiConfigs {
         events.stopWatching();
     }
 
-    async getPastEventsMerge(web3, type, event, filter, mergeData, callback) {
+    async getPastEventsMergeBidToJob(web3, type, event, filter, mergeData, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
             data: {},
         };
 
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
 
-        events.get((error, events) => {
+        events.get(async (error, events) => {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
@@ -144,17 +145,15 @@ class abiConfigs {
             }
             let bidAddr = '';
             for (let event of events) {
-                //console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
                     award: Utils.WeiToBBO(web3, event.args.bid.toString()),
-                    created: event.args.created.toString(),
-                    timeDone: event.args.timeDone.toString(),
+                    timeDone: event.args.bidTime.toString(),
                     id: event.args.jobHash,
                     jobHash: mergeData.jobHash,
                     accepted: false,
                     canceled: false,
-                    blockNumber: event.blockNumber,
+                    bidBlockNumber: event.blockNumber,
                 };
                 if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
                     // get latest bid for each address
@@ -184,7 +183,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, events) {
@@ -201,6 +200,7 @@ class abiConfigs {
                         if (web3.sha3(jobData.jobHash) === jobHashE) {
                             if (bid.address === e.args.freelancer) {
                                 bid.accepted = true;
+                                bid.acceptedBlockNumber = e.blockNumber;
                             }
                         }
                     }
@@ -236,7 +236,7 @@ class abiConfigs {
         const getSingleEvent = contractInstance.instance[event](
             filter,
             {
-                fromBlock: 3970636, // should use recent number
+                fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
@@ -249,7 +249,7 @@ class abiConfigs {
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {
@@ -260,6 +260,11 @@ class abiConfigs {
         });
 
         eventInstance.stopWatching();
+    }
+
+    async getBlock(web3, blockNumber) {
+        const [err, blockLogs] = await Utils.callMethod(web3.eth.getBlock)(blockNumber);
+        console.log(err, blockLogs);
     }
 }
 
