@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 export default () => (
     <div id="main" className="container-wrp">
         <Grid container className="job-detail">
-            <div id="hirer" className="container-wrp">
+            <div className="container-wrp">
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">

@@ -684,13 +684,13 @@ body {
       text-align: center; }
 
 #home .home-wrp .home-intro,
-#hirer .home-wrp .home-intro {
+#client .home-wrp .home-intro {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   box-sizing: border-box; }
   #home .home-wrp .home-intro h1,
-  #hirer .home-wrp .home-intro h1 {
+  #client .home-wrp .home-intro h1 {
     font-size: 34px;
     font-weight: bold;
     padding: 80px 80px 0 80px;
@@ -698,25 +698,25 @@ body {
     line-height: 45px;
     color: #fff; }
   #home .home-wrp .home-intro .buttons,
-  #hirer .home-wrp .home-intro .buttons {
+  #client .home-wrp .home-intro .buttons {
     padding: 20px 0 0 80px; }
     #home .home-wrp .home-intro .buttons .left,
-    #hirer .home-wrp .home-intro .buttons .left {
+    #client .home-wrp .home-intro .buttons .left {
       margin-right: 20px; }
   #home .home-wrp .home-intro .connect-item-wrp,
-  #hirer .home-wrp .home-intro .connect-item-wrp {
+  #client .home-wrp .home-intro .connect-item-wrp {
     padding: 10px 35px; }
     #home .home-wrp .home-intro .connect-item-wrp:first-child .connect-item,
-    #hirer .home-wrp .home-intro .connect-item-wrp:first-child .connect-item {
+    #client .home-wrp .home-intro .connect-item-wrp:first-child .connect-item {
       box-shadow: 5px -5px #2eae3b; }
     #home .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item,
-    #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item {
+    #client .home-wrp .home-intro .connect-item-wrp:nth-child(2) .connect-item {
       box-shadow: 0 -5px #2eae3b; }
     #home .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item,
-    #hirer .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item {
+    #client .home-wrp .home-intro .connect-item-wrp:nth-child(3) .connect-item {
       box-shadow: -5px -5px #2eae3b; }
     #home .home-wrp .home-intro .connect-item-wrp .connect-item,
-    #hirer .home-wrp .home-intro .connect-item-wrp .connect-item {
+    #client .home-wrp .home-intro .connect-item-wrp .connect-item {
       background: url("/images/bg-connect.png") center center no-repeat;
       background-size: cover;
       padding: 60px 70px 40px 70px;
@@ -725,39 +725,39 @@ body {
       display: flex;
       flex-direction: column; }
       #home .home-wrp .home-intro .connect-item-wrp .connect-item .logo,
-      #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .logo {
+      #client .home-wrp .home-intro .connect-item-wrp .connect-item .logo {
         padding-bottom: 20px; }
       #home .home-wrp .home-intro .connect-item-wrp .connect-item .name,
-      #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .name {
+      #client .home-wrp .home-intro .connect-item-wrp .connect-item .name {
         color: #fff;
         font-weight: bold;
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
         font-size: 20px; }
       #home .home-wrp .home-intro .connect-item-wrp .connect-item .btn,
-      #hirer .home-wrp .home-intro .connect-item-wrp .connect-item .btn {
+      #client .home-wrp .home-intro .connect-item-wrp .connect-item .btn {
         margin: 70px 0 0 0;
         font-size: 16px;
         padding: 8px 35px 9px 35px; }
 
 #home .home-content,
-#hirer .home-content {
+#client .home-content {
   min-height: 100px; }
   #home .home-content h2,
-  #hirer .home-content h2 {
+  #client .home-content h2 {
     font-size: 30px;
     color: #444;
     text-align: center;
     width: 100%;
     padding: 40px 0; }
   #home .home-content .note,
-  #hirer .home-content .note {
+  #client .home-content .note {
     text-align: center;
     width: 100%; }
   #home .home-content .home-content-item,
-  #hirer .home-content .home-content-item {
+  #client .home-content .home-content-item {
     color: #444; }
     #home .home-content .home-content-item .home-content-img,
-    #hirer .home-content .home-content-item .home-content-img {
+    #client .home-content .home-content-item .home-content-img {
       border: 1px solid #40bd56;
       border-radius: 50%;
       background: #fff;
@@ -768,46 +768,46 @@ body {
       align-items: center;
       margin: 0 auto 20px auto; }
       #home .home-content .home-content-item .home-content-img.view-all,
-      #hirer .home-content .home-content-item .home-content-img.view-all {
+      #client .home-content .home-content-item .home-content-img.view-all {
         font-weight: bold;
         color: #7bccc8; }
       #home .home-content .home-content-item .home-content-img:hover,
-      #hirer .home-content .home-content-item .home-content-img:hover {
+      #client .home-content .home-content-item .home-content-img:hover {
         box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3); }
     #home .home-content .home-content-item p,
-    #hirer .home-content .home-content-item p {
+    #client .home-content .home-content-item p {
       font-size: 18px;
       text-align: center; }
 
-#hirer .btn-create svg {
+#client .btn-create svg {
   height: 25px;
   width: 25px;
   margin-right: 10px; }
 
-#hirer .freelancer-bidding {
+#client .freelancer-bidding {
   padding: 40px 0; }
-  #hirer .freelancer-bidding .list-container .list-header {
+  #client .freelancer-bidding .list-container .list-header {
     background: #2070b5;
     color: #fff; }
-    #hirer .freelancer-bidding .list-container .list-header div {
+    #client .freelancer-bidding .list-container .list-header div {
       border-right: 0; }
-  #hirer .freelancer-bidding .list-container .list-body .list-body-row {
+  #client .freelancer-bidding .list-container .list-body .list-body-row {
     border-bottom: 1px solid #eee; }
-    #hirer .freelancer-bidding .list-container .list-body .list-body-row .title {
+    #client .freelancer-bidding .list-container .list-body .list-body-row .title {
       align-items: center;
       display: flex; }
-      #hirer .freelancer-bidding .list-container .list-body .list-body-row .title .avatar {
+      #client .freelancer-bidding .list-container .list-body .list-body-row .title .avatar {
         padding-right: 5px; }
-        #hirer .freelancer-bidding .list-container .list-body .list-body-row .title .avatar svg {
+        #client .freelancer-bidding .list-container .list-body .list-body-row .title .avatar svg {
           width: 30px;
           height: 30px; }
-    #hirer .freelancer-bidding .list-container .list-body .list-body-row div {
+    #client .freelancer-bidding .list-container .list-body .list-body-row div {
       border-right: none; }
 
-#hirer .mkp-form-row .mkp-form-row-sub.left {
+#client .mkp-form-row .mkp-form-row-sub.left {
   padding-right: 40px; }
 
-#hirer .mkp-form-row .mkp-form-row-sub.number input {
+#client .mkp-form-row .mkp-form-row-sub.number input {
   padding: 7px 10px; }
 
 #bigbomMarketplace .job-detail .btn-back {
@@ -1002,3 +1002,26 @@ body {
       transition: all 0.3s ease-in; }
       .main-nav li a:hover {
         color: #40bd56; }
+
+.nav .top-selection {
+  margin-right: 20px;
+  padding: 0;
+  margin-top: -5px; }
+  .nav .top-selection .select-item {
+    padding: 5px 15px;
+    border-radius: 15px;
+    background: white;
+    background: -moz-linear-gradient(left, white 0%, rgba(64, 189, 86, 0.15) 100%);
+    background: -webkit-gradient(left top, right top, color-stop(0%, white), color-stop(100%, rgba(64, 189, 86, 0.15)));
+    background: -webkit-linear-gradient(left, white 0%, rgba(64, 189, 86, 0.15) 100%);
+    background: -o-linear-gradient(left, white 0%, rgba(64, 189, 86, 0.15) 100%);
+    background: -ms-linear-gradient(left, white 0%, rgba(64, 189, 86, 0.15) 100%);
+    background: linear-gradient(to right, white 0%, rgba(64, 189, 86, 0.15) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#40bd56', GradientType=1 ); }
+    .nav .top-selection .select-item .select-item-text {
+      padding-right: 10px; }
+      .nav .top-selection .select-item .select-item-text p {
+        font-size: 16px;
+        color: #319164; }
+    .nav .top-selection .select-item svg {
+      color: #319164; }

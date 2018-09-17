@@ -23,7 +23,7 @@ const categories = settingsApi.getCategories();
 const skills = settingsApi.getSkills();
 const budgetsSource = settingsApi.getBudgets();
 
-class HirerPostJob extends Component {
+class ClientPostJob extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -644,7 +644,7 @@ class HirerPostJob extends Component {
     }
 }
 
-HirerPostJob.propTypes = {
+ClientPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
     balances: PropTypes.any.isRequired,
 };
@@ -660,4 +660,4 @@ const mapDispatchToProps = {};
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(HirerPostJob);
+)(ClientPostJob);

@@ -424,7 +424,7 @@ class JobDetail extends Component {
 
     createAction = () => {
         const { history } = this.props;
-        history.push('/hirer');
+        history.push('/client');
     };
 
     bidActions = freelancer => {
@@ -656,7 +656,7 @@ class JobDetail extends Component {
                     actClose={this.handleClose}
                     btnSttDisabled={btnSttDisabled}
                 />
-                <div id="hirer" className="container-wrp">
+                <div id="client" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
                         <div className="container wrapper">
                             <Grid container className="main-intro">
@@ -703,7 +703,7 @@ const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        jobs: state.hirerReducer.jobs,
+        jobs: state.clientReducer.jobs,
         balances: state.commonReducer.balances,
     };
 };

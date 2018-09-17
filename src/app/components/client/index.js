@@ -4,11 +4,13 @@ import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Manage from '../../components/hirer/Manage';
-import JobDetail from '../../components/hirer/JobDetail';
-import PostJob from '../../components/hirer//PostJob';
+import Manage from '../../components/client/Manage';
+import JobDetail from '../../components/client/JobDetail';
+import PostJob from '../../components/client//PostJob';
 import NotFound from '../../components/NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
+
+import { setView } from '../common/actions';
 
 const styles = theme => ({
     lightTooltip: {
@@ -20,9 +22,10 @@ const styles = theme => ({
     },
 });
 
-class HirerCatagories extends Component {
+class ClientCatagories extends Component {
     componentDidMount() {
-        const { isConnected, history } = this.props;
+        const { isConnected, history, setView } = this.props;
+        setView(history.location.pathname);
         if (!isConnected) {
             history.push('/login');
         }
@@ -72,11 +75,12 @@ class HirerCatagories extends Component {
     }
 }
 
-HirerCatagories.propTypes = {
+ClientCatagories.propTypes = {
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
+    setView: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -85,11 +89,11 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = { setView };
 
 export default withStyles(styles)(
     connect(
         mapStateToProps,
         mapDispatchToProps
-    )(HirerCatagories)
+    )(ClientCatagories)
 );

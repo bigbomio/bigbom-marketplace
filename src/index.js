@@ -16,10 +16,6 @@ import { unregister } from './registerServiceWorker';
 // Store
 import store, { browserHistory } from './app/stores';
 
-// Multi Lang
-import LanguageProvider from './app/LanguageProvider';
-import { translationMessages } from './i18n';
-
 // Custom
 import { muiDefault as muiTheme } from './material-ui-theme';
 
@@ -32,11 +28,9 @@ library.add(fab, fas);
 ReactDOM.render(
     <div className="App" id="bigbomMarketplace">
         <Provider store={store()}>
-            <LanguageProvider messages={translationMessages}>
-                <MuiThemeProvider theme={muiTheme}>
-                    <Routes history={browserHistory} />
-                </MuiThemeProvider>
-            </LanguageProvider>
+            <MuiThemeProvider theme={muiTheme}>
+                <Routes history={browserHistory} />
+            </MuiThemeProvider>
         </Provider>
     </div>,
     document.getElementById('root')

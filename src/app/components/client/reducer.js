@@ -7,7 +7,7 @@ const data = {
 
 const initData = cloneDeep(data);
 
-const hirerReducer = (state = initData, action) => {
+const clientReducer = (state = initData, action) => {
     switch (action.type) {
         case nameActList.SAVE_JOBS: {
             let jobs = cloneDeep(state.jobs);
@@ -22,4 +22,4 @@ const hirerReducer = (state = initData, action) => {
     }
 };
 
-export default hirerReducer;
+export default clientReducer;

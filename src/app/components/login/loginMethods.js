@@ -98,7 +98,7 @@ class LoginMethods extends Component {
                     } else {
                         if (homeAction) {
                             if (homeAction === 'postJobAction') {
-                                history.push('/hirer');
+                                history.push('/client');
                             } else {
                                 history.push('/freelancer');
                             }

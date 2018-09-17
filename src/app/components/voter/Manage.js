@@ -14,14 +14,13 @@ import Select from 'react-select';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
-
-import { saveJobs } from './actions';
+import { saveJobs } from '../client/actions';
 
 const categories = settingsApi.getCategories();
 
 let jobs = [];
 
-class HirerDashboard extends Component {
+class Manage extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -59,7 +58,7 @@ class HirerDashboard extends Component {
         const { web3 } = this.props;
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', { owner: web3.eth.defaultAccount }, this.JobCreatedInit);
+        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
 
     getBiddingStt(stts) {
@@ -77,7 +76,7 @@ class HirerDashboard extends Component {
         const { web3 } = this.props;
         const event = eventLog.data;
         if (!eventLog.data) {
-            this.setState({ stt: { err: true, text: 'You have no any job!' }, isLoading: false });
+            this.setState({ stt: { err: true, text: 'You have no any bid!' }, isLoading: false });
             return;
         }
         const jobHash = Utils.toAscii(event.args.jobHash);
@@ -99,8 +98,8 @@ class HirerDashboard extends Component {
                 jobHash: jobHash,
                 category: Utils.toAscii(event.args.category),
                 expired: event.args.expired.toString(),
-                jobBlockNumber: event.blockNumber,
                 status: jobStatus,
+                jobBlockNumber: event.blockNumber,
                 bid: [],
             };
             fetch(URl)
@@ -144,8 +143,12 @@ class HirerDashboard extends Component {
     };
 
     JobsInit = jobData => {
-        const { saveJobs } = this.props;
-        jobs.push(jobData.data);
+        const { web3, saveJobs } = this.props;
+        for (let freelancer of jobData.data.bid) {
+            if (freelancer.address === web3.eth.defaultAccount) {
+                jobs.push(jobData.data);
+            }
+        }
         const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
             saveJobs(uqJobs);
@@ -211,7 +214,7 @@ class HirerDashboard extends Component {
 
     createAction = () => {
         const { history } = this.props;
-        history.push('/hirer');
+        history.push('/client');
     };
 
     handleChange = name => event => {
@@ -236,71 +239,67 @@ class HirerDashboard extends Component {
     };
 
     jobsRender = () => {
-        const { match } = this.props;
         const { Jobs, stt } = this.state;
-        //console.log(Jobs);
-        if (Jobs) {
-            if (Jobs.length > 0) {
-                return !stt.err ? (
-                    <Grid container className="list-body">
-                        {Jobs.map(job => {
-                            return !job.err ? (
-                                <Grid key={job.id} container className="list-body-row">
-                                    <Grid item xs={7} className="title">
-                                        <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        {job.budget && (
-                                            <span className="bold">
-                                                {Utils.currencyFormat(job.budget.max_sum)}
-                                                {' ( ' + job.currency.label + ' ) '}
-                                            </span>
-                                        )}
-                                    </Grid>
-                                    <Grid item xs={1}>
-                                        {job.bid.length}
-                                    </Grid>
-                                    <Grid item xs={2} className="status">
-                                        {Utils.getStatusJob(job.status)}
-                                    </Grid>
+        if (Jobs.length > 0) {
+            return !stt.err ? (
+                <Grid container className="list-body">
+                    {Jobs.map(job => {
+                        return !job.err ? (
+                            <Grid key={job.id} container className="list-body-row">
+                                <Grid item xs={7} className="title">
+                                    <Link to={`jobs/${Utils.toAscii(job.id)}`}>{job.title}</Link>
                                 </Grid>
-                            ) : (
-                                <Grid key={job.id} container className="list-body-row">
-                                    <Grid item xs={7} className="title">
-                                        <span className="err">{Utils.toAscii(job.id)}</span>
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        ---
-                                    </Grid>
-                                    <Grid item xs={1}>
-                                        ---
-                                    </Grid>
-                                    <Grid item xs={2}>
-                                        ---
-                                    </Grid>
+                                <Grid item xs={2}>
+                                    {job.budget && (
+                                        <span className="bold">
+                                            {Utils.currencyFormat(job.budget.max_sum)}
+                                            {' ( ' + job.currency.label + ' ) '}
+                                        </span>
+                                    )}
                                 </Grid>
-                            );
-                        })}
-                    </Grid>
-                ) : (
-                    <Grid container className="no-data">
-                        {stt.text}
-                    </Grid>
-                );
-            } else {
-                return (
-                    <Grid container className="no-data">
-                        You have no any job!
-                    </Grid>
-                );
-            }
+                                <Grid item xs={1}>
+                                    {job.bid.length}
+                                </Grid>
+                                <Grid item xs={2} className="status">
+                                    {Utils.getStatusJob(job.status)}
+                                </Grid>
+                            </Grid>
+                        ) : (
+                            <Grid key={job.id} container className="list-body-row">
+                                <Grid item xs={7} className="title">
+                                    <span className="err">{Utils.toAscii(job.id)}</span>
+                                </Grid>
+                                <Grid item xs={2}>
+                                    ---
+                                </Grid>
+                                <Grid item xs={1}>
+                                    ---
+                                </Grid>
+                                <Grid item xs={2}>
+                                    ---
+                                </Grid>
+                            </Grid>
+                        );
+                    })}
+                </Grid>
+            ) : (
+                <Grid container className="no-data">
+                    {stt.text}
+                </Grid>
+            );
+        } else {
+            return (
+                <Grid container className="no-data">
+                    You have no any bid!
+                </Grid>
+            );
         }
     };
 
     render() {
         const { selectedCategory, isLoading } = this.state;
         return (
-            <div id="hirer" className="container-wrp">
+            <div className="container-wrp">
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
@@ -448,8 +447,7 @@ class HirerDashboard extends Component {
     }
 }
 
-HirerDashboard.propTypes = {
-    match: PropTypes.object.isRequired,
+Manage.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
@@ -462,11 +460,9 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {
-    saveJobs,
-};
+const mapDispatchToProps = { saveJobs };
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(HirerDashboard);
+)(Manage);

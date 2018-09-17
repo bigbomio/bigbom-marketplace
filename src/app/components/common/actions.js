@@ -6,3 +6,10 @@ export const setBalances = balances => {
         balances,
     };
 };
+
+export const setView = view => {
+    return {
+        type: listTypes.SET_VIEW,
+        view,
+    };
+};

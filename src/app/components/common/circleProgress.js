@@ -5,10 +5,10 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 class CircleProgress extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             completed: 0,
         };
+        this.mounted = false;
     }
 
     componentDidMount() {

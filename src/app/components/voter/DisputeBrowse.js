@@ -19,7 +19,7 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 import CircleProgress from '../common/circleProgress';
 
-import JobsRender from './JobsRender';
+import DisputesRender from './DisputesRender';
 
 import { saveJobs } from '../client/actions';
 
@@ -28,7 +28,7 @@ let jobs = [];
 const options = ['Latest', 'Oldest', 'Highest Budget', 'Lowest Budget', 'Most Bids', 'Fewest Bids'];
 const KEYS_TO_FILTERS = ['owner', 'title', 'description'];
 
-class JobBrowser extends Component {
+class DisputeBrowser extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -311,7 +311,7 @@ class JobBrowser extends Component {
                             </Grid>
                             {!isLoading ? (
                                 !stt.err ? (
-                                    <JobsRender Jobs={filteredJobs} />
+                                    <DisputesRender Jobs={filteredJobs} />
                                 ) : (
                                     <div className="no-data">{stt.text}</div>
                                 )
@@ -329,7 +329,7 @@ class JobBrowser extends Component {
     }
 }
 
-JobBrowser.propTypes = {
+DisputeBrowser.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     saveJobs: PropTypes.func.isRequired,
@@ -348,4 +348,4 @@ const mapDispatchToProps = { saveJobs };
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(JobBrowser);
+)(DisputeBrowser);

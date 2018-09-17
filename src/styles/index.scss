@@ -4,7 +4,7 @@
 @import 'footer';
 
 @import './components/home';
-@import './components/hirer';
+@import './components/client';
 @import './components/freelancer';
 
 body {
@@ -144,6 +144,35 @@ body {
             transition: all 0.3s ease-in;
             &:hover {
                 color: $green;
+            }
+        }
+    }
+}
+.nav {
+    .top-selection {
+        margin-right: 20px;
+        padding: 0;
+        margin-top: -5px;
+        .select-item {
+            padding: 5px 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 1);
+            background: -moz-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: -webkit-gradient(left top, right top, color-stop(0%, rgba(255, 255, 255, 1)), color-stop(100%, rgba(64, 189, 86, 0.15)));
+            background: -webkit-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: -o-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: -ms-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: linear-gradient(to right, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#40bd56', GradientType=1 );
+            .select-item-text {
+                padding-right: 10px;
+                p {
+                    font-size: 16px;
+                    color: #319164;
+                }
+            }
+            svg {
+                color: #319164;
             }
         }
     }

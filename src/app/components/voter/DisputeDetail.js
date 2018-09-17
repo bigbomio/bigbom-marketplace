@@ -32,7 +32,7 @@ const skillShow = job => {
     );
 };
 
-class JobDetailBid extends Component {
+class DisputeDetail extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -174,7 +174,7 @@ class JobDetailBid extends Component {
 
     jobDataInit = async refresh => {
         const { match, web3, jobs } = this.props;
-        const jobHash = match.params.jobId;
+        const jobHash = match.params.disputeId;
         this.setState({ isLoading: true, jobHash: jobHash });
         if (!refresh) {
             if (jobs.length > 0) {
@@ -809,7 +809,7 @@ class JobDetailBid extends Component {
     }
 }
 
-JobDetailBid.propTypes = {
+DisputeDetail.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
@@ -829,4 +829,4 @@ const mapDispatchToProps = {};
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(JobDetailBid);
+)(DisputeDetail);
