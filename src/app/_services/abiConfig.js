@@ -42,7 +42,7 @@ class abiConfigs {
     }
 
     getIpfsLink() {
-        return 'https://ipfs.infura.io/ipfs/';
+        return 'https://cloudflare-ipfs.com/ipfs/';
     }
 
     async contractInstanceGenerator(web3, type) {
