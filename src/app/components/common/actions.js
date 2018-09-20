@@ -13,3 +13,10 @@ export const setView = view => {
         view,
     };
 };
+
+export const setActionBtnDisabled = actionBtnDisabled => {
+    return {
+        type: listTypes.SET_ACTION_BTN_DISABLED,
+        actionBtnDisabled,
+    };
+};

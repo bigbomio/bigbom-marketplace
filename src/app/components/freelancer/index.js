@@ -24,7 +24,7 @@ const styles = theme => ({
 class FreelancerContainer extends Component {
     componentDidMount() {
         const { isConnected, history, setView } = this.props;
-        setView(history.location.pathname);
+        setView('freelancer');
         if (!isConnected) {
             history.push('/login');
         }

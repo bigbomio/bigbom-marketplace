@@ -24,7 +24,7 @@ const styles = theme => ({
 class VoterContainer extends Component {
     componentDidMount() {
         const { isConnected, history, setView } = this.props;
-        setView(history.location.pathname);
+        setView('voter');
         if (!isConnected) {
             history.push('/login');
         }

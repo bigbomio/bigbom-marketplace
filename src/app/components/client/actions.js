@@ -6,3 +6,10 @@ export const saveJobs = jobs => {
         jobs,
     };
 };
+
+export const setReason = reason => {
+    return {
+        type: listTypes.SET_REASON,
+        reason,
+    };
+};

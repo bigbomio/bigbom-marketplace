@@ -11,6 +11,9 @@ import abiConfig from '../../_services/abiConfig';
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 
+import Reasons from '../client/Reasons';
+import { setActionBtnDisabled } from '../common/actions';
+
 const skillShow = jobSkills => {
     return (
         <div className="skill">
@@ -40,8 +43,9 @@ class JobDetail extends Component {
                 actionText: null,
                 actions: null,
             },
-            btnSttDisabled: false,
+            dialogContent: null,
         };
+        this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
 
     componentDidMount() {
@@ -215,7 +219,7 @@ class JobDetail extends Component {
                 title: '',
                 err: false,
                 text: 'Your job has been accepted! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLogAccept,
+                link: abiConfig.getTXlink() + jobLogAccept,
             },
             acceptDone: true,
             dialogLoading: false,
@@ -227,6 +231,7 @@ class JobDetail extends Component {
         const { bidValue } = this.state;
         const { web3, balances } = this.props;
         if (Number(balances.ETH) <= 0) {
+            this.setActionBtnDisabled(true);
             this.setState({
                 actStt: {
                     title: 'Error: ',
@@ -234,10 +239,10 @@ class JobDetail extends Component {
                     text: 'Sorry, you have insufficient funds! You can not create a job if your ETH balance less than fee.',
                     link: '',
                 },
-                btnSttDisabled: true,
             });
             return;
         } else if (Utils.BBOToWei(web3, balances.BBO) < Number(bidValue)) {
+            this.setActionBtnDisabled(true);
             this.setState({
                 actStt: {
                     title: 'Error: ',
@@ -245,11 +250,11 @@ class JobDetail extends Component {
                     text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than fee.',
                     link: '',
                 },
-                btnSttDisabled: true,
             });
             return;
         }
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const allowance = await this.getAllowance();
         if (Number(allowance.toString(10)) === 0) {
             const apprv = await this.approve(Math.pow(2, 255));
@@ -272,7 +277,8 @@ class JobDetail extends Component {
     cancelJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [cancelErr, cancelLog] = await Utils.callMethod(jobInstance.instance.cancelJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -292,7 +298,7 @@ class JobDetail extends Component {
                 title: '',
                 err: false,
                 text: 'Your job has been canceled! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + cancelLog,
+                link: abiConfig.getTXlink() + cancelLog,
             },
             cancelDone: true,
             dialogLoading: false,
@@ -303,7 +309,8 @@ class JobDetail extends Component {
     payment = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.acceptPayment)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -323,20 +330,20 @@ class JobDetail extends Component {
                 title: '',
                 err: false,
                 text: 'Payment success! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + paymentLog,
+                link: abiConfig.getTXlink() + paymentLog,
             },
             paymentDone: true,
             dialogLoading: false,
         });
-        console.log('payment log: ', paymentLog);
     };
 
     rejectPayment = async () => {
         const { jobHash } = this.state;
-        const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        const { web3, reason } = this.props;
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true, dialogContent: null });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.rejectPayment)(jobHash, {
+        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.rejectPayment)(jobHash, reason, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -354,16 +361,16 @@ class JobDetail extends Component {
                 title: '',
                 err: false,
                 text: 'Reject payment success! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + paymentLog,
+                link: abiConfig.getTXlink() + paymentLog,
             },
             rejectPaymentDone: true,
             dialogLoading: false,
         });
-        console.log('payment log: ', paymentLog);
     };
 
     confirmAccept = bid => {
         const { web3 } = this.props;
+        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             bidAddress: bid.address,
@@ -373,11 +380,12 @@ class JobDetail extends Component {
                 actions: this.acceptBidInit,
             },
             actStt: { title: 'Do you want to accept bid?', err: false, text: null, link: '' },
-            btnSttDisabled: false,
+            dialogContent: null,
         });
     };
 
     confirmCancelJob = () => {
+        this.setActionBtnDisabled(false);
         this.setState({
             dialogData: {
                 actionText: 'Cancel',
@@ -385,11 +393,12 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to cancel this job?', err: false, text: null, link: '' },
-            btnSttDisabled: false,
+            dialogContent: null,
         });
     };
 
     confirmPayment = () => {
+        this.setActionBtnDisabled(false);
         this.setState({
             dialogData: {
                 actionText: 'Payment',
@@ -397,19 +406,20 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to payment for this job?', err: false, text: null, link: '' },
-            btnSttDisabled: false,
+            dialogContent: null,
         });
     };
 
     confirmRejectPayment = () => {
+        this.setActionBtnDisabled(true);
         this.setState({
+            dialogContent: <Reasons />,
             dialogData: {
                 actionText: 'Reject Payment',
                 actions: this.rejectPayment,
             },
             open: true,
             actStt: { title: 'Do you want to reject payment this job?', err: false, text: null, link: '' },
-            btnSttDisabled: false,
         });
     };
 
@@ -478,9 +488,8 @@ class JobDetail extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData, btnSttDisabled } = this.state;
+        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData, dialogContent } = this.state;
         let jobTplRender;
-
         if (stt.err) {
             jobTplRender = () => (
                 <Grid container className="single-body">
@@ -654,7 +663,7 @@ class JobDetail extends Component {
                     title={actStt.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
-                    btnSttDisabled={btnSttDisabled}
+                    content={dialogContent}
                 />
                 <div id="client" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
@@ -698,17 +707,23 @@ JobDetail.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     jobs: PropTypes.any.isRequired,
     balances: PropTypes.any.isRequired,
+    reason: PropTypes.number.isRequired,
+    setActionBtnDisabled: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
+        reason: state.clientReducer.reason,
+        actionBtnDisabled: state.commonReducer.actionBtnDisabled,
         balances: state.commonReducer.balances,
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    setActionBtnDisabled,
+};
 
 export default connect(
     mapStateToProps,

@@ -227,8 +227,25 @@ $orange: #f99a0c;
         background-color: $orange;
         color: #fff;
     }
+    .btn-icon {
+        &.btn-normal {
+            font-size: 20px;
+        }
+        &.btn-medium {
+            font-size: 26px;
+        }
+    }
     .green {
         color: $green;
+    }
+    .red {
+        color: $red;
+    }
+    .blue {
+        color: $blue;
+    }
+    .gray {
+        color: gray;
     }
     .medium-circle {
         border-radius: 50%;
@@ -500,7 +517,6 @@ $orange: #f99a0c;
                 height: 17px;
                 width: 17px;
                 margin-right: 3px;
-                color: $green;
             }
             button {
                 margin-top: -10px;

@@ -25,7 +25,7 @@ const styles = theme => ({
 class ClientCatagories extends Component {
     componentDidMount() {
         const { isConnected, history, setView } = this.props;
-        setView(history.location.pathname);
+        setView('client');
         if (!isConnected) {
             history.push('/login');
         }

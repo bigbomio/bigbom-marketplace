@@ -177,3 +177,20 @@ body {
         }
     }
 }
+.inside-box {
+    width: 100%;
+    margin-top: 0px;
+    .inside-result {
+        padding: 20px;
+        min-height: 150px;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #ccc;
+        margin: 20px 0;
+    }
+    .inside-result-close {
+        float: right;
+        bottom: -40px;
+    }
+}

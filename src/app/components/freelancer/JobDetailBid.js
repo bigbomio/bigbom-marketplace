@@ -1,20 +1,33 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fade from '@material-ui/core/Fade';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
+import api from '../../_services/settingsApi';
 
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
+import CreateDispute from '../freelancer/CreateDispute';
+import { setActionBtnDisabled } from '../common/actions';
 
 let myAddress;
+
+const styles = () => ({
+    noteTooltip: {
+        width: '200px',
+        padding: '10px 20px',
+        fontSize: '14px',
+    },
+});
 
 const skillShow = job => {
     const jobSkills = job.skills;
@@ -49,9 +62,10 @@ class JobDetailBid extends Component {
                 actionText: null,
                 actions: null,
             },
-            btnSttDisabled: false,
             claim: false,
+            checkedDispute: false,
         };
+        this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
 
     componentDidMount() {
@@ -111,8 +125,8 @@ class JobDetailBid extends Component {
                         }
                         return (
                             <span className="note">
-                                <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
-                                from job owner.
+                                <FontAwesomeIcon icon="check-circle" className="green" /> <span className="bold">You have bid this job</span>, please
+                                waiting acceptance from job owner.
                                 <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
                                     Cancel Bid
                                 </ButtonBase>
@@ -166,8 +180,40 @@ class JobDetailBid extends Component {
                             </span>
                         );
                     }
+                } else if (jobData.status.reject && mybid.length > 0) {
+                    return (
+                        <span className="note">
+                            <FontAwesomeIcon icon="ban" className="red" /> Sorry, job owner has <span className="bold">rejected payment</span> for
+                            you.{' '}
+                            <Tooltip
+                                disableFocusListener
+                                disableTouchListener
+                                title={api.getReason(0).text}
+                                classes={{ tooltip: this.props.classes.noteTooltip }}
+                            >
+                                <ButtonBase className="btn btn-small btn-gray bold blue">
+                                    <FontAwesomeIcon icon="info-circle" /> reason
+                                </ButtonBase>
+                            </Tooltip>
+                            <ButtonBase
+                                className="btn btn-normal btn-orange btn-bid"
+                                onClick={this.handleCreateDisputeClose}
+                                disabled={cancelBidDone}
+                            >
+                                Create Dispute
+                            </ButtonBase>
+                        </span>
+                    );
                 }
             }
+        } else {
+            return (
+                <span className="note">
+                    <ButtonBase onClick={this.viewMyJobs} className="btn btn-normal btn-blue">
+                        View all your jobs
+                    </ButtonBase>
+                </span>
+            );
         }
         return null;
     };
@@ -291,7 +337,8 @@ class JobDetailBid extends Component {
     createBid = async () => {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const awardSend = Utils.BBOToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
@@ -314,7 +361,7 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'Your bid has been created! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog bid: ', jobLog);
@@ -323,7 +370,8 @@ class JobDetailBid extends Component {
     cancelBid = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -344,7 +392,7 @@ class JobDetailBid extends Component {
             actStt: {
                 err: false,
                 text: 'Your bid has been canceled! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog cancel bid: ', jobLog);
@@ -353,7 +401,8 @@ class JobDetailBid extends Component {
     startJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -375,7 +424,7 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been started! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog start: ', jobLog);
@@ -384,7 +433,8 @@ class JobDetailBid extends Component {
     completeJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setState({ dialogLoading: true, btnSttDisabled: true });
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobLog] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
             from: jobInstance.defaultAccount,
@@ -406,7 +456,7 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been completed! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog finish: ', jobLog);
@@ -421,12 +471,12 @@ class JobDetailBid extends Component {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
+        this.setActionBtnDisabled(true);
         if (err) {
             this.setState({
                 claimPaymentDone: false,
                 dialogLoading: false,
                 actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not claim payment! :(', link: '' },
-                btnSttDisabled: true,
             });
             console.log(err);
             return;
@@ -438,9 +488,8 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'You have claimed! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
-            btnSttDisabled: true,
         });
         console.log('claim payment log: ', jobLog);
     };
@@ -450,62 +499,62 @@ class JobDetailBid extends Component {
         const timeValid = this.validate(time, 'time');
         const awardValid = this.validate(award, 'award');
         if (timeValid && awardValid) {
+            this.setActionBtnDisabled(false);
             this.setState({
                 open: true,
                 dialogData: {
                     actionText: 'Bid',
                     actions: this.createBid,
                 },
-                btnSttDisabled: false,
                 actStt: { title: 'Do you want to bid this job?', err: false, text: null, link: '' },
             });
         }
     };
 
     confirmCancelBid = () => {
+        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Cancel',
                 actions: this.cancelBid,
             },
-            btnSttDisabled: false,
             actStt: { title: 'Do you want to cancel bid this job?', err: false, text: null, link: '' },
         });
     };
 
     confirmStartJob = () => {
+        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Start',
                 actions: this.startJob,
-                btnSttDisabled: false,
             },
             actStt: { title: 'Do you want to start this job?', err: false, text: null, link: '' },
         });
     };
 
     confirmCompleteJob = () => {
+        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Complete',
                 actions: this.completeJob,
             },
-            btnSttDisabled: false,
             actStt: { title: 'Do you want to complete this job?', err: false, text: null, link: '' },
         });
     };
 
     confirmClaimPayment = () => {
+        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Claim',
                 actions: this.claimPayment,
             },
-            btnSttDisabled: false,
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
         });
     };
@@ -569,9 +618,20 @@ class JobDetailBid extends Component {
         this.setState({ open: false, checkedBid: false });
     };
 
+    handleCreateDisputeClose = () => {
+        const { checkedDispute } = this.state;
+        this.setState({ checkedDispute: !checkedDispute });
+    };
+
+    viewMyJobs = () => {
+        const { history } = this.props;
+        history.push('/client/manage');
+    };
+
     render() {
-        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnSttDisabled } = this.state;
+        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, checkedDispute } = this.state;
         //console.log(jobData);
+        const { web3 } = this.props;
         let jobTplRender;
 
         if (stt.err) {
@@ -641,6 +701,15 @@ class JobDetailBid extends Component {
                                         </Grid>
                                     </Grid>
                                 </Fade>
+
+                                <CreateDispute
+                                    checkedDispute={checkedDispute}
+                                    closeAct={this.handleCreateDisputeClose}
+                                    createDisputeConfirm={this.createDisputeConfirm}
+                                    jobHash={jobData.jobHash}
+                                    web3={web3}
+                                />
+
                                 <Grid container className="job-detail-row">
                                     <Grid item xs={10}>
                                         <Grid container>
@@ -772,7 +841,6 @@ class JobDetailBid extends Component {
                     title={actStt.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
-                    btnSttDisabled={btnSttDisabled}
                 />
                 <div id="freelancer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
@@ -815,18 +883,27 @@ JobDetailBid.propTypes = {
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     jobs: PropTypes.any.isRequired,
+    setActionBtnDisabled: PropTypes.func.isRequired,
+    classes: PropTypes.object.isRequired,
+    freelancerProof: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
+        setActionBtnDisabled: state.commonReducer.setActionBtnDisabled,
+        freelancerProof: state.freelancerReducer.freelancerProof,
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    setActionBtnDisabled,
+};
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(JobDetailBid);
+export default withStyles(styles)(
+    connect(
+        mapStateToProps,
+        mapDispatchToProps
+    )(JobDetailBid)
+);

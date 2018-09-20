@@ -5,6 +5,8 @@ import BBFreelancerJob from '../_services/abi/BBFreelancerJob.json';
 import BBFreelancerBid from '../_services/abi/BBFreelancerBid.json';
 import BBFreelancerPayment from '../_services/abi/BBFreelancerPayment.json';
 import BigbomTokenExtended from '../_services/abi/BigbomTokenExtended.json'; // bbo
+import BBDispute from '../_services/abi/BBDispute.json';
+import BBVoting from '../_services/abi/BBVoting.json';
 
 class abiConfigs {
     getContract(type) {
@@ -29,6 +31,16 @@ class abiConfigs {
                     address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
                     abi: BigbomTokenExtended.abi,
                 };
+            case 'BBDispute':
+                return {
+                    address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+                    abi: BBDispute.abi,
+                };
+            case 'BBVoting':
+                return {
+                    address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+                    abi: BBVoting.abi,
+                };
             default:
                 return {
                     address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
@@ -42,7 +54,11 @@ class abiConfigs {
     }
 
     getIpfsLink() {
-        return 'https://ipfs.infura.io/ipfs/';
+        return 'https://cloudflare-ipfs.com/ipfs/';
+    }
+
+    getTXlink() {
+        return 'https://ropsten.etherscan.io/tx/';
     }
 
     async contractInstanceGenerator(web3, type) {

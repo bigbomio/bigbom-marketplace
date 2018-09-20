@@ -314,7 +314,7 @@ class DisputeDetail extends Component {
                 title: '',
                 err: false,
                 text: 'Your bid has been created! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog bid: ', jobLog);
@@ -344,7 +344,7 @@ class DisputeDetail extends Component {
             actStt: {
                 err: false,
                 text: 'Your bid has been canceled! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog cancel bid: ', jobLog);
@@ -375,7 +375,7 @@ class DisputeDetail extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been started! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog start: ', jobLog);
@@ -406,7 +406,7 @@ class DisputeDetail extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been completed! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
         console.log('joblog finish: ', jobLog);
@@ -438,7 +438,7 @@ class DisputeDetail extends Component {
                 title: '',
                 err: false,
                 text: 'You have claimed! Please waiting for confirm from your network.',
-                link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                link: abiConfig.getTXlink() + jobLog,
             },
             btnSttDisabled: true,
         });

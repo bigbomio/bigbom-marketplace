@@ -82,7 +82,7 @@ class ClientPostJob extends Component {
                     title: 'Create New Job: ',
                     err: false,
                     text: 'Your job has been created! Please waiting for confirm from your network.',
-                    link: 'https://ropsten.etherscan.io/tx/' + jobLog,
+                    link: abiConfig.getTXlink() + jobLog,
                 },
             });
             setTimeout(() => {

@@ -50,7 +50,7 @@ class Header extends PureComponent {
         history.push('/login');
     };
 
-    handleClickListItemSort = event => {
+    handleClickListView = event => {
         this.setState({ anchorEl: event.currentTarget });
     };
 
@@ -103,7 +103,7 @@ class Header extends PureComponent {
                                             button
                                             aria-haspopup="true"
                                             aria-controls="as-menu"
-                                            onClick={this.handleClickListItemSort}
+                                            onClick={this.handleClickListView}
                                         >
                                             <ListItemText className="select-item-text" secondary={options[this.state.selectedIndex].text} />
                                             <FontAwesomeIcon className="icon" icon="angle-down" />

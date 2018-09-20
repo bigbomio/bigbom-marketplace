@@ -304,7 +304,7 @@ class FreelancerDashboard extends Component {
                     <div className="container wrapper">
                         <Grid container className="main-intro">
                             <Grid item xs={8}>
-                                <h1>Your Jobs</h1>
+                                <h1>Your bids</h1>
                             </Grid>
                             <Grid item xs={4} className="main-intro-right">
                                 <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
