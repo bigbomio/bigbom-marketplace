@@ -10,6 +10,8 @@ const data = {
         proof: '',
         imgs: [],
     },
+    votingParams: {},
+    disputeCreated: false,
 };
 
 const initData = cloneDeep(data);
@@ -30,6 +32,22 @@ const freelancerReducer = (state = initData, action) => {
             return {
                 ...state,
                 freelancerProof,
+            };
+        }
+        case nameActList.SAVE_VOTING_PARAMS: {
+            let votingParams = cloneDeep(state.votingParams);
+            votingParams = action.votingParams;
+            return {
+                ...state,
+                votingParams,
+            };
+        }
+        case nameActList.SET_STT_DISPUTE_CREATED: {
+            let disputeCreated = cloneDeep(state.disputeCreated);
+            disputeCreated = action.disputeCreated;
+            return {
+                ...state,
+                disputeCreated,
             };
         }
         default:

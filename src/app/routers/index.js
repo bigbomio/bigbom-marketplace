@@ -5,7 +5,6 @@ import { Helmet } from 'react-helmet';
 import Eth from 'ethjs';
 import { connect } from 'react-redux';
 import { isMobile } from 'react-device-detect';
-//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import asyncComponent from '../components/_asynComponent';
 import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';

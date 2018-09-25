@@ -10,11 +10,10 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
-import { setSttDisputeCreated } from './actions';
 
 const ipfs = abiConfig.getIpfs();
 
-class CreateDispute extends Component {
+class ResponseDispute extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -33,10 +32,10 @@ class CreateDispute extends Component {
         };
     }
 
-    createDispute = async proofHash => {
+    responseDispute = async proofHash => {
         const { web3, jobHash } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.startPoll)(jobHash, proofHash, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.PollAgainsted)(jobHash, proofHash, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -64,7 +63,6 @@ class CreateDispute extends Component {
                 ),
             },
         });
-        setSttDisputeCreated(true);
     };
 
     createProofHash = async () => {
@@ -245,14 +243,13 @@ class CreateDispute extends Component {
     }
 }
 
-CreateDispute.propTypes = {
+ResponseDispute.propTypes = {
     closeAct: PropTypes.func.isRequired,
     checkedDispute: PropTypes.bool.isRequired,
     jobHash: PropTypes.string.isRequired,
     web3: PropTypes.any.isRequired,
     balances: PropTypes.any.isRequired,
     votingParams: PropTypes.object.isRequired,
-    setSttDisputeCreated: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -263,13 +260,11 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {
-    setSttDisputeCreated,
-};
+const mapDispatchToProps = {};
 
 export default withRouter(
     connect(
         mapStateToProps,
         mapDispatchToProps
-    )(CreateDispute)
+    )(ResponseDispute)
 );

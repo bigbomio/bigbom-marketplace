@@ -7,6 +7,7 @@ import BBFreelancerPayment from '../_services/abi/BBFreelancerPayment.json';
 import BigbomTokenExtended from '../_services/abi/BigbomTokenExtended.json'; // bbo
 import BBDispute from '../_services/abi/BBDispute.json';
 import BBVoting from '../_services/abi/BBVoting.json';
+import BBParams from '../_services/abi/BBParams.json';
 
 class abiConfigs {
     getContract(type) {
@@ -41,6 +42,11 @@ class abiConfigs {
                     address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
                     abi: BBVoting.abi,
                 };
+            case 'BBParams':
+                return {
+                    address: '0xb527A50abCdBCDA765FBFD1EDFc63619979f898e',
+                    abi: BBParams.abi,
+                };
             default:
                 return {
                     address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
@@ -73,6 +79,32 @@ class abiConfigs {
             gasPrice,
             address,
         };
+    }
+
+    async getAllowance(web3, ctName) {
+        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
+        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, ctInstance.address);
+        if (err) {
+            console.log('err allowance: ', err);
+            return;
+        }
+        return result;
+    }
+
+    async approve(web3, ctName, value) {
+        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
+        const [errApprove, approve] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (errApprove) {
+            console.log('errApprove: ', errApprove);
+            return false;
+        }
+        console.log('approve: ', approve);
+        return true;
     }
 
     async getPastEvents(web3, type, event, filter, callback) {
@@ -280,7 +312,63 @@ class abiConfigs {
 
     async getBlock(web3, blockNumber) {
         const [err, blockLogs] = await Utils.callMethod(web3.eth.getBlock)(blockNumber);
-        console.log(err, blockLogs);
+        if (err) {
+            return null;
+        }
+        return blockLogs;
+    }
+
+    async getVotingParams(web3, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBParams');
+        ctInstance.instance.getVotingParams(
+            {
+                from: web3.eth.defaultAccount,
+            },
+            (err, re) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    const votingParams = {
+                        minVotes: re[0].toString(),
+                        maxVotes: re[1].toString(),
+                        voteQuorum: re[2].toString(),
+                        stakeDeposit: re[3].toString(),
+                        eveidenceDuration: re[4].toString(),
+                        commitDuration: re[5].toString(),
+                        revealDuration: re[6].toString(),
+                        bboRewards: re[7].toString(),
+                    };
+                    callback(votingParams);
+                }
+            }
+        );
+    }
+
+    async getEventsPollStarted(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const eventInstance = ctInstance.instance.PollStarted(
+            { jobHash: jobHash, owner: web3.eth.defaultAccount },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                //console.log(re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                        const result = {
+                            created: blockLog.timestamp,
+                            started: true,
+                        };
+                        callback(result);
+                    }
+                }
+            }
+        );
+        eventInstance.stopWatching();
     }
 }
 

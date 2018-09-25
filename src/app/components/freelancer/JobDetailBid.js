@@ -1,33 +1,25 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fade from '@material-ui/core/Fade';
-import Tooltip from '@material-ui/core/Tooltip';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
 
 import Countdown from '../common/countdown';
+import Popper from '../common/Popper';
 import DialogPopup from '../common/dialog';
 import CreateDispute from '../freelancer/CreateDispute';
 import { setActionBtnDisabled } from '../common/actions';
+import { saveVotingParams } from './actions';
 
 let myAddress;
-
-const styles = () => ({
-    noteTooltip: {
-        width: '200px',
-        padding: '10px 20px',
-        fontSize: '14px',
-    },
-});
 
 const skillShow = job => {
     const jobSkills = job.skills;
@@ -64,13 +56,19 @@ class JobDetailBid extends Component {
             },
             claim: false,
             checkedDispute: false,
+            disputeStt: {
+                clientResponseDuration: 0,
+                started: false,
+            },
+            anchorEl: null,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
 
     componentDidMount() {
-        const { isConnected, web3 } = this.props;
+        const { isConnected, web3, saveVotingParams } = this.props;
         const { isLoading } = this.state;
+        abiConfig.getVotingParams(web3, saveVotingParams);
         myAddress = web3.eth.defaultAccount;
         if (isConnected) {
             if (!isLoading) {
@@ -107,9 +105,36 @@ class JobDetailBid extends Component {
         }
     }
 
+    setDisputeStt = async event => {
+        const { votingParams } = this.props;
+        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.eveidenceDuration)) * 1000);
+        if (clientResponseDuration > Date.now()) {
+            if (this.mounted) {
+                this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
+            }
+        } else {
+            if (this.mounted) {
+                this.setState({ disputeStt: { started: event.started, clientResponseDuration: 0 } });
+            }
+        }
+    };
+
     actions = () => {
-        const { web3 } = this.props;
-        const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
+        const { web3, disputeCreated } = this.props;
+        const {
+            jobData,
+            isOwner,
+            checkedBid,
+            bidDone,
+            cancelBidDone,
+            startJobDone,
+            completeJobDone,
+            claimPaymentDone,
+            claim,
+            disputeStt,
+            anchorEl,
+        } = this.state;
+        const isPopperOpen = Boolean(anchorEl);
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!isOwner) {
@@ -181,24 +206,41 @@ class JobDetailBid extends Component {
                         );
                     }
                 } else if (jobData.status.reject && mybid.length > 0) {
-                    return (
+                    console.log(disputeStt);
+                    return disputeStt.started ? (
+                        disputeStt.clientResponseDuration > 0 ? (
+                            <span className="note">You have created dispute for this job, please waiting for response from your client</span>
+                        ) : (
+                            <span className="note">
+                                <ButtonBase className="btn btn-normal btn-green btn-bid">Finalized Dispute</ButtonBase>
+                            </span>
+                        )
+                    ) : (
                         <span className="note">
                             <FontAwesomeIcon icon="ban" className="red" /> Sorry, job owner has <span className="bold">rejected payment</span> for
                             you.{' '}
-                            <Tooltip
-                                disableFocusListener
-                                disableTouchListener
-                                title={api.getReason(0).text}
-                                classes={{ tooltip: this.props.classes.noteTooltip }}
+                            <Popper
+                                placement="top"
+                                anchorEl={anchorEl}
+                                id="mouse-over-popover"
+                                onClose={this.handlePopoverClose}
+                                disableRestoreFocus
+                                open={isPopperOpen}
+                                content={api.getReason(0).text}
+                            />
+                            <ButtonBase
+                                className="btn btn-small btn-gray bold blue"
+                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                aria-haspopup="true"
+                                onMouseEnter={this.handlePopoverOpen}
+                                onMouseLeave={this.handlePopoverClose}
                             >
-                                <ButtonBase className="btn btn-small btn-gray bold blue">
-                                    <FontAwesomeIcon icon="info-circle" /> reason
-                                </ButtonBase>
-                            </Tooltip>
+                                <FontAwesomeIcon icon="info-circle" /> reason
+                            </ButtonBase>
                             <ButtonBase
                                 className="btn btn-normal btn-orange btn-bid"
                                 onClick={this.handleCreateDisputeClose}
-                                disabled={cancelBidDone}
+                                disabled={disputeCreated}
                             >
                                 Create Dispute
                             </ButtonBase>
@@ -222,6 +264,7 @@ class JobDetailBid extends Component {
         const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash: jobHash });
+        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
@@ -341,7 +384,7 @@ class JobDetailBid extends Component {
         this.setState({ dialogLoading: true });
         const awardSend = Utils.BBOToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
+        const [err, tx] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
             from: instanceBid.defaultAccount,
             gasPrice: +instanceBid.gasPrice.toString(10),
         });
@@ -361,10 +404,13 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'Your bid has been created! Please waiting for confirm from your network.',
-                link: abiConfig.getTXlink() + jobLog,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
             },
         });
-        console.log('joblog bid: ', jobLog);
     };
 
     cancelBid = async () => {
@@ -373,7 +419,7 @@ class JobDetailBid extends Component {
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -392,10 +438,13 @@ class JobDetailBid extends Component {
             actStt: {
                 err: false,
                 text: 'Your bid has been canceled! Please waiting for confirm from your network.',
-                link: abiConfig.getTXlink() + jobLog,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
             },
         });
-        console.log('joblog cancel bid: ', jobLog);
     };
 
     startJob = async () => {
@@ -404,7 +453,7 @@ class JobDetailBid extends Component {
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -424,10 +473,13 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been started! Please waiting for confirm from your network.',
-                link: abiConfig.getTXlink() + jobLog,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
             },
         });
-        console.log('joblog start: ', jobLog);
     };
 
     completeJob = async () => {
@@ -436,7 +488,7 @@ class JobDetailBid extends Component {
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -456,10 +508,13 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been completed! Please waiting for confirm from your network.',
-                link: abiConfig.getTXlink() + jobLog,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
             },
         });
-        console.log('joblog finish: ', jobLog);
     };
 
     claimPayment = async () => {
@@ -467,7 +522,7 @@ class JobDetailBid extends Component {
         const { web3 } = this.props;
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -488,10 +543,13 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'You have claimed! Please waiting for confirm from your network.',
-                link: abiConfig.getTXlink() + jobLog,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
             },
         });
-        console.log('claim payment log: ', jobLog);
     };
 
     confirmBid = () => {
@@ -628,8 +686,29 @@ class JobDetailBid extends Component {
         history.push('/client/manage');
     };
 
+    handlePopoverOpen = event => {
+        this.setState({ anchorEl: event.currentTarget });
+    };
+
+    handlePopoverClose = () => {
+        this.setState({ anchorEl: null });
+    };
+
     render() {
-        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, checkedDispute } = this.state;
+        const {
+            jobData,
+            isLoading,
+            stt,
+            checkedBid,
+            timeErr,
+            awardErr,
+            dialogLoading,
+            open,
+            actStt,
+            dialogData,
+            checkedDispute,
+            disputeStt,
+        } = this.state;
         //console.log(jobData);
         const { web3 } = this.props;
         let jobTplRender;
@@ -736,7 +815,11 @@ class JobDetailBid extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            {jobData.status.bidding && <Countdown expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {disputeStt.started &&
+                                                (disputeStt.clientResponseDuration > 0 && (
+                                                    <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                ))}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -884,8 +967,9 @@ JobDetailBid.propTypes = {
     history: PropTypes.object.isRequired,
     jobs: PropTypes.any.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
-    classes: PropTypes.object.isRequired,
-    freelancerProof: PropTypes.object.isRequired,
+    votingParams: PropTypes.object.isRequired,
+    saveVotingParams: PropTypes.func.isRequired,
+    disputeCreated: PropTypes.bool.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -893,17 +977,17 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
         setActionBtnDisabled: state.commonReducer.setActionBtnDisabled,
-        freelancerProof: state.freelancerReducer.freelancerProof,
+        votingParams: state.freelancerReducer.votingParams,
+        disputeCreated: state.freelancerReducer.disputeCreated,
     };
 };
 
 const mapDispatchToProps = {
     setActionBtnDisabled,
+    saveVotingParams,
 };
 
-export default withStyles(styles)(
-    connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(JobDetailBid)
-);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(JobDetailBid);

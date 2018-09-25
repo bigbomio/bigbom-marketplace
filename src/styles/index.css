@@ -604,6 +604,17 @@ body {
     margin-right: 5px;
     margin-left: 10px; }
 
+#bigbomMarketplace .popper {
+  min-width: 100px;
+  max-width: 250px; }
+  #bigbomMarketplace .popper .popper-ct {
+    padding: 20px;
+    line-height: 20px;
+    font-size: 14px; }
+
+#bigbomMarketplace .icon-popper-note {
+  color: #777; }
+
 @media (max-width: 1023px) {
   .root {
     width: 100%; } }
@@ -1006,6 +1017,9 @@ body {
     opacity: 0.5; }
   .reddit-api ul li {
     margin-bottom: 10px; }
+
+a {
+  color: #0ca1f9; }
 
 .refresh {
   cursor: default;

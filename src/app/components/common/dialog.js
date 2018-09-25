@@ -52,18 +52,14 @@ class DialogPopup extends Component {
                             {stt && (
                                 <div className="dialog-result">
                                     {stt.err ? (
-                                        <div className="err">{stt.text}</div>
+                                        <div className="err">
+                                            {stt.text}
+                                            {stt.link}
+                                        </div>
                                     ) : (
                                         <div className="success">
                                             {stt.text}
-                                            {stt.link && (
-                                                <p>
-                                                    View your transaction status{' '}
-                                                    <a className="bold link" href={stt.link} target="_blank" rel="noopener noreferrer">
-                                                        HERE
-                                                    </a>
-                                                </p>
-                                            )}
+                                            {stt.link && <p>View your transaction status {stt.link}</p>}
                                         </div>
                                     )}
                                 </div>
