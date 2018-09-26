@@ -370,6 +370,33 @@ class abiConfigs {
         );
         eventInstance.stopWatching();
     }
+
+    async getEventsPollAgainsted(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const eventInstance = ctInstance.instance.PollAgainsted(
+            { jobHash: jobHash, owner: web3.eth.defaultAccount },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                console.log(re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                        const result = {
+                            created: blockLog.timestamp,
+                            responded: true,
+                        };
+                        callback(result);
+                    }
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
 }
 
 export default new abiConfigs();

@@ -5,11 +5,11 @@ import { withRouter } from 'react-router-dom';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Collapse from '@material-ui/core/Collapse';
 import Grid from '@material-ui/core/Grid';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
+import { setSttRespondedDispute } from './actions';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -33,9 +33,9 @@ class ResponseDispute extends Component {
     }
 
     responseDispute = async proofHash => {
-        const { web3, jobHash } = this.props;
+        const { web3, jobHash, setSttRespondedDispute } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.PollAgainsted)(jobHash, proofHash, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.againstPoll)(jobHash, proofHash, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -63,13 +63,13 @@ class ResponseDispute extends Component {
                 ),
             },
         });
+        setSttRespondedDispute(true);
     };
 
     createProofHash = async () => {
         const { proof, imgs } = this.state;
         const { jobHash, votingParams, balances, web3 } = this.props;
         const allowance = await abiConfig.getAllowance(web3, 'BBDispute');
-
         /// check balance
         if (balances.ETH <= 0) {
             this.setState({
@@ -119,16 +119,16 @@ class ResponseDispute extends Component {
             if (Number(allowance.toString(10)) === 0) {
                 const apprv = await abiConfig.approve(web3, 'BBDispute', Math.pow(2, 255));
                 if (apprv) {
-                    await this.createDispute(proofHash);
+                    await this.responseDispute(proofHash);
                 }
             } else if (Number(allowance.toString(10)) > Number(votingParams.stakeDeposit)) {
-                await this.createDispute(proofHash);
+                await this.responseDispute(proofHash);
             } else {
                 const apprv = await abiConfig.approve(web3, 'BBDispute', 0);
                 if (apprv) {
                     const apprv2 = await abiConfig.approve(web3, 'BBDispute', Math.pow(2, 255));
                     if (apprv2) {
-                        await this.createDispute(proofHash);
+                        await this.responseDispute(proofHash);
                     }
                 }
             }
@@ -185,11 +185,11 @@ class ResponseDispute extends Component {
             actStt.err ? (
                 <Collapse in={checkedDisputeResult} className="inside-box">
                     <ButtonBase className="btn-icon btn-normal gray inside-result-close" onClick={this.handleResultClose}>
-                        <FontAwesomeIcon icon="times" />
+                        <i className="fas fa-times" />
                     </ButtonBase>
                     <Grid container className="inside-result">
                         <p className="bold">
-                            <FontAwesomeIcon icon="exclamation-circle" className="red" /> {actStt.text} {actStt.link}
+                            <i className="fas fa-exclamation-circle red" /> {actStt.text} {actStt.link}
                         </p>
                     </Grid>
                 </Collapse>
@@ -197,7 +197,7 @@ class ResponseDispute extends Component {
                 <Collapse in={checkedDisputeResult} className="inside-box">
                     <Grid container className="inside-result">
                         <p className="bold">
-                            <FontAwesomeIcon icon="check" className="green" /> {actStt.text}
+                            <i className="fas fa-check green" /> {actStt.text}
                             View your transaction status {actStt.link}
                         </p>
                     </Grid>
@@ -230,10 +230,10 @@ class ResponseDispute extends Component {
                             </Grid> */}
                     <Grid container className="mkp-form-row">
                         <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.createProofHash()} disabled={submitDisabled}>
-                            <FontAwesomeIcon icon="check" /> Create
+                            <i className="fas fa-check" /> Create
                         </ButtonBase>
                         <ButtonBase className="btn btn-normal btn-red" onClick={() => closeAct()}>
-                            <FontAwesomeIcon icon="times" />
+                            <i className="fas fa-times" />
                             Cancel
                         </ButtonBase>
                     </Grid>
@@ -250,6 +250,7 @@ ResponseDispute.propTypes = {
     web3: PropTypes.any.isRequired,
     balances: PropTypes.any.isRequired,
     votingParams: PropTypes.object.isRequired,
+    setSttRespondedDispute: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -260,7 +261,9 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    setSttRespondedDispute,
+};
 
 export default withRouter(
     connect(

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default () => (
     <div id="main" className="container-wrp">
@@ -17,7 +16,7 @@ export default () => (
                             </Grid>
                             <Grid item xs={4} className="main-intro-right">
                                 <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                    <FontAwesomeIcon icon="plus" /> Create A New Job
+                                    <i className="fas fa-plus" /> Create A New Job
                                 </ButtonBase>
                             </Grid>
                         </Grid>

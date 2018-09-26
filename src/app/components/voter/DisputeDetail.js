@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fade from '@material-ui/core/Fade';
 
@@ -111,7 +110,7 @@ class DisputeDetail extends Component {
                         }
                         return (
                             <span className="note">
-                                <FontAwesomeIcon icon="check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
+                                <i className="fas fa-check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
                                 from job owner.
                                 <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
                                     Cancel Bid
@@ -590,11 +589,11 @@ class DisputeDetail extends Component {
                             <Grid container>
                                 <div className="top-action">
                                     <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
-                                        <FontAwesomeIcon icon="angle-left" />
+                                        <i className="fas fa-angle-left" />
                                         Back
                                     </ButtonBase>
                                     <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
-                                        <FontAwesomeIcon icon="sync-alt" />
+                                        <i className="fas fa-sync-alt" />
                                         Refresh
                                     </ButtonBase>
                                     {this.actions()}
@@ -632,10 +631,10 @@ class DisputeDetail extends Component {
                                         </Grid>
                                         <Grid container className="mkp-form-row">
                                             <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.confirmBid()}>
-                                                <FontAwesomeIcon icon="check" /> Bid
+                                                <i className="fas fa-check" /> Bid
                                             </ButtonBase>
                                             <ButtonBase className="btn btn-normal btn-red" onClick={() => this.bidSwitched(false)}>
-                                                <FontAwesomeIcon icon="times" />
+                                                <i className="fas fa-times" />
                                                 Cancel
                                             </ButtonBase>
                                         </Grid>
@@ -708,14 +707,14 @@ class DisputeDetail extends Component {
                                                             <Grid key={freelancer.address} container className="list-body-row">
                                                                 <Grid item xs={8} className="title">
                                                                     <span className="avatar">
-                                                                        <FontAwesomeIcon icon="user-circle" />
+                                                                        <i className="fas fa-user-circle" />
                                                                     </span>
                                                                     {freelancer.address}
                                                                     {freelancer.canceled && (
                                                                         <span className="bold">
                                                                             <span className="text-stt-unsuccess">
                                                                                 &nbsp;
-                                                                                <FontAwesomeIcon icon="times-circle" />
+                                                                                <i className="fas fa-times-circle" />
                                                                                 Canceled
                                                                             </span>
                                                                         </span>
@@ -783,7 +782,7 @@ class DisputeDetail extends Component {
                                 </Grid>
                                 <Grid item xs={4} className="main-intro-right">
                                     <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                        <FontAwesomeIcon icon="plus" /> Create A Job Like This
+                                        <i className="fas fa-plus" /> Create A Job Like This
                                     </ButtonBase>
                                 </Grid>
                             </Grid>

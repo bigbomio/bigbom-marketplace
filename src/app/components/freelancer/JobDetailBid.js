@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fade from '@material-ui/core/Fade';
 
@@ -60,7 +59,9 @@ class JobDetailBid extends Component {
                 clientResponseDuration: 0,
                 started: false,
             },
+            clientRespondedDispute: { responded: false, commitDuration: 0 },
             anchorEl: null,
+            evidenceShow: false,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -119,22 +120,23 @@ class JobDetailBid extends Component {
         }
     };
 
+    setRespondedisputeStt = async event => {
+        const { votingParams } = this.props;
+        const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
+        if (commitDuration > Date.now()) {
+            if (this.mounted) {
+                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration } });
+            }
+        } else {
+            if (this.mounted) {
+                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
+            }
+        }
+    };
+
     actions = () => {
-        const { web3, disputeCreated } = this.props;
-        const {
-            jobData,
-            isOwner,
-            checkedBid,
-            bidDone,
-            cancelBidDone,
-            startJobDone,
-            completeJobDone,
-            claimPaymentDone,
-            claim,
-            disputeStt,
-            anchorEl,
-        } = this.state;
-        const isPopperOpen = Boolean(anchorEl);
+        const { web3 } = this.props;
+        const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!isOwner) {
@@ -150,8 +152,8 @@ class JobDetailBid extends Component {
                         }
                         return (
                             <span className="note">
-                                <FontAwesomeIcon icon="check-circle" className="green" /> <span className="bold">You have bid this job</span>, please
-                                waiting acceptance from job owner.
+                                <i className="fas fa-check-circle green" /> <span className="bold">You have bid this job</span>, please waiting
+                                acceptance from job owner.
                                 <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
                                     Cancel Bid
                                 </ButtonBase>
@@ -205,47 +207,6 @@ class JobDetailBid extends Component {
                             </span>
                         );
                     }
-                } else if (jobData.status.reject && mybid.length > 0) {
-                    console.log(disputeStt);
-                    return disputeStt.started ? (
-                        disputeStt.clientResponseDuration > 0 ? (
-                            <span className="note">You have created dispute for this job, please waiting for response from your client</span>
-                        ) : (
-                            <span className="note">
-                                <ButtonBase className="btn btn-normal btn-green btn-bid">Finalized Dispute</ButtonBase>
-                            </span>
-                        )
-                    ) : (
-                        <span className="note">
-                            <FontAwesomeIcon icon="ban" className="red" /> Sorry, job owner has <span className="bold">rejected payment</span> for
-                            you.{' '}
-                            <Popper
-                                placement="top"
-                                anchorEl={anchorEl}
-                                id="mouse-over-popover"
-                                onClose={this.handlePopoverClose}
-                                disableRestoreFocus
-                                open={isPopperOpen}
-                                content={api.getReason(0).text}
-                            />
-                            <ButtonBase
-                                className="btn btn-small btn-gray bold blue"
-                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                aria-haspopup="true"
-                                onMouseEnter={this.handlePopoverOpen}
-                                onMouseLeave={this.handlePopoverClose}
-                            >
-                                <FontAwesomeIcon icon="info-circle" /> reason
-                            </ButtonBase>
-                            <ButtonBase
-                                className="btn btn-normal btn-orange btn-bid"
-                                onClick={this.handleCreateDisputeClose}
-                                disabled={disputeCreated}
-                            >
-                                Create Dispute
-                            </ButtonBase>
-                        </span>
-                    );
                 }
             }
         } else {
@@ -260,11 +221,136 @@ class JobDetailBid extends Component {
         return null;
     };
 
+    evidence = () => {
+        return <div className="evidence-show">This is client’s evidence</div>;
+    };
+
+    disputeActions = () => {
+        const { disputeCreated, web3 } = this.props;
+        const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow } = this.state;
+        const isPopperOpen = Boolean(anchorEl);
+        const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
+        if (!clientRespondedDispute.responded) {
+            if (jobData.status.reject && mybid.length > 0) {
+                if (!disputeStt.started) {
+                    return (
+                        <div className="dispute-actions">
+                            <span className="note">
+                                <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
+                                <Popper
+                                    placement="top"
+                                    anchorEl={anchorEl}
+                                    id="mouse-over-popover"
+                                    onClose={this.handlePopoverClose}
+                                    disableRestoreFocus
+                                    open={isPopperOpen}
+                                    content={api.getReason(0).text}
+                                />
+                                <ButtonBase
+                                    className="btn btn-small btn-gray bold blue"
+                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                    aria-haspopup="true"
+                                    onMouseEnter={this.handlePopoverOpen}
+                                    onMouseLeave={this.handlePopoverClose}
+                                >
+                                    <i className="fas fa-info-circle" /> reason
+                                </ButtonBase>
+                                <ButtonBase
+                                    className="btn btn-normal btn-orange btn-bid float-right"
+                                    onClick={this.handleCreateDisputeClose}
+                                    disabled={disputeCreated}
+                                >
+                                    Create Dispute
+                                </ButtonBase>
+                            </span>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div className="dispute-actions">
+                            {disputeStt.clientResponseDuration > 0 ? (
+                                <span className="note">
+                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
+                                </span>
+                            ) : (
+                                <span className="note">
+                                    Your client did not responded to your dispute.{' '}
+                                    <ButtonBase className="btn btn-normal btn-green btn-bid">Finalized Dispute</ButtonBase>
+                                </span>
+                            )}
+                        </div>
+                    );
+                }
+            } else {
+                return null;
+            }
+        } else {
+            if (disputeStt.commitDuration > 0) {
+                return (
+                    <div className="dispute-actions">
+                        <span className="note">
+                            <Popper
+                                placement="top"
+                                anchorEl={anchorEl}
+                                id="mouse-over-popover"
+                                onClose={this.handlePopoverClose}
+                                disableRestoreFocus
+                                open={isPopperOpen}
+                                content="Your client have participated into your dipute......."
+                            />
+                            <span className="bold">Your client have participated into your dispute.</span>
+                            <i
+                                className="fas fa-info-circle icon-popper-note"
+                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                aria-haspopup="true"
+                                onMouseEnter={this.handlePopoverOpen}
+                                onMouseLeave={this.handlePopoverClose}
+                            />
+                            <ButtonBase onClick={this.handleEvidenceShow} className="btn btn-normal btn-dark-green btn-bid float-right">
+                                {evidenceShow ? (
+                                    <i className="fas fa-angle-up icon-popper-note" />
+                                ) : (
+                                    <i className="fas fa-angle-down icon-popper-note" />
+                                )}
+                                Freelancer&#39;s Evidences
+                            </ButtonBase>
+                        </span>
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="dispute-actions">
+                        <span className="note">
+                            <Popper
+                                placement="top"
+                                anchorEl={anchorEl}
+                                id="mouse-over-popover"
+                                onClose={this.handlePopoverClose}
+                                disableRestoreFocus
+                                open={isPopperOpen}
+                                content="......"
+                            />
+                            <span className="bold">Commited vote (revealDuration)</span>
+                            <i
+                                className="fas fa-info-circle icon-popper-note"
+                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                aria-haspopup="true"
+                                onMouseEnter={this.handlePopoverOpen}
+                                onMouseLeave={this.handlePopoverClose}
+                            />
+                        </span>
+                    </div>
+                );
+            }
+        }
+    };
+
     jobDataInit = async refresh => {
         const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash: jobHash });
         abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
+        abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
@@ -694,6 +780,11 @@ class JobDetailBid extends Component {
         this.setState({ anchorEl: null });
     };
 
+    handleEvidenceShow = () => {
+        const { evidenceShow } = this.state;
+        this.setState({ evidenceShow: !evidenceShow });
+    };
+
     render() {
         const {
             jobData,
@@ -708,9 +799,10 @@ class JobDetailBid extends Component {
             dialogData,
             checkedDispute,
             disputeStt,
+            evidenceShow,
         } = this.state;
         //console.log(jobData);
-        const { web3 } = this.props;
+        const { web3, disputeCreated } = this.props;
         let jobTplRender;
 
         if (stt.err) {
@@ -729,16 +821,17 @@ class JobDetailBid extends Component {
                             <Grid container>
                                 <div className="top-action">
                                     <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
-                                        <FontAwesomeIcon icon="angle-left" />
+                                        <i className="fas fa-angle-left" />
                                         Back
                                     </ButtonBase>
                                     <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
-                                        <FontAwesomeIcon icon="sync-alt" />
+                                        <i className="fas fa-sync-alt" />
                                         Refresh
                                     </ButtonBase>
                                     {this.actions()}
                                 </div>
-
+                                {this.disputeActions()}
+                                {evidenceShow && this.evidence()}
                                 <Fade in={checkedBid}>
                                     <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
                                         <Grid container className="mkp-form-row">
@@ -771,23 +864,24 @@ class JobDetailBid extends Component {
                                         </Grid>
                                         <Grid container className="mkp-form-row">
                                             <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.confirmBid()}>
-                                                <FontAwesomeIcon icon="check" /> Bid
+                                                <i className="fas fa-check" /> Bid
                                             </ButtonBase>
                                             <ButtonBase className="btn btn-normal btn-red" onClick={() => this.bidSwitched(false)}>
-                                                <FontAwesomeIcon icon="times" />
+                                                <i className="fas fa-times" />
                                                 Cancel
                                             </ButtonBase>
                                         </Grid>
                                     </Grid>
                                 </Fade>
 
-                                <CreateDispute
-                                    checkedDispute={checkedDispute}
-                                    closeAct={this.handleCreateDisputeClose}
-                                    createDisputeConfirm={this.createDisputeConfirm}
-                                    jobHash={jobData.jobHash}
-                                    web3={web3}
-                                />
+                                {!disputeCreated && (
+                                    <CreateDispute
+                                        checkedDispute={checkedDispute}
+                                        closeAct={this.handleCreateDisputeClose}
+                                        jobHash={jobData.jobHash}
+                                        web3={web3}
+                                    />
+                                )}
 
                                 <Grid container className="job-detail-row">
                                     <Grid item xs={10}>
@@ -860,14 +954,14 @@ class JobDetailBid extends Component {
                                                             <Grid key={freelancer.address} container className="list-body-row">
                                                                 <Grid item xs={8} className="title">
                                                                     <span className="avatar">
-                                                                        <FontAwesomeIcon icon="user-circle" />
+                                                                        <i className="fas fa-user-circle" />
                                                                     </span>
                                                                     {freelancer.address}
                                                                     {freelancer.canceled && (
                                                                         <span className="bold">
                                                                             <span className="text-stt-unsuccess">
                                                                                 &nbsp;
-                                                                                <FontAwesomeIcon icon="times-circle" />
+                                                                                <i className="fas fa-times-circle" />
                                                                                 Canceled
                                                                             </span>
                                                                         </span>
@@ -934,7 +1028,7 @@ class JobDetailBid extends Component {
                                 </Grid>
                                 <Grid item xs={4} className="main-intro-right">
                                     <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                        <FontAwesomeIcon icon="plus" /> Create A Job Like This
+                                        <i className="fas fa-plus" /> Create A Job Like This
                                     </ButtonBase>
                                 </Grid>
                             </Grid>

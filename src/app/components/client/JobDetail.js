@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
@@ -52,6 +51,9 @@ class JobDetail extends Component {
                 clientResponseDuration: 0,
                 started: false,
             },
+            clientRespondedDispute: { responded: false, commitDuration: 0 },
+            evidenceShow: false,
+            checkedDispute: false,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -86,11 +88,26 @@ class JobDetail extends Component {
         }
     };
 
+    setRespondedisputeStt = async event => {
+        const { votingParams } = this.props;
+        const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
+        if (commitDuration > Date.now()) {
+            if (this.mounted) {
+                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration } });
+            }
+        } else {
+            if (this.mounted) {
+                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
+            }
+        }
+    };
+
     jobDataInit = async refresh => {
         const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash });
         abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
+        abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
@@ -454,6 +471,11 @@ class JobDetail extends Component {
         this.setState({ checkedDispute: !checkedDispute });
     };
 
+    handleEvidenceShow = () => {
+        const { evidenceShow } = this.state;
+        this.setState({ evidenceShow: !evidenceShow });
+    };
+
     bidActions = freelancer => {
         const { acceptDone, jobData } = this.state;
         let disabled = acceptDone;
@@ -463,21 +485,20 @@ class JobDetail extends Component {
         if (jobData.status.bidding) {
             return (
                 <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" onClick={() => this.confirmAccept(freelancer)} disabled={disabled}>
-                    <FontAwesomeIcon icon="check" /> Accept
+                    <i className="fas fa-check" /> Accept
                 </ButtonBase>
             );
         } else {
             return (
                 <ButtonBase aria-label="Cancel" className="btn btn-small btn-blue" disabled>
-                    <FontAwesomeIcon icon="check" /> Accept
+                    <i className="fas fa-check" /> Accept
                 </ButtonBase>
             );
         }
     };
 
     jobActions = () => {
-        const { jobData, cancelDone, paymentDone, rejectPaymentDone, disputeStt, anchorEl } = this.state;
-        const isPopperOpen = Boolean(anchorEl);
+        const { jobData, cancelDone, paymentDone, rejectPaymentDone, disputeStt } = this.state;
         //console.log(jobData);
         if (jobData.status.bidding) {
             return (
@@ -502,7 +523,25 @@ class JobDetail extends Component {
                     </ButtonBase>
                 </span>
             );
-        } else if (disputeStt.started) {
+        } else if (jobData.status.reject && disputeStt.clientResponseDuration > 0) {
+            return (
+                <div className="note">
+                    <span className="bold">You have rejected payment for freelancer</span>, please waiting for response from your freelancer.
+                </div>
+            );
+        }
+    };
+
+    evidence = () => {
+        return <div className="evidence-show">This is freelancer’s evidence</div>;
+    };
+
+    disputeActions = () => {
+        const { disputeStt, anchorEl, evidenceShow, clientRespondedDispute } = this.state;
+        const { sttRespondedDispute } = this.props;
+        const isPopperOpen = Boolean(anchorEl);
+
+        if (!clientRespondedDispute.responded) {
             if (disputeStt.clientResponseDuration > 0) {
                 return (
                     <span className="note">
@@ -525,11 +564,15 @@ class JobDetail extends Component {
                             onMouseLeave={this.handlePopoverClose}
                         />
                         <ButtonBase
-                            className="btn btn-normal btn-blue btn-bid"
-                            disabled={disputeStt.clientResponseDuration <= 0}
+                            className="btn btn-normal btn-blue btn-bid right"
+                            disabled={sttRespondedDispute}
                             onClick={this.handleResponseDispute}
                         >
                             Yes
+                        </ButtonBase>
+                        <ButtonBase onClick={this.handleEvidenceShow} className="btn btn-normal btn-dark-green btn-bid float-right">
+                            {evidenceShow ? <i className="fas fa-angle-up icon-popper-note" /> : <i className="fas fa-angle-down icon-popper-note" />}
+                            Freelancer&#39;s Evidences
                         </ButtonBase>
                     </span>
                 );
@@ -555,6 +598,56 @@ class JobDetail extends Component {
                             onMouseEnter={this.handlePopoverOpen}
                             onMouseLeave={this.handlePopoverClose}
                         />
+                        <ButtonBase onClick={this.handleEvidenceShow} className="btn btn-normal btn-dark-green btn-bid float-right">
+                            {evidenceShow ? <i className="fas fa-angle-up icon-popper-note" /> : <i className="fas fa-angle-down icon-popper-note" />}
+                            Freelancer&#39;s Evidences
+                        </ButtonBase>
+                    </span>
+                );
+            }
+        } else {
+            if (disputeStt.commitDuration > 0) {
+                return (
+                    <span className="note">
+                        <Popper
+                            placement="top"
+                            anchorEl={anchorEl}
+                            id="mouse-over-popover"
+                            onClose={this.handlePopoverClose}
+                            disableRestoreFocus
+                            open={isPopperOpen}
+                            content="You have participated a dipute of this job......"
+                        />
+                        <span className="bold">You have participated a dipute of this job.</span>
+                        <i
+                            className="fas fa-info-circle icon-popper-note"
+                            aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                            aria-haspopup="true"
+                            onMouseEnter={this.handlePopoverOpen}
+                            onMouseLeave={this.handlePopoverClose}
+                        />
+                    </span>
+                );
+            } else {
+                return (
+                    <span className="note">
+                        <Popper
+                            placement="top"
+                            anchorEl={anchorEl}
+                            id="mouse-over-popover"
+                            onClose={this.handlePopoverClose}
+                            disableRestoreFocus
+                            open={isPopperOpen}
+                            content="......"
+                        />
+                        <span className="bold">Commited vote (revealDuration)</span>
+                        <i
+                            className="fas fa-info-circle icon-popper-note"
+                            aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                            aria-haspopup="true"
+                            onMouseEnter={this.handlePopoverOpen}
+                            onMouseLeave={this.handlePopoverClose}
+                        />
                     </span>
                 );
             }
@@ -562,8 +655,21 @@ class JobDetail extends Component {
     };
 
     render() {
-        const { jobData, isLoading, stt, dialogLoading, open, actStt, dialogData, dialogContent, checkedDispute } = this.state;
-        const { web3 } = this.props;
+        const {
+            jobData,
+            isLoading,
+            stt,
+            dialogLoading,
+            open,
+            actStt,
+            dialogData,
+            dialogContent,
+            checkedDispute,
+            disputeStt,
+            evidenceShow,
+            clientRespondedDispute,
+        } = this.state;
+        const { web3, sttRespondedDispute } = this.props;
         let jobTplRender;
         if (stt.err) {
             jobTplRender = () => (
@@ -581,24 +687,31 @@ class JobDetail extends Component {
                             <Grid container>
                                 <div className="top-action">
                                     <ButtonBase onClick={this.back} className="btn btn-normal btn-default btn-back e-left">
-                                        <FontAwesomeIcon icon="angle-left" />
+                                        <i className="fas fa-angle-left" />
                                         View all Job
                                     </ButtonBase>
                                     <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
-                                        <FontAwesomeIcon icon="sync-alt" />
+                                        <i className="fas fa-sync-alt" />
                                         Refresh
                                     </ButtonBase>
                                     {this.jobActions()}
                                 </div>
+                                {disputeStt.started && (
+                                    <div className="dispute-actions">
+                                        {this.disputeActions()}
+                                        {evidenceShow && this.evidence()}
+                                    </div>
+                                )}
                             </Grid>
                             <Grid container>
-                                <ResponseDispute
-                                    checkedDispute={checkedDispute}
-                                    closeAct={this.handleCreateDisputeClose}
-                                    createDisputeConfirm={this.createDisputeConfirm}
-                                    jobHash={jobData.jobHash}
-                                    web3={web3}
-                                />
+                                {!sttRespondedDispute && (
+                                    <ResponseDispute
+                                        checkedDispute={checkedDispute}
+                                        closeAct={this.handleResponseDispute}
+                                        jobHash={jobData.jobHash}
+                                        web3={web3}
+                                    />
+                                )}
                                 <Grid container className="job-detail-row">
                                     <Grid item xs={10}>
                                         <Grid container>
@@ -627,6 +740,14 @@ class JobDetail extends Component {
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {disputeStt.started &&
+                                                (disputeStt.clientResponseDuration > 0 && (
+                                                    <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                ))}
+                                            {clientRespondedDispute.started &&
+                                                (clientRespondedDispute.commitDuration > 0 && (
+                                                    <Countdown name="Evidence Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                                ))}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -670,7 +791,7 @@ class JobDetail extends Component {
                                                         <Grid key={freelancer.address} container className="list-body-row">
                                                             <Grid item xs={6} className={freelancer.accepted ? 'title bold' : 'title'}>
                                                                 <span className="avatar">
-                                                                    <FontAwesomeIcon icon="user-circle" />
+                                                                    <i className="fas fa-user-circle" />
                                                                 </span>
                                                                 {freelancer.address}
                                                                 {freelancer.canceled && (
@@ -678,7 +799,7 @@ class JobDetail extends Component {
                                                                         &nbsp;
                                                                         <span className="text-stt-unsuccess">
                                                                             &nbsp;
-                                                                            <FontAwesomeIcon icon="times-circle" />
+                                                                            <i className="fas fa-times-circle" />
                                                                             Canceled
                                                                         </span>
                                                                     </span>
@@ -688,7 +809,7 @@ class JobDetail extends Component {
                                                                         &nbsp;
                                                                         <span className="text-stt-success">
                                                                             &nbsp;
-                                                                            <FontAwesomeIcon icon="check" />
+                                                                            <i className="fas fa-check" />
                                                                             Accepted
                                                                         </span>
                                                                     </span>
@@ -756,7 +877,7 @@ class JobDetail extends Component {
                                 </Grid>
                                 <Grid item xs={4} className="main-intro-right">
                                     <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                        <FontAwesomeIcon icon="plus" /> Create A New Job
+                                        <i className="fas fa-plus" /> Create A New Job
                                     </ButtonBase>
                                 </Grid>
                             </Grid>
@@ -793,6 +914,7 @@ JobDetail.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     votingParams: PropTypes.object.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
+    sttRespondedDispute: PropTypes.bool.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -803,6 +925,7 @@ const mapStateToProps = state => {
         actionBtnDisabled: state.commonReducer.actionBtnDisabled,
         balances: state.commonReducer.balances,
         votingParams: state.freelancerReducer.votingParams,
+        sttRespondedDispute: state.clientReducer.sttRespondedDispute,
     };
 };
 

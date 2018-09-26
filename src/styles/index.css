@@ -268,6 +268,8 @@ body {
     margin-right: 5px;
     width: 18px;
     height: 18px; }
+  #bigbomMarketplace .btn i {
+    margin-right: 5px; }
   #bigbomMarketplace .btn:disabled {
     background: #ccc;
     color: #666; }
@@ -293,15 +295,21 @@ body {
 #bigbomMarketplace .btn-green {
   background-color: #40bd56;
   color: #fff; }
+  #bigbomMarketplace .btn-green i {
+    color: #fff; }
 
 #bigbomMarketplace .btn-red {
   background-color: red;
   color: #fff; }
+  #bigbomMarketplace .btn-red i {
+    color: #fff; }
 
 #bigbomMarketplace .btn-gray {
   background-color: #eee;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
   color: #888; }
+  #bigbomMarketplace .btn-gray i {
+    color: #888; }
   #bigbomMarketplace .btn-gray:hover {
     background: #5ca16a;
     color: #fff; }
@@ -309,20 +317,40 @@ body {
 #bigbomMarketplace .btn-blue {
   background-color: #0ca1f9;
   color: #fff; }
+  #bigbomMarketplace .btn-blue i {
+    color: #fff; }
 
 #bigbomMarketplace .btn-white {
   background-color: #fff;
   color: #40bd56;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+  #bigbomMarketplace .btn-white i {
+    color: #40bd56; }
 
 #bigbomMarketplace .btn-default {
   background-color: #f9f9f9;
   color: #252525;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+  #bigbomMarketplace .btn-default i {
+    color: #252525; }
 
 #bigbomMarketplace .btn-orange {
   background-color: #f99a0c;
   color: #fff; }
+  #bigbomMarketplace .btn-orange i {
+    color: #fff; }
+
+#bigbomMarketplace .btn-dark {
+  background-color: #555;
+  color: #fff; }
+  #bigbomMarketplace .btn-dark i {
+    color: #fff; }
+
+#bigbomMarketplace .btn-dark-green {
+  background-color: #428d51;
+  color: #fff; }
+  #bigbomMarketplace .btn-dark-green i {
+    color: #fff; }
 
 #bigbomMarketplace .btn-icon.btn-normal {
   font-size: 20px; }
@@ -372,9 +400,8 @@ body {
         display: flex; }
         #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar {
           margin-right: 5px; }
-          #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar svg {
-            width: 30px;
-            height: 30px; }
+          #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar i {
+            font-size: 20px; }
         #bigbomMarketplace .list-container .list-body .list-body-row div.title a {
           font-weight: bold;
           font-size: 16px;
@@ -513,56 +540,6 @@ body {
 #bigbomMarketplace .col-6 {
   width: 50%; }
 
-#bigbomMarketplace .dialog .loading {
-  min-height: inherit; }
-
-#bigbomMarketplace .dialog .dialog-result {
-  padding: 30px;
-  font-size: 18px;
-  text-align: center;
-  line-height: 24px; }
-  #bigbomMarketplace .dialog .dialog-result .success {
-    font-weight: bold; }
-    #bigbomMarketplace .dialog .dialog-result .success .icon {
-      color: #40bd56;
-      width: 22px;
-      height: 22px;
-      margin-right: 5px; }
-
-#bigbomMarketplace .top-actions {
-  float: right;
-  padding-right: 30px; }
-  #bigbomMarketplace .top-actions .action {
-    padding-right: 20px;
-    float: left; }
-    #bigbomMarketplace .top-actions .action.filter {
-      min-width: 400px;
-      z-index: 999;
-      position: relative; }
-    #bigbomMarketplace .top-actions .action .btn {
-      margin-top: 3px; }
-    #bigbomMarketplace .top-actions .action:last-child {
-      padding-right: 0; }
-    #bigbomMarketplace .top-actions .action.reload-btn {
-      float: right; }
-
-#bigbomMarketplace .top-action {
-  width: 100%; }
-  #bigbomMarketplace .top-action .btn-bid {
-    float: right;
-    margin-left: 15px; }
-  #bigbomMarketplace .top-action .note {
-    margin-top: -20px;
-    margin-bottom: 30px;
-    display: inline-block;
-    float: right; }
-    #bigbomMarketplace .top-action .note svg {
-      height: 17px;
-      width: 17px;
-      margin-right: 3px; }
-    #bigbomMarketplace .top-action .note button {
-      margin-top: -10px; }
-
 #bigbomMarketplace .show-block {
   display: block; }
 
@@ -614,6 +591,12 @@ body {
 
 #bigbomMarketplace .icon-popper-note {
   color: #777; }
+
+#bigbomMarketplace .float-right {
+  float: right; }
+
+#bigbomMarketplace .float-left {
+  float: left; }
 
 @media (max-width: 1023px) {
   .root {
@@ -668,31 +651,27 @@ body {
         color: #fff;
         vertical-align: top;
         margin: 0 15px; }
-        #footer footer .social-list .cycle-box.tele svg {
-          width: 37px;
-          height: 30px; }
-        #footer footer .social-list .cycle-box.face svg {
-          width: 15px;
-          height: 33px; }
-        #footer footer .social-list .cycle-box.link svg {
-          width: 35px;
-          height: 33px; }
+        #footer footer .social-list .cycle-box.tele i {
+          font-size: 33px; }
+        #footer footer .social-list .cycle-box.face i {
+          font-size: 30px; }
+        #footer footer .social-list .cycle-box.link {
+          line-height: 60px; }
+          #footer footer .social-list .cycle-box.link i {
+            font-size: 30px; }
         #footer footer .social-list .cycle-box.youtu {
           line-height: 63px; }
-          #footer footer .social-list .cycle-box.youtu svg {
-            width: 35px;
-            height: 25px; }
+          #footer footer .social-list .cycle-box.youtu i {
+            font-size: 30px; }
         #footer footer .social-list .cycle-box.git {
           background: none;
           color: #40bd56; }
-          #footer footer .social-list .cycle-box.git svg {
-            width: 50px;
-            height: 50px; }
+          #footer footer .social-list .cycle-box.git i {
+            font-size: 52px; }
         #footer footer .social-list .cycle-box.twi {
           line-height: 65px; }
-          #footer footer .social-list .cycle-box.twi svg {
-            width: 31px;
-            height: 25px; }
+          #footer footer .social-list .cycle-box.twi i {
+            font-size: 30px; }
     #footer footer .link-interm {
       margin: 25px 0;
       text-align: center; }
@@ -1068,7 +1047,7 @@ a {
       .nav .top-selection .select-item .select-item-text p {
         font-size: 16px;
         color: #319164; }
-    .nav .top-selection .select-item svg {
+    .nav .top-selection .select-item i {
       color: #319164; }
 
 .inside-box {
@@ -1085,3 +1064,68 @@ a {
   .inside-box .inside-result-close {
     float: right;
     bottom: -40px; }
+
+.dispute-actions {
+  background: #fffcdf;
+  border: 1px solid #fc9a4b;
+  padding: 20px;
+  width: 100%;
+  margin-bottom: 20px;
+  float: left; }
+  .dispute-actions .note i {
+    margin: 0 5px; }
+
+.evidence-show {
+  padding: 20px;
+  margin-top: 40px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+.dialog .loading {
+  min-height: inherit; }
+
+.dialog .dialog-result {
+  padding: 30px;
+  font-size: 18px;
+  text-align: center;
+  line-height: 24px; }
+  .dialog .dialog-result .success {
+    font-weight: bold; }
+    .dialog .dialog-result .success .icon {
+      color: #40bd56;
+      font-size: 22px;
+      margin-right: 5px; }
+
+.top-actions {
+  float: right;
+  padding-right: 30px; }
+  .top-actions .action {
+    padding-right: 20px;
+    float: left; }
+    .top-actions .action.filter {
+      min-width: 400px;
+      z-index: 999;
+      position: relative; }
+    .top-actions .action .btn {
+      margin-top: 3px; }
+    .top-actions .action:last-child {
+      padding-right: 0; }
+    .top-actions .action.reload-btn {
+      float: right; }
+
+.top-action {
+  width: 100%; }
+  .top-action .btn-bid {
+    float: right;
+    margin-left: 15px; }
+  .top-action .note {
+    margin-top: -20px;
+    margin-bottom: 30px;
+    display: inline-block;
+    float: right; }
+    .top-action .note svg {
+      height: 17px;
+      width: 17px;
+      margin-right: 3px; }
+    .top-action .note button {
+      margin-top: -10px; }

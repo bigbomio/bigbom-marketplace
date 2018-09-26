@@ -6,7 +6,6 @@ import { connect } from 'react-redux';
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
@@ -308,7 +307,7 @@ class FreelancerDashboard extends Component {
                             </Grid>
                             <Grid item xs={4} className="main-intro-right">
                                 <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                    <FontAwesomeIcon icon="plus" /> Create A New Job
+                                    <i className="fas fa-plus" /> Create A New Job
                                 </ButtonBase>
                             </Grid>
                         </Grid>
@@ -319,7 +318,7 @@ class FreelancerDashboard extends Component {
                         <Grid className="top-actions">
                             <Grid className="action">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
-                                    <FontAwesomeIcon icon="sync-alt" />
+                                    <i className="fas fa-sync-alt" />
                                     Refresh
                                 </ButtonBase>
                             </Grid>

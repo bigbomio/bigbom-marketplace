@@ -8,7 +8,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { setReason } from './actions';
 import { setActionBtnDisabled } from '../common/actions';
@@ -46,7 +45,7 @@ class Reasons extends Component {
                 <List component="nav" className="top-selection">
                     <ListItem className="select-item" button aria-haspopup="true" aria-controls="reason-menu" onClick={this.handleClickListReason}>
                         <ListItemText className="select-item-text" secondary={reasons[this.state.rejectReasonSelected].text} />
-                        <FontAwesomeIcon className="icon" icon="angle-down" />
+                        <i className="fas fa-angle-down icon" />
                     </ListItem>
                 </List>
                 <Menu id="reason-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleCloseReasonList}>
@@ -59,7 +58,7 @@ class Reasons extends Component {
                             className="reason-item"
                         >
                             <ListItemIcon>
-                                <FontAwesomeIcon className="icon" icon={reason.icon} />
+                                <i className={'fas fa-' + reason.icon + 'icon'} />
                             </ListItemIcon>
                             {reason.text}
                         </MenuItem>

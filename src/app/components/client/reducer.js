@@ -5,6 +5,7 @@ const data = {
     jobs: [],
     reason: 0,
     actionBtnDisabled: true,
+    sttRespondedDispute: false,
 };
 
 const initData = cloneDeep(data);
@@ -25,6 +26,15 @@ const clientReducer = (state = initData, action) => {
             return {
                 ...state,
                 reason,
+                actionBtnDisabled: false,
+            };
+        }
+        case nameActList.SET_STT_RESPONDED_DISPUTE: {
+            let sttRespondedDispute = cloneDeep(state.sttRespondedDispute);
+            sttRespondedDispute = action.sttRespondedDispute;
+            return {
+                ...state,
+                sttRespondedDispute,
                 actionBtnDisabled: false,
             };
         }

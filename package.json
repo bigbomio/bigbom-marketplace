@@ -3,12 +3,6 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "@fortawesome/fontawesome-free": "^5.1.0",
-        "@fortawesome/fontawesome-svg-core": "^1.2.0-14",
-        "@fortawesome/free-brands-svg-icons": "^5.1.0",
-        "@fortawesome/free-regular-svg-icons": "^5.1.0",
-        "@fortawesome/free-solid-svg-icons": "^5.1.0-11",
-        "@fortawesome/react-fontawesome": "^0.1.0-11",
         "@material-ui/core": "^1.4.2",
         "cross-env": "^5.2.0",
         "ethjs": "^0.4.0",

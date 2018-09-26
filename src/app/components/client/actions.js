@@ -13,3 +13,10 @@ export const setReason = reason => {
         reason,
     };
 };
+
+export const setSttRespondedDispute = sttRespondedDispute => {
+    return {
+        type: listTypes.SET_STT_RESPONDED_DISPUTE,
+        sttRespondedDispute,
+    };
+};

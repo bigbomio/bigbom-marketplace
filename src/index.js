@@ -5,10 +5,6 @@ import { Provider } from 'react-redux';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 
 // Font Awesome
-import '@fortawesome/fontawesome-free/css/all.css';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { fab } from '@fortawesome/free-brands-svg-icons';
-import { fas } from '@fortawesome/free-solid-svg-icons';
 
 // Service Worker
 import { unregister } from './registerServiceWorker';
@@ -24,7 +20,6 @@ import './styles/index.css';
 
 import Routes from './app/routers';
 
-library.add(fab, fas);
 ReactDOM.render(
     <div className="App" id="bigbomMarketplace">
         <Provider store={store()}>

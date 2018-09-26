@@ -14,7 +14,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
-import { FontAwesomeIcon } from '../../../../node_modules/@fortawesome/react-fontawesome';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -473,7 +472,7 @@ class ClientPostJob extends Component {
                                             <div className="err">{status.text}</div>
                                         ) : (
                                             <div className="success">
-                                                <FontAwesomeIcon className="icon" icon="check" />
+                                                <i className="fas fa-check icon" />
                                                 {status.text}
                                                 {status.link && (
                                                     <p>
@@ -576,7 +575,7 @@ class ClientPostJob extends Component {
                                     ) : (
                                         <span className="custom-budget">
                                             <ButtonBase className="btn btn-medium btn-gray medium-rectangle" onClick={this.backToCustom}>
-                                                <FontAwesomeIcon icon="long-arrow-alt-left" />
+                                                <i className="fas fa-long-arrow-alt-left" />
                                             </ButtonBase>
                                             <input
                                                 className={customBudgetErr ? 'input-err' : ''}

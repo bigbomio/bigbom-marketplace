@@ -11,16 +11,15 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import Utils from '../../_utils/utils';
 
 import RoutersAuthen from '../../routers/RoutersAuthen';
 
 const options = [
-    { text: 'View as Client', icon: 'user-tie' },
-    { text: 'View as Freelancer', icon: 'user' },
-    { text: 'View as Voter', icon: 'users' },
+    { text: 'View as Client', icon: 'fas fa-user-tie' },
+    { text: 'View as Freelancer', icon: 'fas fa-user' },
+    { text: 'View as Voter', icon: 'fas fa-users' },
 ];
 
 class Header extends PureComponent {
@@ -106,7 +105,7 @@ class Header extends PureComponent {
                                             onClick={this.handleClickListView}
                                         >
                                             <ListItemText className="select-item-text" secondary={options[this.state.selectedIndex].text} />
-                                            <FontAwesomeIcon className="icon" icon="angle-down" />
+                                            <i className="fas fa-angle-down icon" />
                                         </ListItem>
                                     </List>
                                     <Menu id="as-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleClose}>
@@ -117,7 +116,7 @@ class Header extends PureComponent {
                                                 onClick={event => this.handleMenuItemSelect(event, index)}
                                             >
                                                 <ListItemIcon>
-                                                    <FontAwesomeIcon className="icon" icon={option.icon} />
+                                                    <i className={option.icon + ' icon'} />
                                                 </ListItemIcon>
                                                 {option.text}
                                             </MenuItem>

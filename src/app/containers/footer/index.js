@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 
 class Footer extends PureComponent {
@@ -10,13 +9,13 @@ class Footer extends PureComponent {
                     <footer className="wrapper">
                         <div className="social-list">
                             <a className="cycle-box tele" href="https://t.me/bigbomicogroup" target="_blank" rel="noopener noreferrer">
-                                <FontAwesomeIcon icon={['fab', 'telegram-plane']} />
+                                <i className="fab fa-telegram-plane" />
                             </a>
                             <a className="cycle-box face" href="https://www.facebook.com/bigbom.global/" target="_blank" rel="noopener noreferrer">
-                                <FontAwesomeIcon icon={['fab', 'facebook-f']} />
+                                <i className="fab fa-facebook-f" />
                             </a>
                             <a className="cycle-box link" href="http://google.com/" target="_blank" rel="noopener noreferrer">
-                                <FontAwesomeIcon icon={['fab', 'linkedin-in']} />
+                                <i className="fab fa-linkedin-in" />
                             </a>
                             <a
                                 className="cycle-box youtu"
@@ -24,13 +23,13 @@ class Footer extends PureComponent {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                <FontAwesomeIcon icon={['fab', 'youtube']} />
+                                <i className="fab fa-youtube" />
                             </a>
                             <a className="cycle-box git" href="https://github.com/bigbomio" target="_blank" rel="noopener noreferrer">
-                                <FontAwesomeIcon icon={['fab', 'github']} />
+                                <i className="fab fa-github" />
                             </a>
                             <a className="cycle-box twi" href="https://twitter.com/bigbomglobal" target="_blank" rel="noopener noreferrer">
-                                <FontAwesomeIcon icon={['fab', 'twitter']} />
+                                <i className="fab fa-twitter" />
                             </a>
                         </div>
                         <div className="link-interm">

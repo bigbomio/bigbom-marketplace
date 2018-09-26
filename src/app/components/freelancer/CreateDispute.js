@@ -5,7 +5,6 @@ import { withRouter } from 'react-router-dom';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Collapse from '@material-ui/core/Collapse';
 import Grid from '@material-ui/core/Grid';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
@@ -34,7 +33,7 @@ class CreateDispute extends Component {
     }
 
     createDispute = async proofHash => {
-        const { web3, jobHash } = this.props;
+        const { web3, jobHash, setSttDisputeCreated } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [err, tx] = await Utils.callMethod(ctInstance.instance.startPoll)(jobHash, proofHash, {
             from: ctInstance.defaultAccount,
@@ -187,11 +186,11 @@ class CreateDispute extends Component {
             actStt.err ? (
                 <Collapse in={checkedDisputeResult} className="inside-box">
                     <ButtonBase className="btn-icon btn-normal gray inside-result-close" onClick={this.handleResultClose}>
-                        <FontAwesomeIcon icon="times" />
+                        <i className="fas fa-times" />
                     </ButtonBase>
                     <Grid container className="inside-result">
                         <p className="bold">
-                            <FontAwesomeIcon icon="exclamation-circle" className="red" /> {actStt.text} {actStt.link}
+                            <i className="fas fa-exclamation-circle red" /> {actStt.text} {actStt.link}
                         </p>
                     </Grid>
                 </Collapse>
@@ -199,7 +198,7 @@ class CreateDispute extends Component {
                 <Collapse in={checkedDisputeResult} className="inside-box">
                     <Grid container className="inside-result">
                         <p className="bold">
-                            <FontAwesomeIcon icon="check" className="green" /> {actStt.text}
+                            <i className="fas fa-check green" /> {actStt.text}
                             View your transaction status {actStt.link}
                         </p>
                     </Grid>
@@ -232,10 +231,10 @@ class CreateDispute extends Component {
                             </Grid> */}
                     <Grid container className="mkp-form-row">
                         <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.createProofHash()} disabled={submitDisabled}>
-                            <FontAwesomeIcon icon="check" /> Create
+                            <i className="fas fa-check" /> Create
                         </ButtonBase>
                         <ButtonBase className="btn btn-normal btn-red" onClick={() => closeAct()}>
-                            <FontAwesomeIcon icon="times" />
+                            <i className="fas fa-times" />
                             Cancel
                         </ButtonBase>
                     </Grid>

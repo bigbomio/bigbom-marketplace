@@ -175,7 +175,7 @@ a {
                     color: #319164;
                 }
             }
-            svg {
+            i {
                 color: #319164;
             }
         }
@@ -196,5 +196,88 @@ a {
     .inside-result-close {
         float: right;
         bottom: -40px;
+    }
+}
+.dispute-actions {
+    background: #fffcdf;
+    border: 1px solid #fc9a4b;
+    padding: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+    float: left;
+    .note {
+        i {
+            margin: 0 5px;
+        }
+    }
+}
+.evidence-show {
+    padding: 20px;
+    margin-top: 40px;
+    background: #fff;
+    box-shadow: $thinShadow;
+}
+
+.dialog {
+    .loading {
+        min-height: inherit;
+    }
+    .dialog-result {
+        padding: 30px;
+        font-size: 18px;
+        text-align: center;
+        line-height: 24px;
+        .success {
+            font-weight: bold;
+            .icon {
+                color: $green;
+                font-size: 22px;
+                margin-right: 5px;
+            }
+        }
+    }
+}
+.top-actions {
+    float: right;
+    padding-right: 30px;
+
+    .action {
+        padding-right: 20px;
+        float: left;
+        &.filter {
+            min-width: 400px;
+            z-index: 999;
+            position: relative;
+        }
+        .btn {
+            margin-top: 3px;
+        }
+        &:last-child {
+            padding-right: 0;
+        }
+        &.reload-btn {
+            float: right;
+        }
+    }
+}
+.top-action {
+    width: 100%;
+    .btn-bid {
+        float: right;
+        margin-left: 15px;
+    }
+    .note {
+        margin-top: -20px;
+        margin-bottom: 30px;
+        display: inline-block;
+        float: right;
+        svg {
+            height: 17px;
+            width: 17px;
+            margin-right: 3px;
+        }
+        button {
+            margin-top: -10px;
+        }
     }
 }

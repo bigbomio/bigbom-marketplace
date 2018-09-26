@@ -7,7 +7,6 @@ import Select from 'react-select';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import SearchInput, { createFilter } from 'react-search-input';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -255,7 +254,7 @@ class JobBrowser extends Component {
                             <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getJobs} />}</div>
                             <Grid className="action reload-btn">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
-                                    <FontAwesomeIcon icon="sync-alt" />
+                                    <i className="fas fa-sync-alt" />
                                     Refresh
                                 </ButtonBase>
                             </Grid>
@@ -293,7 +292,7 @@ class JobBrowser extends Component {
                                                 primary="Sort by"
                                                 secondary={options[this.state.selectedIndex]}
                                             />
-                                            <FontAwesomeIcon className="icon" icon="angle-down" />
+                                            <i className="fas fa-angle-down icon" />
                                         </ListItem>
                                     </List>
                                     <Menu id="lock-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleClose}>

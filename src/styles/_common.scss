@@ -165,6 +165,9 @@ $orange: #f99a0c;
             width: 18px;
             height: 18px;
         }
+        i {
+            margin-right: 5px;
+        }
         &:disabled {
             background: #ccc;
             color: #666;
@@ -195,15 +198,24 @@ $orange: #f99a0c;
     .btn-green {
         background-color: $green;
         color: #fff;
+        i {
+            color: #fff;
+        }
     }
     .btn-red {
         background-color: $red;
         color: #fff;
+        i {
+            color: #fff;
+        }
     }
     .btn-gray {
         background-color: #eee;
         box-shadow: $thinShadow;
         color: #888;
+        i {
+            color: #888;
+        }
         &:hover {
             background: #5ca16a;
             color: #fff;
@@ -212,20 +224,46 @@ $orange: #f99a0c;
     .btn-blue {
         background-color: $blue;
         color: #fff;
+        i {
+            color: #fff;
+        }
     }
     .btn-white {
         background-color: #fff;
         color: $green;
+        i {
+            color: $green;
+        }
         box-shadow: $thinShadow;
     }
     .btn-default {
         background-color: #f9f9f9;
         color: $dark;
+        i {
+            color: $dark;
+        }
         box-shadow: $thinShadow;
     }
     .btn-orange {
         background-color: $orange;
         color: #fff;
+        i {
+            color: #fff;
+        }
+    }
+    .btn-dark {
+        background-color: #555;
+        color: #fff;
+        i {
+            color: #fff;
+        }
+    }
+    .btn-dark-green {
+        background-color: #428d51;
+        color: #fff;
+        i {
+            color: #fff;
+        }
     }
     .btn-icon {
         &.btn-normal {
@@ -280,9 +318,8 @@ $orange: #f99a0c;
                     &.title {
                         .avatar {
                             margin-right: 5px;
-                            svg {
-                                width: 30px;
-                                height: 30px;
+                            i {
+                                font-size: 20px;
                             }
                         }
                         a {
@@ -459,70 +496,6 @@ $orange: #f99a0c;
     .col-6 {
         width: 50%;
     }
-    .dialog {
-        .loading {
-            min-height: inherit;
-        }
-        .dialog-result {
-            padding: 30px;
-            font-size: 18px;
-            text-align: center;
-            line-height: 24px;
-            .success {
-                font-weight: bold;
-                .icon {
-                    color: $green;
-                    width: 22px;
-                    height: 22px;
-                    margin-right: 5px;
-                }
-            }
-        }
-    }
-    .top-actions {
-        float: right;
-        padding-right: 30px;
-
-        .action {
-            padding-right: 20px;
-            float: left;
-            &.filter {
-                min-width: 400px;
-                z-index: 999;
-                position: relative;
-            }
-            .btn {
-                margin-top: 3px;
-            }
-            &:last-child {
-                padding-right: 0;
-            }
-            &.reload-btn {
-                float: right;
-            }
-        }
-    }
-    .top-action {
-        width: 100%;
-        .btn-bid {
-            float: right;
-            margin-left: 15px;
-        }
-        .note {
-            margin-top: -20px;
-            margin-bottom: 30px;
-            display: inline-block;
-            float: right;
-            svg {
-                height: 17px;
-                width: 17px;
-                margin-right: 3px;
-            }
-            button {
-                margin-top: -10px;
-            }
-        }
-    }
     .show-block {
         display: block;
     }
@@ -579,6 +552,12 @@ $orange: #f99a0c;
     }
     .icon-popper-note {
         color: #777;
+    }
+    .float-right {
+        float: right;
+    }
+    .float-left {
+        float: left;
     }
 }
 
