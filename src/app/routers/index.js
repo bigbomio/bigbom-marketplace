@@ -5,14 +5,12 @@ import { Helmet } from 'react-helmet';
 import Eth from 'ethjs';
 import { connect } from 'react-redux';
 import { isMobile } from 'react-device-detect';
-//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import asyncComponent from '../components/_asynComponent';
 import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
 import Login from '../components/login';
-import RoutersUnAuthen from './RoutersUnAuthen';
 import RoutersAuthen from './RoutersAuthen';
 
 import Utils from '../_utils/utils';
@@ -25,20 +23,13 @@ class Routers extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            isLogin: true,
-            routes: RoutersUnAuthen,
+            routes: RoutersAuthen,
         };
         _this = this;
     }
 
     componentDidMount() {
-        const { isLogin } = this.state;
         const { setWeb3 } = this.props;
-        if (isLogin) {
-            this.setState({
-                routes: RoutersAuthen,
-            });
-        }
         setWeb3(global.web3);
         _this.checkMetamaskID = setInterval(() => {
             _this.checkMetamask();

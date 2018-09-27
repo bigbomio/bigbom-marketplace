@@ -4,9 +4,9 @@ import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Dashboard from './Dashboard';
-import JobDetailBid from './JobDetailBid';
-import JobBrowse from './JobBrowse';
+import Manage from './Manage';
+import DisputeDetail from './DisputeDetail';
+import DisputeBrowse from './DisputeBrowse';
 import NotFound from '../NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
 
@@ -21,10 +21,10 @@ const styles = theme => ({
         maxWidth: 'inherit',
     },
 });
-class FreelancerContainer extends Component {
+class VoterContainer extends Component {
     componentDidMount() {
         const { isConnected, history, setView } = this.props;
-        setView('freelancer');
+        setView('voter');
         if (!isConnected) {
             history.push('/login');
         }
@@ -33,15 +33,15 @@ class FreelancerContainer extends Component {
         const { match } = this.props;
         const listSubLink = [
             {
-                title: 'Find a Job',
+                title: 'Browser Disputes',
                 path: `${match.url}`,
                 exact: true,
-                component: JobBrowse,
+                component: DisputeBrowse,
             },
             {
-                title: 'My Bid',
-                path: `${match.url}/bid`,
-                component: Dashboard,
+                title: 'Manage',
+                path: `${match.url}/disputes`,
+                component: Manage,
             },
         ];
 
@@ -64,7 +64,7 @@ class FreelancerContainer extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/jobs/:jobId`} render={props => <JobDetailBid {...props} />} />
+                    <Route path={`${match.url}/disputes/:disputeId`} render={props => <DisputeDetail {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>
@@ -73,7 +73,7 @@ class FreelancerContainer extends Component {
     }
 }
 
-FreelancerContainer.propTypes = {
+VoterContainer.propTypes = {
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
@@ -95,5 +95,5 @@ export default withStyles(styles)(
     connect(
         mapStateToProps,
         mapDispatchToProps
-    )(FreelancerContainer)
+    )(VoterContainer)
 );

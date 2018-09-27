@@ -4,7 +4,7 @@
 @import 'footer';
 
 @import './components/home';
-@import './components/hirer';
+@import './components/client';
 @import './components/freelancer';
 
 body {
@@ -112,6 +112,10 @@ body {
     }
 }
 
+a {
+    color: $blue;
+}
+
 .refresh {
     cursor: default;
     color: blue;
@@ -145,6 +149,135 @@ body {
             &:hover {
                 color: $green;
             }
+        }
+    }
+}
+.nav {
+    .top-selection {
+        margin-right: 20px;
+        padding: 0;
+        margin-top: -5px;
+        .select-item {
+            padding: 5px 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 1);
+            background: -moz-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: -webkit-gradient(left top, right top, color-stop(0%, rgba(255, 255, 255, 1)), color-stop(100%, rgba(64, 189, 86, 0.15)));
+            background: -webkit-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: -o-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: -ms-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            background: linear-gradient(to right, rgba(255, 255, 255, 1) 0%, rgba(64, 189, 86, 0.15) 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#40bd56', GradientType=1 );
+            .select-item-text {
+                padding-right: 10px;
+                p {
+                    font-size: 16px;
+                    color: #319164;
+                }
+            }
+            i {
+                color: #319164;
+            }
+        }
+    }
+}
+.inside-box {
+    width: 100%;
+    margin-top: 0px;
+    .inside-result {
+        padding: 20px;
+        min-height: 150px;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #ccc;
+        margin: 20px 0;
+    }
+    .inside-result-close {
+        float: right;
+        bottom: -40px;
+    }
+}
+.dispute-actions {
+    background: #fffcdf;
+    border: 1px solid #fc9a4b;
+    padding: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+    float: left;
+    .note {
+        i {
+            margin: 0 5px;
+        }
+    }
+}
+.evidence-show {
+    padding: 20px;
+    margin-top: 40px;
+    background: #fff;
+    box-shadow: $thinShadow;
+}
+
+.dialog {
+    .loading {
+        min-height: inherit;
+    }
+    .dialog-result {
+        padding: 30px;
+        font-size: 18px;
+        text-align: center;
+        line-height: 24px;
+        .success {
+            font-weight: bold;
+            .icon {
+                color: $green;
+                font-size: 22px;
+                margin-right: 5px;
+            }
+        }
+    }
+}
+.top-actions {
+    float: right;
+    padding-right: 30px;
+
+    .action {
+        padding-right: 20px;
+        float: left;
+        &.filter {
+            min-width: 400px;
+            z-index: 999;
+            position: relative;
+        }
+        .btn {
+            margin-top: 3px;
+        }
+        &:last-child {
+            padding-right: 0;
+        }
+        &.reload-btn {
+            float: right;
+        }
+    }
+}
+.top-action {
+    width: 100%;
+    .btn-bid {
+        float: right;
+        margin-left: 15px;
+    }
+    .note {
+        margin-top: -20px;
+        margin-bottom: 30px;
+        display: inline-block;
+        float: right;
+        svg {
+            height: 17px;
+            width: 17px;
+            margin-right: 3px;
+        }
+        button {
+            margin-top: -10px;
         }
     }
 }

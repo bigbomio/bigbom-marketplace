@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
@@ -24,7 +26,7 @@ class DialogPopup extends Component {
     };
 
     render() {
-        const { dialogLoading, stt, title, actionText, open, btnSttDisabled } = this.props;
+        const { dialogLoading, stt, title, actionText, open, content, actionBtnDisabled } = this.props;
         return (
             <Dialog
                 open={open}
@@ -39,6 +41,7 @@ class DialogPopup extends Component {
             >
                 <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
                 <DialogContent>
+                    {content && <div className="dialog-result">{content}</div>}
                     {dialogLoading ? (
                         <div className="loading">
                             <CircularProgress size={50} color="secondary" />
@@ -49,18 +52,14 @@ class DialogPopup extends Component {
                             {stt && (
                                 <div className="dialog-result">
                                     {stt.err ? (
-                                        <div className="err">{stt.text}</div>
+                                        <div className="err">
+                                            {stt.text}
+                                            {stt.link}
+                                        </div>
                                     ) : (
                                         <div className="success">
                                             {stt.text}
-                                            {stt.link && (
-                                                <p>
-                                                    View your transaction status{' '}
-                                                    <a className="bold link" href={stt.link} target="_blank" rel="noopener noreferrer">
-                                                        HERE
-                                                    </a>
-                                                </p>
-                                            )}
+                                            {stt.link && <p>View your transaction status {stt.link}</p>}
                                         </div>
                                     )}
                                 </div>
@@ -75,7 +74,7 @@ class DialogPopup extends Component {
                         </ButtonBase>
                     )}
                     {actionText && (
-                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={btnSttDisabled}>
+                        <ButtonBase onClick={this.runAction} className="btn btn-normal btn-blue" disabled={actionBtnDisabled}>
                             {actionText}
                         </ButtonBase>
                     )}
@@ -87,19 +86,34 @@ class DialogPopup extends Component {
 
 DialogPopup.propTypes = {
     dialogLoading: PropTypes.bool.isRequired,
+    content: PropTypes.any,
     open: PropTypes.bool.isRequired,
     stt: PropTypes.object.isRequired,
     actions: PropTypes.func,
     title: PropTypes.string,
     actionText: PropTypes.string,
     actClose: PropTypes.func.isRequired,
-    btnSttDisabled: PropTypes.bool.isRequired,
+    actionBtnDisabled: PropTypes.bool.isRequired,
 };
 
 DialogPopup.defaultProps = {
     actions: null,
     title: null,
     actionText: null,
+    content: null,
 };
 
-export default DialogPopup;
+const mapStateToProps = state => {
+    return {
+        actionBtnDisabled: state.commonReducer.actionBtnDisabled,
+    };
+};
+
+const mapDispatchToProps = {};
+
+export default withRouter(
+    connect(
+        mapStateToProps,
+        mapDispatchToProps
+    )(DialogPopup)
+);

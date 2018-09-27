@@ -4,10 +4,10 @@ import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Dashboard from './Dashboard';
-import JobDetailBid from './JobDetailBid';
-import JobBrowse from './JobBrowse';
-import NotFound from '../NotFound';
+import Manage from '../../components/client/Manage';
+import JobDetail from '../../components/client/JobDetail';
+import PostJob from '../../components/client//PostJob';
+import NotFound from '../../components/NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
 
 import { setView } from '../common/actions';
@@ -21,27 +21,29 @@ const styles = theme => ({
         maxWidth: 'inherit',
     },
 });
-class FreelancerContainer extends Component {
+
+class ClientCatagories extends Component {
     componentDidMount() {
         const { isConnected, history, setView } = this.props;
-        setView('freelancer');
+        setView('client');
         if (!isConnected) {
             history.push('/login');
         }
     }
+
     render() {
         const { match } = this.props;
         const listSubLink = [
             {
-                title: 'Find a Job',
+                title: 'Post a Job',
                 path: `${match.url}`,
                 exact: true,
-                component: JobBrowse,
+                component: PostJob,
             },
             {
-                title: 'My Bid',
-                path: `${match.url}/bid`,
-                component: Dashboard,
+                title: 'Manage',
+                path: `${match.url}/manage`,
+                component: Manage,
             },
         ];
 
@@ -64,7 +66,7 @@ class FreelancerContainer extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/jobs/:jobId`} render={props => <JobDetailBid {...props} />} />
+                    <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>
@@ -73,7 +75,7 @@ class FreelancerContainer extends Component {
     }
 }
 
-FreelancerContainer.propTypes = {
+ClientCatagories.propTypes = {
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
@@ -87,13 +89,11 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {
-    setView,
-};
+const mapDispatchToProps = { setView };
 
 export default withStyles(styles)(
     connect(
         mapStateToProps,
         mapDispatchToProps
-    )(FreelancerContainer)
+    )(ClientCatagories)
 );

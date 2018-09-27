@@ -29,48 +29,43 @@
                 margin: 0 15px;
 
                 &.tele {
-                    svg {
-                        width: 37px;
-                        height: 30px;
+                    i {
+                        font-size: 33px;
                     }
                 }
 
                 &.face {
-                    svg {
-                        width: 15px;
-                        height: 33px;
+                    i {
+                        font-size: 30px;
                     }
                 }
 
                 &.link {
-                    svg {
-                        width: 35px;
-                        height: 33px;
+                    line-height: 60px;
+                    i {
+                        font-size: 30px;
                     }
                 }
 
                 &.youtu {
                     line-height: 63px;
-                    svg {
-                        width: 35px;
-                        height: 25px;
+                    i {
+                        font-size: 30px;
                     }
                 }
 
                 &.git {
                     background: none;
                     color: $green;
-                    svg {
-                        width: 50px;
-                        height: 50px;
+                    i {
+                        font-size: 52px;
                     }
                 }
 
                 &.twi {
                     line-height: 65px;
-                    svg {
-                        width: 31px;
-                        height: 25px;
+                    i {
+                        font-size: 30px;
                     }
                 }
                 &:hover {

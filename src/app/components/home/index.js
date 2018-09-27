@@ -74,7 +74,7 @@ class Home extends Component {
         const { isConnected, history } = this.props;
         if (isConnected) {
             if (action === 'postJobAction') {
-                history.push('/hirer');
+                history.push('/client');
             } else {
                 history.push('/freelancer');
             }

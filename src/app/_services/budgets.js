@@ -1,4 +1,5 @@
 import Utils from '../_utils/utils';
+
 export default [
     {
         value: '1',

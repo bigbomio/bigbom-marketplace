@@ -5,23 +5,26 @@ import BBFreelancerJob from '../_services/abi/BBFreelancerJob.json';
 import BBFreelancerBid from '../_services/abi/BBFreelancerBid.json';
 import BBFreelancerPayment from '../_services/abi/BBFreelancerPayment.json';
 import BigbomTokenExtended from '../_services/abi/BigbomTokenExtended.json'; // bbo
+import BBDispute from '../_services/abi/BBDispute.json';
+import BBVoting from '../_services/abi/BBVoting.json';
+import BBParams from '../_services/abi/BBParams.json';
 
 class abiConfigs {
     getContract(type) {
         switch (type) {
             case 'BBFreelancerJob':
                 return {
-                    address: '0x62aa93f9dffec25daf9d2955d468194e996e8c87',
+                    address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
                     abi: BBFreelancerJob.abi,
                 };
             case 'BBFreelancerBid':
                 return {
-                    address: '0x0ff11890ef301dfd0fb37e423930b391836c69c9',
+                    address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
                     abi: BBFreelancerBid.abi,
                 };
             case 'BBFreelancerPayment':
                 return {
-                    address: '0x7b7e6f2b02a48bd24b5b1554fafff5f70547ab0a',
+                    address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
                     abi: BBFreelancerPayment.abi,
                 };
             case 'BigbomTokenExtended':
@@ -29,9 +32,24 @@ class abiConfigs {
                     address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
                     abi: BigbomTokenExtended.abi,
                 };
+            case 'BBDispute':
+                return {
+                    address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+                    abi: BBDispute.abi,
+                };
+            case 'BBVoting':
+                return {
+                    address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+                    abi: BBVoting.abi,
+                };
+            case 'BBParams':
+                return {
+                    address: '0xb527A50abCdBCDA765FBFD1EDFc63619979f898e',
+                    abi: BBParams.abi,
+                };
             default:
                 return {
-                    address: '0x62aa93f9dffec25daf9d2955d468194e996e8c87',
+                    address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
                     abi: BBFreelancerJob.abi,
                 };
         }
@@ -43,6 +61,10 @@ class abiConfigs {
 
     getIpfsLink() {
         return 'https://cloudflare-ipfs.com/ipfs/';
+    }
+
+    getTXlink() {
+        return 'https://ropsten.etherscan.io/tx/';
     }
 
     async contractInstanceGenerator(web3, type) {
@@ -57,6 +79,32 @@ class abiConfigs {
             gasPrice,
             address,
         };
+    }
+
+    async getAllowance(web3, ctName) {
+        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
+        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, ctInstance.address);
+        if (err) {
+            console.log('err allowance: ', err);
+            return;
+        }
+        return result;
+    }
+
+    async approve(web3, ctName, value) {
+        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
+        const [errApprove, approve] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (errApprove) {
+            console.log('errApprove: ', errApprove);
+            return false;
+        }
+        console.log('approve: ', approve);
+        return true;
     }
 
     async getPastEvents(web3, type, event, filter, callback) {
@@ -81,7 +129,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
 
@@ -102,7 +150,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, bidCanceledEvents) {
@@ -111,10 +159,11 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            for (let bidEvents of bidCanceledEvents) {
+            for (let bidEvent of bidCanceledEvents) {
                 for (let bid of mergeData.bid) {
-                    if (bid.address === bidEvents.args.owner) {
+                    if (bid.address === bidEvent.args.owner) {
                         bid.canceled = true;
+                        bid.canceledBlockNumber = bidEvent.blockNumber;
                     }
                 }
             }
@@ -125,18 +174,18 @@ class abiConfigs {
         events.stopWatching();
     }
 
-    async getPastEventsMerge(web3, type, event, filter, mergeData, callback) {
+    async getPastEventsMergeBidToJob(web3, type, event, filter, mergeData, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
             data: {},
         };
 
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
 
-        events.get((error, events) => {
+        events.get(async (error, events) => {
             if (error) {
                 console.log(error);
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
@@ -144,17 +193,15 @@ class abiConfigs {
             }
             let bidAddr = '';
             for (let event of events) {
-                //console.log('event created bid  -------', event);
                 const bidTpl = {
                     address: event.args.owner,
                     award: Utils.WeiToBBO(web3, event.args.bid.toString()),
-                    created: event.args.created.toString(),
-                    timeDone: event.args.timeDone.toString(),
+                    timeDone: event.args.bidTime.toString(),
                     id: event.args.jobHash,
                     jobHash: mergeData.jobHash,
                     accepted: false,
                     canceled: false,
-                    blockNumber: event.blockNumber,
+                    bidBlockNumber: event.blockNumber,
                 };
                 if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
                     // get latest bid for each address
@@ -184,7 +231,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, events) {
@@ -201,6 +248,7 @@ class abiConfigs {
                         if (web3.sha3(jobData.jobHash) === jobHashE) {
                             if (bid.address === e.args.freelancer) {
                                 bid.accepted = true;
+                                bid.acceptedBlockNumber = e.blockNumber;
                             }
                         }
                     }
@@ -236,7 +284,7 @@ class abiConfigs {
         const getSingleEvent = contractInstance.instance[event](
             filter,
             {
-                fromBlock: 3970636, // should use recent number
+                fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
@@ -249,7 +297,7 @@ class abiConfigs {
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3970636, // should use recent number
+            fromBlock: 4030174, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {
@@ -259,6 +307,94 @@ class abiConfigs {
             }
         });
 
+        eventInstance.stopWatching();
+    }
+
+    async getBlock(web3, blockNumber) {
+        const [err, blockLogs] = await Utils.callMethod(web3.eth.getBlock)(blockNumber);
+        if (err) {
+            return null;
+        }
+        return blockLogs;
+    }
+
+    async getVotingParams(web3, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBParams');
+        ctInstance.instance.getVotingParams(
+            {
+                from: web3.eth.defaultAccount,
+            },
+            (err, re) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    const votingParams = {
+                        minVotes: re[0].toString(),
+                        maxVotes: re[1].toString(),
+                        voteQuorum: re[2].toString(),
+                        stakeDeposit: re[3].toString(),
+                        eveidenceDuration: re[4].toString(),
+                        commitDuration: re[5].toString(),
+                        revealDuration: re[6].toString(),
+                        bboRewards: re[7].toString(),
+                    };
+                    callback(votingParams);
+                }
+            }
+        );
+    }
+
+    async getEventsPollStarted(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const eventInstance = ctInstance.instance.PollStarted(
+            { jobHash: jobHash, owner: web3.eth.defaultAccount },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                //console.log(re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                        const result = {
+                            created: blockLog.timestamp,
+                            started: true,
+                        };
+                        callback(result);
+                    }
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
+
+    async getEventsPollAgainsted(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const eventInstance = ctInstance.instance.PollAgainsted(
+            { jobHash: jobHash, owner: web3.eth.defaultAccount },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                console.log(re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                        const result = {
+                            created: blockLog.timestamp,
+                            responded: true,
+                        };
+                        callback(result);
+                    }
+                }
+            }
+        );
         eventInstance.stopWatching();
     }
 }

@@ -9,14 +9,9 @@ import Fade from '@material-ui/core/Fade';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
-import api from '../../_services/settingsApi';
 
 import Countdown from '../common/countdown';
-import Popper from '../common/Popper';
 import DialogPopup from '../common/dialog';
-import CreateDispute from '../freelancer/CreateDispute';
-import { setActionBtnDisabled } from '../common/actions';
-import { saveVotingParams } from './actions';
 
 let myAddress;
 
@@ -36,7 +31,7 @@ const skillShow = job => {
     );
 };
 
-class JobDetailBid extends Component {
+class DisputeDetail extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -53,23 +48,14 @@ class JobDetailBid extends Component {
                 actionText: null,
                 actions: null,
             },
+            btnSttDisabled: false,
             claim: false,
-            checkedDispute: false,
-            disputeStt: {
-                clientResponseDuration: 0,
-                started: false,
-            },
-            clientRespondedDispute: { responded: false, commitDuration: 0 },
-            anchorEl: null,
-            evidenceShow: false,
         };
-        this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
 
     componentDidMount() {
-        const { isConnected, web3, saveVotingParams } = this.props;
+        const { isConnected, web3 } = this.props;
         const { isLoading } = this.state;
-        abiConfig.getVotingParams(web3, saveVotingParams);
         myAddress = web3.eth.defaultAccount;
         if (isConnected) {
             if (!isLoading) {
@@ -106,34 +92,6 @@ class JobDetailBid extends Component {
         }
     }
 
-    setDisputeStt = async event => {
-        const { votingParams } = this.props;
-        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.eveidenceDuration)) * 1000);
-        if (clientResponseDuration > Date.now()) {
-            if (this.mounted) {
-                this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
-            }
-        } else {
-            if (this.mounted) {
-                this.setState({ disputeStt: { started: event.started, clientResponseDuration: 0 } });
-            }
-        }
-    };
-
-    setRespondedisputeStt = async event => {
-        const { votingParams } = this.props;
-        const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
-        if (commitDuration > Date.now()) {
-            if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration } });
-            }
-        } else {
-            if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
-            }
-        }
-    };
-
     actions = () => {
         const { web3 } = this.props;
         const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
@@ -152,8 +110,8 @@ class JobDetailBid extends Component {
                         }
                         return (
                             <span className="note">
-                                <i className="fas fa-check-circle green" /> <span className="bold">You have bid this job</span>, please waiting
-                                acceptance from job owner.
+                                <i className="fas fa-check-circle" /> <span className="bold">You have bid this job</span>, please waiting acceptance
+                                from job owner.
                                 <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
                                     Cancel Bid
                                 </ButtonBase>
@@ -209,148 +167,14 @@ class JobDetailBid extends Component {
                     }
                 }
             }
-        } else {
-            return (
-                <span className="note">
-                    <ButtonBase onClick={this.viewMyJobs} className="btn btn-normal btn-blue">
-                        View all your jobs
-                    </ButtonBase>
-                </span>
-            );
         }
         return null;
     };
 
-    evidence = () => {
-        return <div className="evidence-show">This is client’s evidence</div>;
-    };
-
-    disputeActions = () => {
-        const { disputeCreated, web3 } = this.props;
-        const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow } = this.state;
-        const isPopperOpen = Boolean(anchorEl);
-        const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
-        if (!clientRespondedDispute.responded) {
-            if (jobData.status.reject && mybid.length > 0) {
-                if (!disputeStt.started) {
-                    return (
-                        <div className="dispute-actions">
-                            <span className="note">
-                                <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
-                                <Popper
-                                    placement="top"
-                                    anchorEl={anchorEl}
-                                    id="mouse-over-popover"
-                                    onClose={this.handlePopoverClose}
-                                    disableRestoreFocus
-                                    open={isPopperOpen}
-                                    content={api.getReason(0).text}
-                                />
-                                <ButtonBase
-                                    className="btn btn-small btn-gray bold blue"
-                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                    aria-haspopup="true"
-                                    onMouseEnter={this.handlePopoverOpen}
-                                    onMouseLeave={this.handlePopoverClose}
-                                >
-                                    <i className="fas fa-info-circle" /> reason
-                                </ButtonBase>
-                                <ButtonBase
-                                    className="btn btn-normal btn-orange btn-bid float-right"
-                                    onClick={this.handleCreateDisputeClose}
-                                    disabled={disputeCreated}
-                                >
-                                    Create Dispute
-                                </ButtonBase>
-                            </span>
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div className="dispute-actions">
-                            {disputeStt.clientResponseDuration > 0 ? (
-                                <span className="note">
-                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
-                                </span>
-                            ) : (
-                                <span className="note">
-                                    Your client did not responded to your dispute.{' '}
-                                    <ButtonBase className="btn btn-normal btn-green btn-bid">Finalized Dispute</ButtonBase>
-                                </span>
-                            )}
-                        </div>
-                    );
-                }
-            } else {
-                return null;
-            }
-        } else {
-            if (disputeStt.commitDuration > 0) {
-                return (
-                    <div className="dispute-actions">
-                        <span className="note">
-                            <Popper
-                                placement="top"
-                                anchorEl={anchorEl}
-                                id="mouse-over-popover"
-                                onClose={this.handlePopoverClose}
-                                disableRestoreFocus
-                                open={isPopperOpen}
-                                content="Your client have participated into your dipute......."
-                            />
-                            <span className="bold">Your client have participated into your dispute.</span>
-                            <i
-                                className="fas fa-info-circle icon-popper-note"
-                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                aria-haspopup="true"
-                                onMouseEnter={this.handlePopoverOpen}
-                                onMouseLeave={this.handlePopoverClose}
-                            />
-                            <ButtonBase onClick={this.handleEvidenceShow} className="btn btn-normal btn-dark-green btn-bid float-right">
-                                {evidenceShow ? (
-                                    <i className="fas fa-angle-up icon-popper-note" />
-                                ) : (
-                                    <i className="fas fa-angle-down icon-popper-note" />
-                                )}
-                                Freelancer&#39;s Evidences
-                            </ButtonBase>
-                        </span>
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="dispute-actions">
-                        <span className="note">
-                            <Popper
-                                placement="top"
-                                anchorEl={anchorEl}
-                                id="mouse-over-popover"
-                                onClose={this.handlePopoverClose}
-                                disableRestoreFocus
-                                open={isPopperOpen}
-                                content="......"
-                            />
-                            <span className="bold">Commited vote (revealDuration)</span>
-                            <i
-                                className="fas fa-info-circle icon-popper-note"
-                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                aria-haspopup="true"
-                                onMouseEnter={this.handlePopoverOpen}
-                                onMouseLeave={this.handlePopoverClose}
-                            />
-                        </span>
-                    </div>
-                );
-            }
-        }
-    };
-
     jobDataInit = async refresh => {
         const { match, web3, jobs } = this.props;
-        const jobHash = match.params.jobId;
+        const jobHash = match.params.disputeId;
         this.setState({ isLoading: true, jobHash: jobHash });
-        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
-        abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
@@ -466,11 +290,10 @@ class JobDetailBid extends Component {
     createBid = async () => {
         const { time, jobHash, award } = this.state;
         const { web3 } = this.props;
-        this.setActionBtnDisabled(true);
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const awardSend = Utils.BBOToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [err, tx] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
+        const [err, jobLog] = await Utils.callMethod(instanceBid.instance.createBid)(jobHash, awardSend, time, {
             from: instanceBid.defaultAccount,
             gasPrice: +instanceBid.gasPrice.toString(10),
         });
@@ -490,22 +313,18 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'Your bid has been created! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
+        console.log('joblog bid: ', jobLog);
     };
 
     cancelBid = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setActionBtnDisabled(true);
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.cancelBid)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -524,22 +343,18 @@ class JobDetailBid extends Component {
             actStt: {
                 err: false,
                 text: 'Your bid has been canceled! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
+        console.log('joblog cancel bid: ', jobLog);
     };
 
     startJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setActionBtnDisabled(true);
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.startJob)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -559,22 +374,18 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been started! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
+        console.log('joblog start: ', jobLog);
     };
 
     completeJob = async () => {
         const { jobHash } = this.state;
         const { web3 } = this.props;
-        this.setActionBtnDisabled(true);
-        this.setState({ dialogLoading: true });
+        this.setState({ dialogLoading: true, btnSttDisabled: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.finishJob)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -594,13 +405,10 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'This job has been completed! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
+                link: abiConfig.getTXlink() + jobLog,
             },
         });
+        console.log('joblog finish: ', jobLog);
     };
 
     claimPayment = async () => {
@@ -608,16 +416,16 @@ class JobDetailBid extends Component {
         const { web3 } = this.props;
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
+        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
-        this.setActionBtnDisabled(true);
         if (err) {
             this.setState({
                 claimPaymentDone: false,
                 dialogLoading: false,
                 actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not claim payment! :(', link: '' },
+                btnSttDisabled: true,
             });
             console.log(err);
             return;
@@ -629,13 +437,11 @@ class JobDetailBid extends Component {
                 title: '',
                 err: false,
                 text: 'You have claimed! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
+                link: abiConfig.getTXlink() + jobLog,
             },
+            btnSttDisabled: true,
         });
+        console.log('claim payment log: ', jobLog);
     };
 
     confirmBid = () => {
@@ -643,62 +449,62 @@ class JobDetailBid extends Component {
         const timeValid = this.validate(time, 'time');
         const awardValid = this.validate(award, 'award');
         if (timeValid && awardValid) {
-            this.setActionBtnDisabled(false);
             this.setState({
                 open: true,
                 dialogData: {
                     actionText: 'Bid',
                     actions: this.createBid,
                 },
+                btnSttDisabled: false,
                 actStt: { title: 'Do you want to bid this job?', err: false, text: null, link: '' },
             });
         }
     };
 
     confirmCancelBid = () => {
-        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Cancel',
                 actions: this.cancelBid,
             },
+            btnSttDisabled: false,
             actStt: { title: 'Do you want to cancel bid this job?', err: false, text: null, link: '' },
         });
     };
 
     confirmStartJob = () => {
-        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Start',
                 actions: this.startJob,
+                btnSttDisabled: false,
             },
             actStt: { title: 'Do you want to start this job?', err: false, text: null, link: '' },
         });
     };
 
     confirmCompleteJob = () => {
-        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Complete',
                 actions: this.completeJob,
             },
+            btnSttDisabled: false,
             actStt: { title: 'Do you want to complete this job?', err: false, text: null, link: '' },
         });
     };
 
     confirmClaimPayment = () => {
-        this.setActionBtnDisabled(false);
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Claim',
                 actions: this.claimPayment,
             },
+            btnSttDisabled: false,
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
         });
     };
@@ -762,47 +568,9 @@ class JobDetailBid extends Component {
         this.setState({ open: false, checkedBid: false });
     };
 
-    handleCreateDisputeClose = () => {
-        const { checkedDispute } = this.state;
-        this.setState({ checkedDispute: !checkedDispute });
-    };
-
-    viewMyJobs = () => {
-        const { history } = this.props;
-        history.push('/client/manage');
-    };
-
-    handlePopoverOpen = event => {
-        this.setState({ anchorEl: event.currentTarget });
-    };
-
-    handlePopoverClose = () => {
-        this.setState({ anchorEl: null });
-    };
-
-    handleEvidenceShow = () => {
-        const { evidenceShow } = this.state;
-        this.setState({ evidenceShow: !evidenceShow });
-    };
-
     render() {
-        const {
-            jobData,
-            isLoading,
-            stt,
-            checkedBid,
-            timeErr,
-            awardErr,
-            dialogLoading,
-            open,
-            actStt,
-            dialogData,
-            checkedDispute,
-            disputeStt,
-            evidenceShow,
-        } = this.state;
+        const { jobData, isLoading, stt, checkedBid, timeErr, awardErr, dialogLoading, open, actStt, dialogData, btnSttDisabled } = this.state;
         //console.log(jobData);
-        const { web3, disputeCreated } = this.props;
         let jobTplRender;
 
         if (stt.err) {
@@ -830,8 +598,7 @@ class JobDetailBid extends Component {
                                     </ButtonBase>
                                     {this.actions()}
                                 </div>
-                                {this.disputeActions()}
-                                {evidenceShow && this.evidence()}
+
                                 <Fade in={checkedBid}>
                                     <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
                                         <Grid container className="mkp-form-row">
@@ -873,16 +640,6 @@ class JobDetailBid extends Component {
                                         </Grid>
                                     </Grid>
                                 </Fade>
-
-                                {!disputeCreated && (
-                                    <CreateDispute
-                                        checkedDispute={checkedDispute}
-                                        closeAct={this.handleCreateDisputeClose}
-                                        jobHash={jobData.jobHash}
-                                        web3={web3}
-                                    />
-                                )}
-
                                 <Grid container className="job-detail-row">
                                     <Grid item xs={10}>
                                         <Grid container>
@@ -909,11 +666,7 @@ class JobDetailBid extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
-                                            {disputeStt.started &&
-                                                (disputeStt.clientResponseDuration > 0 && (
-                                                    <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
-                                                ))}
+                                            {jobData.status.bidding && <Countdown expiredTime={jobData.expiredTime} />}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -1018,6 +771,7 @@ class JobDetailBid extends Component {
                     title={actStt.title}
                     actionText={dialogData.actionText}
                     actClose={this.handleClose}
+                    btnSttDisabled={btnSttDisabled}
                 />
                 <div id="freelancer" className="container-wrp">
                     <div className="container-wrp full-top-wrp">
@@ -1054,34 +808,24 @@ class JobDetailBid extends Component {
     }
 }
 
-JobDetailBid.propTypes = {
+DisputeDetail.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     jobs: PropTypes.any.isRequired,
-    setActionBtnDisabled: PropTypes.func.isRequired,
-    votingParams: PropTypes.object.isRequired,
-    saveVotingParams: PropTypes.func.isRequired,
-    disputeCreated: PropTypes.bool.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
-        setActionBtnDisabled: state.commonReducer.setActionBtnDisabled,
-        votingParams: state.freelancerReducer.votingParams,
-        disputeCreated: state.freelancerReducer.disputeCreated,
     };
 };
 
-const mapDispatchToProps = {
-    setActionBtnDisabled,
-    saveVotingParams,
-};
+const mapDispatchToProps = {};
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(JobDetailBid);
+)(DisputeDetail);

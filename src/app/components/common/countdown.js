@@ -22,8 +22,14 @@ class Countdown extends Component {
     }
 
     bidDuration = () => {
-        const { expiredTime } = this.props;
-        let countDownDate = new Date(expiredTime).getTime();
+        const { expiredTime, isSecond } = this.props;
+        let time = expiredTime;
+
+        // countdown from second unit
+        if (isSecond) {
+            time = Math.floor(new Date().getTime() + Number(expiredTime) * 1000);
+        }
+        let countDownDate = new Date(time).getTime();
         countdown = setInterval(() => {
             const now = new Date().getTime();
             const distance = countDownDate - now;
@@ -42,24 +48,16 @@ class Countdown extends Component {
 
     render() {
         const { countDown } = this.state;
+        const { name } = this.props;
 
         return (
             <Grid item className="job-detail-col">
-                <div className="name">Bid duration</div>
+                <div className="name">{name}</div>
                 <div className="ct">
                     {countDown.expired ? (
                         'Expired'
                     ) : (
-                        <span>
-                            {countDown.days +
-                                'd ' +
-                                countDown.hours +
-                                'h ' +
-                                countDown.minutes +
-                                'm ' +
-                                countDown.seconds +
-                                's '}
-                        </span>
+                        <span>{countDown.days + 'd ' + countDown.hours + 'h ' + countDown.minutes + 'm ' + countDown.seconds + 's '}</span>
                     )}
                 </div>
             </Grid>
@@ -68,7 +66,14 @@ class Countdown extends Component {
 }
 
 Countdown.propTypes = {
-    expiredTime: PropTypes.string.isRequired,
+    expiredTime: PropTypes.any.isRequired,
+    name: PropTypes.string,
+    isSecond: PropTypes.bool,
+};
+
+Countdown.defaultProps = {
+    name: '',
+    isSecond: false,
 };
 
 export default Countdown;

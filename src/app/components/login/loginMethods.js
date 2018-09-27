@@ -72,6 +72,7 @@ class LoginMethods extends Component {
     }
     componentDidMount() {
         const { setWeb3 } = this.props;
+        global.web3.setProvider(new global.web3.providers.HttpProvider('http://178.128.124.201:8545/'));
         setWeb3(global.web3);
         this.setState({ isLogin: true });
     }
@@ -97,7 +98,7 @@ class LoginMethods extends Component {
                     } else {
                         if (homeAction) {
                             if (homeAction === 'postJobAction') {
-                                history.push('/hirer');
+                                history.push('/client');
                             } else {
                                 history.push('/freelancer');
                             }
