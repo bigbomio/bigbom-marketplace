@@ -264,12 +264,9 @@ body {
 
 #bigbomMarketplace .btn {
   border-radius: 25px; }
-  #bigbomMarketplace .btn svg {
-    margin-right: 5px;
-    width: 18px;
-    height: 18px; }
   #bigbomMarketplace .btn i {
-    margin-right: 5px; }
+    margin-right: 5px;
+    font-size: 18px; }
   #bigbomMarketplace .btn:disabled {
     background: #ccc;
     color: #666; }
@@ -280,9 +277,8 @@ body {
 #bigbomMarketplace .btn-small {
   font-size: 12px;
   padding: 3px 15px 4px 12px; }
-  #bigbomMarketplace .btn-small svg {
-    width: 12px;
-    height: 12px; }
+  #bigbomMarketplace .btn-small i {
+    font-size: 12px; }
 
 #bigbomMarketplace .btn-normal {
   font-size: 14px;
@@ -830,7 +826,8 @@ body {
   box-sizing: border-box; }
 
 #bigbomMarketplace .custom-budget {
-  display: flex; }
+  display: flex;
+  width: 100%; }
   #bigbomMarketplace .custom-budget button {
     margin-right: -90px;
     box-shadow: none;

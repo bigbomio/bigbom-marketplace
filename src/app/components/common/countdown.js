@@ -7,22 +7,32 @@ let countdown;
 class Countdown extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             countDown: { expired: false, days: 0, hours: 0, minutes: 0, seconds: 0 },
         };
+        this.mounted = false;
     }
 
     componentDidMount() {
         this.bidDuration();
+        this.mounted = true;
     }
 
     componentWillUnmount() {
         clearInterval(countdown);
+        this.mounted = false;
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.expiredTime === prevState.expiredTime) {
+            return null;
+        }
+        return { expiredTime: nextProps.expiredTime };
     }
 
     bidDuration = () => {
-        const { expiredTime, isSecond } = this.props;
+        const { isSecond } = this.props;
+        const { expiredTime } = this.state;
         let time = expiredTime;
 
         // countdown from second unit
@@ -37,11 +47,13 @@ class Countdown extends Component {
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            if (distance < 0) {
-                clearInterval(countdown);
-                this.setState({ countDown: { expired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
-            } else {
-                this.setState({ countDown: { expired: false, days, hours, minutes, seconds } });
+            if (this.mounted) {
+                if (distance < 0) {
+                    clearInterval(countdown);
+                    this.setState({ countDown: { expired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
+                } else {
+                    this.setState({ countDown: { expired: false, days, hours, minutes, seconds } });
+                }
             }
         }, 1000);
     };
@@ -66,7 +78,6 @@ class Countdown extends Component {
 }
 
 Countdown.propTypes = {
-    expiredTime: PropTypes.any.isRequired,
     name: PropTypes.string,
     isSecond: PropTypes.bool,
 };

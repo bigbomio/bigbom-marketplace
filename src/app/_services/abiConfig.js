@@ -380,7 +380,7 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                console.log(re);
+                //console.log(re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -391,6 +391,43 @@ class abiConfigs {
                             responded: true,
                         };
                         callback(result);
+                    }
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
+
+    async getAllAvailablePoll(web3, votingParams, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        let results = {
+            data: null,
+        };
+        const eventInstance = ctInstance.instance.PollAgainsted(
+            {},
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                console.log(re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    const blockLog = await this.getBlock(web3, re.blockNumber);
+                    const commitDuration = Math.floor(new Date(blockLog.timestamp + Number(votingParams.commitDuration)) * 1000);
+                    if (commitDuration > Date.now()) {
+                        results.data = {
+                            id: re.args.jobHash,
+                            commitDuration: commitDuration,
+                            created: blockLog.timestamp,
+                            started: true,
+                            jobHash: re.args.jobHash,
+                            creator: re.args.creator,
+                            proofHash: re.args.proofHash ? re.args.proofHash : null,
+                            againstProofHash: re.args.againstProofHash ? re.args.againstProofHash : null,
+                        };
+                        callback(results);
                     }
                 }
             }

@@ -20,12 +20,12 @@ import CircleProgress from '../common/circleProgress';
 
 import DisputesRender from './DisputesRender';
 
-import { saveJobs } from '../client/actions';
+import { saveDisputes } from '../voter/actions';
 
-let jobs = [];
+let disputes = [];
 
-const options = ['Latest', 'Oldest', 'Highest Budget', 'Lowest Budget', 'Most Bids', 'Fewest Bids'];
-const KEYS_TO_FILTERS = ['owner', 'title', 'description'];
+const options = ['Latest', 'Oldest'];
+const KEYS_TO_FILTERS = ['title'];
 
 class DisputeBrowser extends Component {
     constructor(props) {
@@ -43,12 +43,13 @@ class DisputeBrowser extends Component {
     }
 
     componentDidMount() {
-        const { isConnected } = this.props;
+        const { isConnected, web3 } = this.props;
         const { isLoading } = this.state;
+
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                this.getJobs();
+                abiConfig.getVotingParams(web3, this.getDisputes);
             }
         }
     }
@@ -57,112 +58,111 @@ class DisputeBrowser extends Component {
         this.mounted = false;
     }
 
-    getJobs = () => {
+    getDisputes = votingParams => {
         const { web3 } = this.props;
         this.setState({ isLoading: true, circleProgressRender: false });
-        jobs = [];
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
-    };
+        disputes = [];
 
-    JobCreatedInit = async eventLog => {
-        //console.log('getPastSingleEvent success: ', eventLog);
-        const { web3 } = this.props;
-        const event = eventLog.data;
-        if (!eventLog.data) {
-            this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
-            return;
-        }
-        const jobHash = Utils.toAscii(event.args.jobHash);
-        // get job status
-        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
-            from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            return console.log(err);
-        } else {
-            const jobStatus = Utils.getStatus(jobStatusLog);
-            if (jobStatus.bidding) {
-                // get detail from ipfs
-                const URl = abiConfig.getIpfsLink() + jobHash;
-                const jobTpl = {
-                    id: event.args.jobHash,
-                    owner: event.args.owner,
-                    jobHash: jobHash,
-                    category: Utils.toAscii(event.args.category),
-                    expired: event.args.expired.toString(),
-                    status: jobStatus,
-                    bid: [],
-                    jobBlockNumber: event.blockNumber,
-                };
-                fetch(URl)
-                    .then(res => res.json())
-                    .then(
-                        result => {
-                            jobTpl.title = result.title;
-                            jobTpl.skills = result.skills;
-                            jobTpl.description = result.description;
-                            jobTpl.currency = result.currency;
-                            jobTpl.budget = result.budget;
-                            jobTpl.estimatedTime = result.estimatedTime;
-                            jobTpl.expiredTime = result.expiredTime;
-                            jobTpl.created = result.created;
-                            this.BidCreatedInit(jobTpl);
-                        },
-                        error => {
-                            console.log(error);
-                            jobTpl.err = 'Can not fetch data from server';
-                            // this.BidCreatedInit(jobTpl); // dont push if data can not fetch
-                        }
-                    );
+        // time out 20s
+        setTimeout(() => {
+            if (disputes.length <= 0) {
+                this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
+                return;
             }
-        }
+        }, 20000);
+
+        abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeCreatedInit);
     };
 
-    BidCreatedInit = job => {
-        //console.log('BidCreatedInit success: ', job);
-        const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+    clientProofFetch = async dispute => {
+        const URl = abiConfig.getIpfsLink() + dispute.againstProofHash;
+        fetch(URl)
+            .then(res => res.json())
+            .then(
+                result => {
+                    dispute.clientProof = result;
+                    this.freelancerProofFetch(dispute);
+                },
+                error => {
+                    console.log(error);
+                    dispute.err = 'Can not fetch data from server';
+                }
+            );
     };
 
-    BidAcceptedInit = jobData => {
-        //console.log('BidAcceptedInit success: ', jobData);
-        const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(
-            web3,
-            'BBFreelancerBid',
-            'BidAccepted',
-            { jobHash: web3.sha3(jobData.data.jobHash) },
-            jobData.data,
-            this.JobsInit
-        );
+    freelancerProofFetch = async dispute => {
+        const URl = abiConfig.getIpfsLink() + dispute.proofHash;
+        fetch(URl)
+            .then(res => res.json())
+            .then(
+                result => {
+                    dispute.freelancerProof = result;
+                    this.disputeListInit(dispute);
+                },
+                error => {
+                    console.log(error);
+                    dispute.err = 'Can not fetch data from server';
+                }
+            );
     };
 
-    JobsInit = jobData => {
+    disputeCreatedInit = async eventLog => {
+        //console.log('disputeCreatedInit success: ', eventLog);
+        const event = eventLog.data;
+        const jobHash = Utils.toAscii(event.jobHash);
+        const URl = abiConfig.getIpfsLink() + jobHash;
+        let dispute = {
+            ...event,
+            jobDispute: {},
+        };
+        // fetch proof here
+        fetch(URl)
+            .then(res => res.json())
+            .then(
+                result => {
+                    dispute.jobDispute.title = result.title;
+                    dispute.jobDispute.skills = result.skills;
+                    dispute.jobDispute.category = result.category;
+                    dispute.jobDispute.description = result.description;
+                    dispute.jobDispute.currency = result.currency;
+                    dispute.jobDispute.budget = result.budget;
+                    dispute.jobDispute.estimatedTime = result.estimatedTime;
+                    dispute.jobDispute.expiredTime = result.expiredTime;
+                    dispute.jobDispute.created = result.created;
+                    this.clientProofFetch(dispute);
+                },
+                error => {
+                    console.log(error);
+                    dispute.err = 'Can not fetch data from server';
+                }
+            );
+    };
+
+    disputeListInit = jobDispute => {
+        //console.log('disputeListInit success: ', jobDispute);
         const { selectedIndex } = this.state;
-        const { saveJobs } = this.props;
-        jobs.push(jobData.data);
-        const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
-        this.handleMenuItemSort(null, selectedIndex, jobs);
+        const { saveDisputes } = this.props;
+        disputes.push(jobDispute);
+        const uqDisputes = Utils.removeDuplicates(disputes, 'id'); // fix duplicate data
+        this.handleMenuItemSort(null, selectedIndex, disputes);
         if (this.mounted) {
-            saveJobs(uqJobs);
+            saveDisputes(uqDisputes);
             this.setState({ isLoading: false, circleProgressRender: true });
         }
     };
 
-    jobsFilterByCategory(filterData) {
-        let jobsFilter = [];
-        const { saveJobs } = this.props;
+    disputeFilterByCategory(filterData) {
+        let disputesFilter = [];
+        const { saveDisputes } = this.props;
         if (filterData) {
             if (filterData.length > 0) {
                 for (let category of filterData) {
-                    const jobsFilterSelected = jobs.filter(job => job.category === category.value);
-                    jobsFilter = [...jobsFilter, ...jobsFilterSelected];
-                    saveJobs(jobsFilter);
+                    const disputesFilterSelected = disputes.filter(dispute => dispute.jobDispute.category.value === category.value);
+                    disputesFilter = [...disputesFilter, ...disputesFilterSelected];
+                    saveDisputes(disputesFilter);
                 }
             } else {
-                saveJobs(jobs);
+                saveDisputes(disputes);
             }
         }
     }
@@ -175,50 +175,26 @@ class DisputeBrowser extends Component {
         this.setState({ anchorEl: event.currentTarget });
     };
 
-    handleMenuItemSort = (event, index, Jobs) => {
+    handleMenuItemSort = (event, index, Disputes) => {
         if (this.mounted) {
             this.setState({ selectedIndex: index, anchorEl: null });
         }
         switch (index) {
             case 0:
                 //Latest
-                Jobs.sort((a, b) => {
+                Disputes.sort((a, b) => {
                     return b.created - a.created;
                 });
                 break;
             case 1:
                 // Oldest
-                Jobs.sort((a, b) => {
+                Disputes.sort((a, b) => {
                     return a.created - b.created;
-                });
-                break;
-            case 2:
-                // Highest Budget
-                Jobs.sort((a, b) => {
-                    return b.budget.max_sum - a.budget.max_sum;
-                });
-                break;
-            case 3:
-                // Lowest Budget
-                Jobs.sort((a, b) => {
-                    return a.budget.max_sum - b.budget.max_sum;
-                });
-                break;
-            case 4:
-                // Most Bids
-                Jobs.sort((a, b) => {
-                    return b.bid.length - a.bid.length;
-                });
-                break;
-            case 5:
-                // Fewest Bids
-                Jobs.sort((a, b) => {
-                    return a.bid.length - b.bid.length;
                 });
                 break;
             default:
                 // Latest
-                Jobs.sort((a, b) => {
+                Disputes.sort((a, b) => {
                     return b.created - a.created;
                 });
         }
@@ -230,30 +206,30 @@ class DisputeBrowser extends Component {
 
     handleChangeCategory = selectedOption => {
         this.setState({ selectedCategory: selectedOption });
-        this.jobsFilterByCategory(selectedOption);
+        this.disputeFilterByCategory(selectedOption);
     };
 
     render() {
         const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender } = this.state;
-        const { jobs } = this.props;
-        const filteredJobs = jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
+        const { disputes } = this.props;
+        const filteredDisputes = disputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         const categories = settingsApi.getCategories();
         return (
             <div id="freelancer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
-                            <h1>Find any job you can do</h1>
-                            <span className="description">Use filter tool to find all job that fit to you.</span>
+                            <h1>Find a dispute and voting to get reward</h1>
+                            <span className="description">Use filter tool to find all dispute that fit to you.</span>
                         </Grid>
                     </div>
                 </div>
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid className="top-actions">
-                            <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getJobs} />}</div>
+                            <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getDisputes} />}</div>
                             <Grid className="action reload-btn">
-                                <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
+                                <ButtonBase className="btn btn-normal btn-green" onClick={this.getDisputes}>
                                     <i className="fas fa-sync-alt" />
                                     Refresh
                                 </ButtonBase>
@@ -262,11 +238,7 @@ class DisputeBrowser extends Component {
                         <Grid container className="single-body">
                             <Grid container className="filter">
                                 <Grid item xs={5}>
-                                    <SearchInput
-                                        className="search-input"
-                                        placeholder="Enter wallet address or anything..."
-                                        onChange={e => this.searchUpdated(e)}
-                                    />
+                                    <SearchInput className="search-input" placeholder="Search..." onChange={e => this.searchUpdated(e)} />
                                 </Grid>
                                 <Grid item xs={5}>
                                     <Select
@@ -300,7 +272,7 @@ class DisputeBrowser extends Component {
                                             <MenuItem
                                                 key={option}
                                                 selected={index === this.state.selectedIndex}
-                                                onClick={event => this.handleMenuItemSort(event, index, jobs)}
+                                                onClick={event => this.handleMenuItemSort(event, index, disputes)}
                                             >
                                                 {option}
                                             </MenuItem>
@@ -310,7 +282,7 @@ class DisputeBrowser extends Component {
                             </Grid>
                             {!isLoading ? (
                                 !stt.err ? (
-                                    <DisputesRender Jobs={filteredJobs} />
+                                    <DisputesRender disputes={filteredDisputes} />
                                 ) : (
                                     <div className="no-data">{stt.text}</div>
                                 )
@@ -331,18 +303,18 @@ class DisputeBrowser extends Component {
 DisputeBrowser.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
-    saveJobs: PropTypes.func.isRequired,
-    jobs: PropTypes.any.isRequired,
+    saveDisputes: PropTypes.func.isRequired,
+    disputes: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        jobs: state.clientReducer.jobs,
+        disputes: state.voterReducer.disputes,
     };
 };
 
-const mapDispatchToProps = { saveJobs };
+const mapDispatchToProps = { saveDisputes };
 
 export default connect(
     mapStateToProps,

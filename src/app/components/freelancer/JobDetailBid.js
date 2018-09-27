@@ -134,6 +134,40 @@ class JobDetailBid extends Component {
         }
     };
 
+    finalizeDispute = async () => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizePoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                finalizeDisputeDone: false,
+                dialogLoading: false,
+                actStt: { title: 'Error: ', err: true, text: 'Can not finalize dispute! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            finalizeDisputeDone: true,
+            dialogLoading: false,
+            actStt: {
+                err: false,
+                text: 'Your request has been sent! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+        });
+    };
+
     actions = () => {
         const { web3 } = this.props;
         const { jobData, isOwner, checkedBid, bidDone, cancelBidDone, startJobDone, completeJobDone, claimPaymentDone, claim } = this.state;
@@ -227,7 +261,7 @@ class JobDetailBid extends Component {
 
     disputeActions = () => {
         const { disputeCreated, web3 } = this.props;
-        const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow } = this.state;
+        const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow, finalizeDisputeDone } = this.state;
         const isPopperOpen = Boolean(anchorEl);
         const mybid = jobData.bid.filter(bid => bid.address === web3.eth.defaultAccount);
         if (!clientRespondedDispute.responded) {
@@ -275,7 +309,13 @@ class JobDetailBid extends Component {
                             ) : (
                                 <span className="note">
                                     Your client did not responded to your dispute.{' '}
-                                    <ButtonBase className="btn btn-normal btn-green btn-bid">Finalized Dispute</ButtonBase>
+                                    <ButtonBase
+                                        onClick={this.confirmFinalizeDispute}
+                                        disabled={finalizeDisputeDone}
+                                        className="btn btn-normal btn-green btn-bid float-right"
+                                    >
+                                        Finalized Dispute
+                                    </ButtonBase>
                                 </span>
                             )}
                         </div>
@@ -328,9 +368,9 @@ class JobDetailBid extends Component {
                                 onClose={this.handlePopoverClose}
                                 disableRestoreFocus
                                 open={isPopperOpen}
-                                content="......"
+                                content="Text Description..."
                             />
-                            <span className="bold">Commited vote (revealDuration)</span>
+                            <span className="bold">waiting for result from voters (Commit Duration)</span>
                             <i
                                 className="fas fa-info-circle icon-popper-note"
                                 aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -350,7 +390,23 @@ class JobDetailBid extends Component {
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash: jobHash });
         abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
-        abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+
+        // check client dispute response status
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (!error) {
+            if (re) {
+                abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+            } else {
+                if (this.mounted) {
+                    this.setState({ clientRespondedDispute: { responded: false, commitDuration: 0 } });
+                }
+            }
+        }
+
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
@@ -700,6 +756,18 @@ class JobDetailBid extends Component {
                 actions: this.claimPayment,
             },
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
+        });
+    };
+
+    confirmFinalizeDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            open: true,
+            dialogData: {
+                actionText: 'Finalize',
+                actions: this.finalizeDispute,
+            },
+            actStt: { title: 'Do you want to finalize dispute for this job?', err: false, text: null, link: '' },
         });
     };
 
