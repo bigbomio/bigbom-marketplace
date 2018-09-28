@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
+import { ButtonBase } from '@material-ui/core';
 
 import Utils from '../../_utils/utils';
 import Countdown from '../common/countdown';
@@ -25,31 +26,22 @@ class DisputesRender extends Component {
     render() {
         const { disputes } = this.state;
         return (
-            <Grid container className="job-item-list">
+            <Grid container className="job-item-list dispute-list">
                 {disputes.length > 0 &&
                     disputes.map((dispute, i) => {
-                        const maxLength = 400; // max length characters show on description
-                        const description =
-                            dispute.jobDispute.description.length > maxLength
-                                ? dispute.jobDispute.description.slice(0, maxLength) + '...'
-                                : dispute.jobDispute.description;
                         return (
                             <Link to={'voter/disputes/' + Utils.toAscii(dispute.jobHash)} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">
-                                            {dispute.jobDispute.title}
+                                            <p>{dispute.jobDispute.title}</p>
+                                            <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
                                         </Grid>
-                                        <Grid item xs={3} className="budget">
-                                            <Countdown name="Voting duration" expiredTime={dispute.commitDuration} />
-                                        </Grid>
-                                    </Grid>
-                                    <Grid item xs={12} className="content">
-                                        <Grid item xs={12} className="description">
-                                            {description}
-                                        </Grid>
-                                        <Grid item xs={12} className="status">
-                                            <span className="status stt-date-time">{' - Created: ' + Utils.convertDateTime(dispute.created)}</span>
+                                        <Grid item xs={3} className="commit-duration">
+                                            <Countdown expiredTime={dispute.commitDuration} />
+                                            <Grid className="vote-btn">
+                                                <ButtonBase className="btn btn-normal btn-green">Vote</ButtonBase>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>

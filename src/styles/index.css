@@ -267,9 +267,17 @@ body {
   #bigbomMarketplace .btn i {
     margin-right: 5px;
     font-size: 18px; }
+    #bigbomMarketplace .btn i.left {
+      margin-right: 5px;
+      margin-left: 0; }
+    #bigbomMarketplace .btn i.right {
+      margin-left: 5px;
+      margin-right: 0; }
   #bigbomMarketplace .btn:disabled {
     background: #ccc;
     color: #666; }
+    #bigbomMarketplace .btn:disabled i {
+      color: #666; }
   #bigbomMarketplace .btn.create-btn:disabled {
     background: #5c9dbb;
     color: #fff; }
@@ -925,6 +933,48 @@ body {
   padding: 20px;
   margin-bottom: 30px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+#bigbomMarketplace #voter .dispute-list .job-item {
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  margin-bottom: 25px; }
+  #bigbomMarketplace #voter .dispute-list .job-item > div {
+    padding: 0; }
+  #bigbomMarketplace #voter .dispute-list .job-item .header .title {
+    padding: 20px; }
+    #bigbomMarketplace #voter .dispute-list .job-item .header .title span {
+      font-size: 12px;
+      color: #888;
+      font-weight: normal; }
+  #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration {
+    margin: -1px 0 0 0;
+    background: #eee; }
+    #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration .vote-btn {
+      text-align: center;
+      padding-top: 13px; }
+      #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration .vote-btn .btn {
+        text-transform: uppercase;
+        font-weight: bold; }
+    #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration .job-detail-col {
+      padding: 10px;
+      text-align: center;
+      font-size: 25px;
+      color: #fff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      background: #5ac95a; }
+
+#bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct {
+  max-height: 200px;
+  overflow: hidden; }
+
+#bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct {
+  border-top: 1px solid #ccc;
+  padding: 0 0 20px 0;
+  margin-top: 30px;
+  text-align: center; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct .btn {
+    margin-top: -25px; }
 
 body {
   padding: 0;

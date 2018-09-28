@@ -163,10 +163,21 @@ $orange: #f99a0c;
         i {
             margin-right: 5px;
             font-size: 18px;
+            &.left {
+                margin-right: 5px;
+                margin-left: 0;
+            }
+            &.right {
+                margin-left: 5px;
+                margin-right: 0;
+            }
         }
         &:disabled {
             background: #ccc;
             color: #666;
+            i {
+                color: #666;
+            }
         }
         &.create-btn {
             &:disabled {

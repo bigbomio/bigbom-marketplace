@@ -60,7 +60,8 @@ class abiConfigs {
     }
 
     getIpfsLink() {
-        return 'https://cloudflare-ipfs.com/ipfs/';
+        return 'https://ipfs.infura.io/ipfs/';
+        //return 'https://cloudflare-ipfs.com/ipfs/';
     }
 
     getTXlink() {
@@ -410,7 +411,6 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                console.log(re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -423,10 +423,11 @@ class abiConfigs {
                             created: blockLog.timestamp,
                             started: true,
                             jobHash: re.args.jobHash,
-                            creator: re.args.creator,
+                            owner: re.args.creator,
                             proofHash: re.args.proofHash ? re.args.proofHash : null,
                             againstProofHash: re.args.againstProofHash ? re.args.againstProofHash : null,
                         };
+                        console.log(results.data);
                         callback(results);
                     }
                 }

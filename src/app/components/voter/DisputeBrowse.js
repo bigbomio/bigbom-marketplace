@@ -19,13 +19,13 @@ import abiConfig from '../../_services/abiConfig';
 import CircleProgress from '../common/circleProgress';
 
 import DisputesRender from './DisputesRender';
-
+import { saveVotingParams } from '../freelancer/actions';
 import { saveDisputes } from '../voter/actions';
 
 let disputes = [];
 
 const options = ['Latest', 'Oldest'];
-const KEYS_TO_FILTERS = ['title'];
+const KEYS_TO_FILTERS = ['jobDispute.title'];
 
 class DisputeBrowser extends Component {
     constructor(props) {
@@ -43,13 +43,14 @@ class DisputeBrowser extends Component {
     }
 
     componentDidMount() {
-        const { isConnected, web3 } = this.props;
+        const { isConnected, web3, saveVotingParams } = this.props;
         const { isLoading } = this.state;
 
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                abiConfig.getVotingParams(web3, this.getDisputes);
+                abiConfig.getVotingParams(web3, saveVotingParams);
+                this.getDisputes();
             }
         }
     }
@@ -58,7 +59,7 @@ class DisputeBrowser extends Component {
         this.mounted = false;
     }
 
-    getDisputes = votingParams => {
+    getDisputes = () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true, circleProgressRender: false });
         disputes = [];
@@ -71,7 +72,13 @@ class DisputeBrowser extends Component {
             }
         }, 20000);
 
-        abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeCreatedInit);
+        const watchVotingParams = setInterval(() => {
+            const { votingParams } = this.props;
+            if (votingParams.commitDuration) {
+                abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeCreatedInit);
+                clearInterval(watchVotingParams);
+            }
+        }, 100);
     };
 
     clientProofFetch = async dispute => {
@@ -129,7 +136,8 @@ class DisputeBrowser extends Component {
                     dispute.jobDispute.estimatedTime = result.estimatedTime;
                     dispute.jobDispute.expiredTime = result.expiredTime;
                     dispute.jobDispute.created = result.created;
-                    this.clientProofFetch(dispute);
+                    //this.clientProofFetch(dispute);
+                    this.disputeListInit(dispute);
                 },
                 error => {
                     console.log(error);
@@ -305,16 +313,19 @@ DisputeBrowser.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     saveDisputes: PropTypes.func.isRequired,
     disputes: PropTypes.any.isRequired,
+    votingParams: PropTypes.object.isRequired,
+    saveVotingParams: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
+        votingParams: state.freelancerReducer.votingParams,
     };
 };
 
-const mapDispatchToProps = { saveDisputes };
+const mapDispatchToProps = { saveDisputes, saveVotingParams };
 
 export default connect(
     mapStateToProps,

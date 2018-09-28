@@ -523,7 +523,7 @@ class JobDetail extends Component {
                     </ButtonBase>
                 </span>
             );
-        } else if (jobData.status.reject && disputeStt.clientResponseDuration > 0) {
+        } else if (jobData.status.reject && disputeStt.clientResponseDuration <= 0) {
             return (
                 <div className="note">
                     <span className="bold">You have rejected payment for freelancer</span>, please waiting for response from your freelancer.
@@ -638,9 +638,9 @@ class JobDetail extends Component {
                             onClose={this.handlePopoverClose}
                             disableRestoreFocus
                             open={isPopperOpen}
-                            content="......"
+                            content="Text Description..."
                         />
-                        <span className="bold">Commited vote (revealDuration)</span>
+                        <span className="bold">waiting for result from voters (Commit Duration)</span>
                         <i
                             className="fas fa-info-circle icon-popper-note"
                             aria-owns={isPopperOpen ? 'mouse-over-popover' : null}

@@ -48,6 +48,14 @@ class ClientPostJob extends Component {
         };
     }
 
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     async newJobInit(jobHash) {
         const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
         const { web3 } = this.props;
@@ -85,7 +93,9 @@ class ClientPostJob extends Component {
                 },
             });
             setTimeout(() => {
-                this.handleClose();
+                if (this.mounted) {
+                    this.handleClose();
+                }
             }, 10000);
         }
     }

@@ -46,7 +46,7 @@ class VoterContainer extends Component {
         ];
 
         return (
-            <div id="main" className="container-wrp">
+            <div id="voter" className="container-wrp">
                 <div className="container-wrp main-nav">
                     <div className="container">
                         <ul>

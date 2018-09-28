@@ -9,6 +9,7 @@ class Countdown extends Component {
         super(props);
         this.state = {
             countDown: { expired: false, days: 0, hours: 0, minutes: 0, seconds: 0 },
+            expiredTime: 0,
         };
         this.mounted = false;
     }
@@ -32,15 +33,15 @@ class Countdown extends Component {
 
     bidDuration = () => {
         const { isSecond } = this.props;
-        const { expiredTime } = this.state;
-        let time = expiredTime;
-
-        // countdown from second unit
-        if (isSecond) {
-            time = Math.floor(new Date().getTime() + Number(expiredTime) * 1000);
-        }
-        let countDownDate = new Date(time).getTime();
         countdown = setInterval(() => {
+            const { expiredTime } = this.state;
+            let time = expiredTime;
+
+            // countdown from second unit
+            if (isSecond) {
+                time = Math.floor(new Date().getTime() + Number(expiredTime) * 1000);
+            }
+            let countDownDate = new Date(time).getTime();
             const now = new Date().getTime();
             const distance = countDownDate - now;
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -64,7 +65,7 @@ class Countdown extends Component {
 
         return (
             <Grid item className="job-detail-col">
-                <div className="name">{name}</div>
+                {name && <div className="name">{name}</div>}
                 <div className="ct">
                     {countDown.expired ? (
                         'Expired'
@@ -83,7 +84,7 @@ Countdown.propTypes = {
 };
 
 Countdown.defaultProps = {
-    name: '',
+    name: null,
     isSecond: false,
 };
 
