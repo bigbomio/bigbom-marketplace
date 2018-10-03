@@ -44,7 +44,7 @@ class abiConfigs {
                 };
             case 'BBParams':
                 return {
-                    address: '0xb527A50abCdBCDA765FBFD1EDFc63619979f898e',
+                    address: '0x2866cef47dce5db897678695d08f0633102f164a',
                     abi: BBParams.abi,
                 };
             default:
@@ -332,12 +332,11 @@ class abiConfigs {
                     const votingParams = {
                         minVotes: re[0].toString(),
                         maxVotes: re[1].toString(),
-                        voteQuorum: re[2].toString(),
-                        stakeDeposit: re[3].toString(),
-                        eveidenceDuration: re[4].toString(),
-                        commitDuration: re[5].toString(),
-                        revealDuration: re[6].toString(),
-                        bboRewards: re[7].toString(),
+                        stakeDeposit: re[2].toString(),
+                        evidenceDuration: re[3].toString(),
+                        commitDuration: re[4].toString(),
+                        revealDuration: re[5].toString(),
+                        bboRewards: re[6].toString(),
                     };
                     callback(votingParams);
                 }
@@ -348,21 +347,24 @@ class abiConfigs {
     async getEventsPollStarted(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         const eventInstance = ctInstance.instance.PollStarted(
-            { jobHash: jobHash, owner: web3.eth.defaultAccount },
+            {},
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log(re);
+                //console.log('getEventsPollStarted', re);
                 if (err) {
                     console.log(err);
                 } else {
                     if (jobHash === Utils.toAscii(re.args.jobHash)) {
                         const blockLog = await this.getBlock(web3, re.blockNumber);
                         const result = {
+                            jobHash,
+                            owner: re.args.creator,
                             created: blockLog.timestamp,
                             started: true,
+                            proofHash: Utils.toAscii(re.args.proofHash),
                         };
                         callback(result);
                     }
@@ -372,16 +374,41 @@ class abiConfigs {
         eventInstance.stopWatching();
     }
 
-    async getEventsPollAgainsted(web3, jobHash, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const eventInstance = ctInstance.instance.PollAgainsted(
-            { jobHash: jobHash, owner: web3.eth.defaultAccount },
+    async getReasonPaymentRejected(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const eventInstance = ctInstance.instance.PaymentRejected(
+            { jobHash: jobHash },
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log(re);
+                //console.log('getReasonPaymentRejected',re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    const result = {
+                        reason: re.args.reason.toString(),
+                        created: re.args.rejectedTimestamp.toString(),
+                        owner: re.args.sender,
+                    };
+                    callback(result);
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
+
+    async getEventsPollAgainsted(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const eventInstance = ctInstance.instance.PollAgainsted(
+            {},
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                //console.log('getEventsPollAgainsted', re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -390,6 +417,9 @@ class abiConfigs {
                         const result = {
                             created: blockLog.timestamp,
                             responded: true,
+                            jobHash,
+                            owner: re.args.creator,
+                            proofHash: Utils.toAscii(re.args.proofHash),
                         };
                         callback(result);
                     }
@@ -411,6 +441,7 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
+                //console.log('getAllAvailablePoll', re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -422,13 +453,30 @@ class abiConfigs {
                             commitDuration: commitDuration,
                             created: blockLog.timestamp,
                             started: true,
-                            jobHash: re.args.jobHash,
+                            jobHash: Utils.toAscii(re.args.jobHash),
                             owner: re.args.creator,
-                            proofHash: re.args.proofHash ? re.args.proofHash : null,
-                            againstProofHash: re.args.againstProofHash ? re.args.againstProofHash : null,
+                            clientProofHash: re.args.proofHash ? Utils.toAscii(re.args.proofHash) : null,
+                            freelancerProofHash: null,
                         };
-                        console.log(results.data);
-                        callback(results);
+                        // get freelancer proofhash
+                        const pollStartedEventInstance = ctInstance.instance.PollStarted(
+                            {},
+                            {
+                                fromBlock: 4030174, // should use recent number
+                                toBlock: 'latest',
+                            },
+                            async (err, pollStartedResult) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    if (re.args.jobHash === pollStartedResult.args.jobHash) {
+                                        results.data.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
+                                        callback(results);
+                                    }
+                                }
+                            }
+                        );
+                        pollStartedEventInstance.stopWatching();
                     }
                 }
             }

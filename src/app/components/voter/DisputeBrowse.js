@@ -81,48 +81,14 @@ class DisputeBrowser extends Component {
         }, 100);
     };
 
-    clientProofFetch = async dispute => {
-        const URl = abiConfig.getIpfsLink() + dispute.againstProofHash;
-        fetch(URl)
-            .then(res => res.json())
-            .then(
-                result => {
-                    dispute.clientProof = result;
-                    this.freelancerProofFetch(dispute);
-                },
-                error => {
-                    console.log(error);
-                    dispute.err = 'Can not fetch data from server';
-                }
-            );
-    };
-
-    freelancerProofFetch = async dispute => {
-        const URl = abiConfig.getIpfsLink() + dispute.proofHash;
-        fetch(URl)
-            .then(res => res.json())
-            .then(
-                result => {
-                    dispute.freelancerProof = result;
-                    this.disputeListInit(dispute);
-                },
-                error => {
-                    console.log(error);
-                    dispute.err = 'Can not fetch data from server';
-                }
-            );
-    };
-
     disputeCreatedInit = async eventLog => {
         //console.log('disputeCreatedInit success: ', eventLog);
         const event = eventLog.data;
-        const jobHash = Utils.toAscii(event.jobHash);
-        const URl = abiConfig.getIpfsLink() + jobHash;
+        const URl = abiConfig.getIpfsLink() + event.jobHash;
         let dispute = {
             ...event,
             jobDispute: {},
         };
-        // fetch proof here
         fetch(URl)
             .then(res => res.json())
             .then(
@@ -136,7 +102,6 @@ class DisputeBrowser extends Component {
                     dispute.jobDispute.estimatedTime = result.estimatedTime;
                     dispute.jobDispute.expiredTime = result.expiredTime;
                     dispute.jobDispute.created = result.created;
-                    //this.clientProofFetch(dispute);
                     this.disputeListInit(dispute);
                 },
                 error => {

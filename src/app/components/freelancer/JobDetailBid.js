@@ -106,9 +106,15 @@ class JobDetailBid extends Component {
         }
     }
 
+    getReasonPaymentRejected = async paymentRejectReason => {
+        if (this.mounted) {
+            this.setState({ paymentRejectReason });
+        }
+    };
+
     setDisputeStt = async event => {
         const { votingParams } = this.props;
-        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.eveidenceDuration)) * 1000);
+        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.evidenceDuration)) * 1000);
         if (clientResponseDuration > Date.now()) {
             if (this.mounted) {
                 this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
@@ -124,9 +130,46 @@ class JobDetailBid extends Component {
         const { votingParams } = this.props;
         const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
         if (commitDuration > Date.now()) {
-            if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration } });
-            }
+            const URl = abiConfig.getIpfsLink() + event.proofHash;
+            fetch(URl)
+                .then(res => res.json())
+                .then(
+                    result => {
+                        const clientProof = {
+                            text: result.proof,
+                            imgs: result.imgs,
+                        };
+                        if (this.mounted) {
+                            this.setState({
+                                clientRespondedDispute: {
+                                    responded: event.responded,
+                                    commitDuration,
+                                    clientProof,
+                                },
+                                disputeStt: {
+                                    clientResponseDuration: 0,
+                                    started: true,
+                                },
+                            });
+                        }
+                    },
+                    error => {
+                        console.log(error);
+                        if (this.mounted) {
+                            this.setState({
+                                clientRespondedDispute: {
+                                    responded: event.responded,
+                                    commitDuration,
+                                    clientProof: { imgs: [], text: 'Client’s evidence not found!' },
+                                },
+                                disputeStt: {
+                                    clientResponseDuration: 0,
+                                    started: true,
+                                },
+                            });
+                        }
+                    }
+                );
         } else {
             if (this.mounted) {
                 this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
@@ -206,7 +249,7 @@ class JobDetailBid extends Component {
                             </ButtonBase>
                         );
                     }
-                } else if (!jobData.status.waiting && !jobData.status.reject && !jobData.status.paymentAccepted) {
+                } else if (!jobData.status.waiting && !jobData.status.reject && !jobData.status.paymentAccepted && !jobData.status.disputing) {
                     if (mybidAccepted.length > 0) {
                         return (
                             <span>
@@ -256,76 +299,78 @@ class JobDetailBid extends Component {
     };
 
     evidence = () => {
-        return <div className="evidence-show">This is client’s evidence</div>;
+        const { clientRespondedDispute } = this.state;
+        return (
+            <div className="evidence-show">
+                <p className="bold">Client’s evidence</p>
+                <p>{clientRespondedDispute.clientProof.text}</p>
+            </div>
+        );
     };
 
     disputeActions = () => {
         const { disputeCreated, web3 } = this.props;
-        const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow, finalizeDisputeDone } = this.state;
+        const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow, finalizeDisputeDone, paymentRejectReason } = this.state;
         const isPopperOpen = Boolean(anchorEl);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!clientRespondedDispute.responded) {
             if (jobData.status.reject && mybidAccepted.length > 0) {
-                if (!disputeStt.started) {
-                    return (
-                        <div className="dispute-actions">
+                return (
+                    <div className="dispute-actions">
+                        <span className="note">
+                            <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
+                            <Popper
+                                placement="top"
+                                anchorEl={anchorEl}
+                                id="mouse-over-popover"
+                                onClose={this.handlePopoverClose}
+                                disableRestoreFocus
+                                open={isPopperOpen}
+                                content={paymentRejectReason && api.getReason(Number(paymentRejectReason.reason)).text}
+                            />
+                            <ButtonBase
+                                className="btn btn-small btn-gray bold blue"
+                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                aria-haspopup="true"
+                                onMouseEnter={this.handlePopoverOpen}
+                                onMouseLeave={this.handlePopoverClose}
+                            >
+                                <i className="fas fa-info-circle" /> reason
+                            </ButtonBase>
+                            <ButtonBase
+                                className="btn btn-normal btn-orange btn-bid float-right"
+                                onClick={this.handleCreateDisputeClose}
+                                disabled={disputeCreated}
+                            >
+                                Create Dispute
+                            </ButtonBase>
+                        </span>
+                    </div>
+                );
+            } else if (jobData.status.disputing) {
+                return (
+                    <div className="dispute-actions">
+                        {disputeStt.clientResponseDuration > 0 ? (
                             <span className="note">
-                                <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
-                                <Popper
-                                    placement="top"
-                                    anchorEl={anchorEl}
-                                    id="mouse-over-popover"
-                                    onClose={this.handlePopoverClose}
-                                    disableRestoreFocus
-                                    open={isPopperOpen}
-                                    content={api.getReason(0).text}
-                                />
+                                <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
+                            </span>
+                        ) : (
+                            <span className="note">
+                                Your client did not responded to your dispute.{' '}
                                 <ButtonBase
-                                    className="btn btn-small btn-gray bold blue"
-                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                    aria-haspopup="true"
-                                    onMouseEnter={this.handlePopoverOpen}
-                                    onMouseLeave={this.handlePopoverClose}
+                                    onClick={this.confirmFinalizeDispute}
+                                    disabled={finalizeDisputeDone}
+                                    className="btn btn-normal btn-green btn-bid float-right"
                                 >
-                                    <i className="fas fa-info-circle" /> reason
-                                </ButtonBase>
-                                <ButtonBase
-                                    className="btn btn-normal btn-orange btn-bid float-right"
-                                    onClick={this.handleCreateDisputeClose}
-                                    disabled={disputeCreated}
-                                >
-                                    Create Dispute
+                                    Finalized Dispute
                                 </ButtonBase>
                             </span>
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div className="dispute-actions">
-                            {disputeStt.clientResponseDuration > 0 ? (
-                                <span className="note">
-                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
-                                </span>
-                            ) : (
-                                <span className="note">
-                                    Your client did not responded to your dispute.{' '}
-                                    <ButtonBase
-                                        onClick={this.confirmFinalizeDispute}
-                                        disabled={finalizeDisputeDone}
-                                        className="btn btn-normal btn-green btn-bid float-right"
-                                    >
-                                        Finalized Dispute
-                                    </ButtonBase>
-                                </span>
-                            )}
-                        </div>
-                    );
-                }
-            } else {
-                return null;
+                        )}
+                    </div>
+                );
             }
         } else {
-            if (disputeStt.commitDuration > 0) {
+            if (clientRespondedDispute.commitDuration > 0) {
                 return (
                     <div className="dispute-actions">
                         <span className="note">
@@ -338,7 +383,7 @@ class JobDetailBid extends Component {
                                 open={isPopperOpen}
                                 content="Your client have participated into your dipute......."
                             />
-                            <span className="bold">Your client have participated into your dispute.</span>
+                            <span className="bold">Your client have participated into your dispute. Please waiting for result from Voters</span>
                             <i
                                 className="fas fa-info-circle icon-popper-note"
                                 aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -355,6 +400,7 @@ class JobDetailBid extends Component {
                                 Freelancer&#39;s Evidences
                             </ButtonBase>
                         </span>
+                        {evidenceShow && this.evidence()}
                     </div>
                 );
             } else {
@@ -385,10 +431,9 @@ class JobDetailBid extends Component {
         }
     };
 
-    jobDataInit = async refresh => {
-        const { match, web3, jobs } = this.props;
+    disputeSttInit = async () => {
+        const { match, web3 } = this.props;
         const jobHash = match.params.jobId;
-        this.setState({ isLoading: true, jobHash: jobHash });
         abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
 
         // check client dispute response status
@@ -406,15 +451,25 @@ class JobDetailBid extends Component {
                 }
             }
         }
+    };
+
+    jobDataInit = async refresh => {
+        const { match, web3, jobs } = this.props;
+        const jobHash = match.params.jobId;
+        this.setState({ isLoading: true, jobHash: jobHash });
 
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
+                if (jobData[0].status.disputing) {
+                    this.disputeSttInit();
+                }
                 this.checkPayment(jobHash);
                 this.setState({ jobData: jobData[0], isLoading: false, isOwner: web3.eth.defaultAccount === jobData[0].owner });
                 return;
             }
         }
+
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
@@ -425,6 +480,10 @@ class JobDetailBid extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
+            console.log(jobStatus);
+            if (jobStatus.disputing) {
+                this.disputeSttInit();
+            }
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
@@ -475,6 +534,10 @@ class JobDetailBid extends Component {
 
     JobsInit = jobData => {
         const { web3 } = this.props;
+        const { jobHash } = this.state;
+        if (jobData.data.status.reject) {
+            abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
+        }
         if (this.mounted) {
             this.setState({
                 jobData: jobData.data,
@@ -867,7 +930,7 @@ class JobDetailBid extends Component {
             dialogData,
             checkedDispute,
             disputeStt,
-            evidenceShow,
+            clientRespondedDispute,
         } = this.state;
         //console.log(jobData);
         const { web3, disputeCreated } = this.props;
@@ -899,7 +962,6 @@ class JobDetailBid extends Component {
                                     {this.actions()}
                                 </div>
                                 {this.disputeActions()}
-                                {evidenceShow && this.evidence()}
                                 <Fade in={checkedBid}>
                                     <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
                                         <Grid container className="mkp-form-row">
@@ -981,6 +1043,10 @@ class JobDetailBid extends Component {
                                             {disputeStt.started &&
                                                 (disputeStt.clientResponseDuration > 0 && (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                ))}
+                                            {clientRespondedDispute.responded &&
+                                                (clientRespondedDispute.commitDuration > 0 && (
+                                                    <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
                                                 ))}
                                         </Grid>
                                     </Grid>

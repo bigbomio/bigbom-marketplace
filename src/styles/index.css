@@ -947,34 +947,94 @@ body {
       font-size: 12px;
       color: #888;
       font-weight: normal; }
-  #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration {
-    margin: -1px 0 0 0;
-    background: #eee; }
-    #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration .vote-btn {
+
+#bigbomMarketplace #voter .commit-duration {
+  margin: -1px 0 0 0;
+  background: #eee; }
+  #bigbomMarketplace #voter .commit-duration .vote-btn {
+    text-align: center;
+    padding-top: 13px; }
+    #bigbomMarketplace #voter .commit-duration .vote-btn .btn {
+      text-transform: uppercase;
+      font-weight: bold; }
+  #bigbomMarketplace #voter .commit-duration .job-detail-col {
+    padding: 10px;
+    text-align: center;
+    font-size: 25px;
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    background: #5ac95a; }
+
+#bigbomMarketplace #voter .job-detail .single-body .job-detail-description {
+  padding-bottom: 0; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct {
+    max-height: 200px;
+    overflow: hidden; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct-full {
+    max-height: inherit; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct {
+    border-top: 1px solid #ccc;
+    padding: 0 0 30px 0;
+    margin-top: 30px;
+    text-align: center; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct .btn {
+      margin-top: -25px; }
+
+#bigbomMarketplace #voter .job-detail .single-body .job-info {
+  padding: 0;
+  margin-bottom: 47px;
+  background: #f9f9f9;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+  #bigbomMarketplace #voter .job-detail .single-body .job-info > div {
+    padding: 10px 20px;
+    font-size: 14px; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration {
+    padding: 0;
+    margin-bottom: 10px; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration p {
+      padding: 5px 10px;
       text-align: center;
-      padding-top: 13px; }
-      #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration .vote-btn .btn {
-        text-transform: uppercase;
-        font-weight: bold; }
-    #bigbomMarketplace #voter .dispute-list .job-item .header .commit-duration .job-detail-col {
-      padding: 10px;
-      text-align: center;
-      font-size: 25px;
       color: #fff;
-      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-      background: #5ac95a; }
+      background: #40bd56; }
 
-#bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct {
-  max-height: 200px;
-  overflow: hidden; }
+#bigbomMarketplace #voter .job-detail .single-body .proofs .client-proof {
+  border-right: 1px solid #c3d8c3;
+  position: relative; }
 
-#bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct {
-  border-top: 1px solid #ccc;
-  padding: 0 0 20px 0;
-  margin-top: 30px;
-  text-align: center; }
-  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct .btn {
-    margin-top: -25px; }
+#bigbomMarketplace #voter .job-detail .single-body .proofs .freelancer-proof {
+  position: relative; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .proof-text {
+  padding: 20px;
+  line-height: 25px;
+  margin-bottom: 30px; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .header {
+  background: #daeeda;
+  color: #285338;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .vote-submit {
+  text-align: center;
+  bottom: 0;
+  position: absolute;
+  width: 100%; }
+
+.voting-options-vote .voting-options-vote-input {
+  width: 100%; }
+
+.voting-options-vote .currency {
+  justify-content: left;
+  display: flex;
+  align-items: flex-end; }
+  .voting-options-vote .currency i {
+    margin-bottom: 3px;
+    margin-left: 5px; }
+
+.popper {
+  z-index: 9999; }
 
 body {
   padding: 0;
@@ -1125,6 +1185,7 @@ a {
 .evidence-show {
   padding: 20px;
   margin-top: 40px;
+  line-height: 25px;
   background: #fff;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
 

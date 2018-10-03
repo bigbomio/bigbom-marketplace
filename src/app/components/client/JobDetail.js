@@ -51,7 +51,7 @@ class JobDetail extends Component {
                 clientResponseDuration: 0,
                 started: false,
             },
-            clientRespondedDispute: { responded: false, commitDuration: 0 },
+            freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } },
             evidenceShow: false,
             checkedDispute: false,
         };
@@ -76,10 +76,12 @@ class JobDetail extends Component {
 
     setDisputeStt = async event => {
         const { votingParams } = this.props;
-        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.eveidenceDuration)) * 1000);
+        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.evidenceDuration)) * 1000);
         if (clientResponseDuration > Date.now()) {
             if (this.mounted) {
-                this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
+                this.setState({
+                    disputeStt: { started: event.started, clientResponseDuration },
+                });
             }
         } else {
             if (this.mounted) {
@@ -93,11 +95,70 @@ class JobDetail extends Component {
         const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
         if (commitDuration > Date.now()) {
             if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration } });
+                const URl = abiConfig.getIpfsLink() + event.proofHash;
+                fetch(URl)
+                    .then(res => res.json())
+                    .then(
+                        result => {
+                            const freelancerProof = {
+                                text: result.proof,
+                                imgs: result.imgs,
+                            };
+                            if (this.mounted) {
+                                this.setState({
+                                    freelancerDispute: { responded: event.responded, commitDuration, freelancerProof },
+                                    disputeStt: {
+                                        clientResponseDuration: 0,
+                                        started: true,
+                                    },
+                                });
+                            }
+                        },
+                        error => {
+                            console.log(error);
+                            if (this.mounted) {
+                                this.setState({
+                                    freelancerDispute: {
+                                        responded: event.responded,
+                                        commitDuration,
+                                        freelancerProof: { imgs: [], text: 'Freelancer’s evidence not found!' },
+                                    },
+                                    disputeStt: {
+                                        clientResponseDuration: 0,
+                                        started: true,
+                                    },
+                                });
+                            }
+                        }
+                    );
             }
         } else {
             if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
+                this.setState({ freelancerDispute: { responded: event.responded, commitDuration: 0 } });
+            }
+        }
+    };
+
+    disputeSttInit = async () => {
+        const { match, web3 } = this.props;
+        const jobHash = match.params.jobId;
+        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
+
+        // check client dispute response status
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (!error) {
+            if (re) {
+                if (this.mounted) {
+                    abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+                }
+            } else {
+                if (this.mounted) {
+                    this.setState({ freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } } });
+                }
             }
         }
     };
@@ -106,11 +167,13 @@ class JobDetail extends Component {
         const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash });
-        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
-        abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
+                if (jobData[0].status.disputing) {
+                    this.disputeSttInit();
+                }
                 if (jobData[0].owner !== web3.eth.defaultAccount) {
                     this.setState({
                         stt: { title: 'Error: ', err: true, text: 'You are not permission to view this page' },
@@ -140,6 +203,9 @@ class JobDetail extends Component {
                 return;
             }
             const jobStatus = Utils.getStatus(jobStatusLog);
+            if (jobStatus.disputing) {
+                this.disputeSttInit();
+            }
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
@@ -533,15 +599,22 @@ class JobDetail extends Component {
     };
 
     evidence = () => {
-        return <div className="evidence-show">This is freelancer’s evidence</div>;
+        const { freelancerDispute } = this.state;
+        console.log(freelancerDispute);
+        return (
+            <div className="evidence-show">
+                <p className="bold">Client’s evidence:</p>
+                <p>{freelancerDispute.freelancerProof.text}</p>
+            </div>
+        );
     };
 
     disputeActions = () => {
-        const { disputeStt, anchorEl, evidenceShow, clientRespondedDispute } = this.state;
+        const { disputeStt, anchorEl, evidenceShow, freelancerDispute } = this.state;
         const { sttRespondedDispute } = this.props;
         const isPopperOpen = Boolean(anchorEl);
 
-        if (!clientRespondedDispute.responded) {
+        if (!freelancerDispute.responded) {
             if (disputeStt.clientResponseDuration > 0) {
                 return (
                     <span className="note">
@@ -606,7 +679,7 @@ class JobDetail extends Component {
                 );
             }
         } else {
-            if (disputeStt.commitDuration > 0) {
+            if (freelancerDispute.commitDuration > 0) {
                 return (
                     <span className="note">
                         <Popper
@@ -618,7 +691,7 @@ class JobDetail extends Component {
                             open={isPopperOpen}
                             content="You have participated a dipute of this job......"
                         />
-                        <span className="bold">You have participated a dipute of this job.</span>
+                        <span className="bold">You have participated a dipute of this job. Please waiting for result from Voters</span>
                         <i
                             className="fas fa-info-circle icon-popper-note"
                             aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -667,7 +740,7 @@ class JobDetail extends Component {
             checkedDispute,
             disputeStt,
             evidenceShow,
-            clientRespondedDispute,
+            freelancerDispute,
         } = this.state;
         const { web3, sttRespondedDispute } = this.props;
         let jobTplRender;
@@ -744,9 +817,9 @@ class JobDetail extends Component {
                                                 (disputeStt.clientResponseDuration > 0 && (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ))}
-                                            {clientRespondedDispute.started &&
-                                                (clientRespondedDispute.commitDuration > 0 && (
-                                                    <Countdown name="Evidence Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                            {freelancerDispute.responded &&
+                                                (freelancerDispute.commitDuration > 0 && (
+                                                    <Countdown name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
                                                 ))}
                                         </Grid>
                                     </Grid>

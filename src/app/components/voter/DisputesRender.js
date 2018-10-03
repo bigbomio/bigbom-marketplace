@@ -30,7 +30,7 @@ class DisputesRender extends Component {
                 {disputes.length > 0 &&
                     disputes.map((dispute, i) => {
                         return (
-                            <Link to={'voter/disputes/' + Utils.toAscii(dispute.jobHash)} key={i} className="job-item">
+                            <Link to={'voter/disputes/' + dispute.jobHash} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">

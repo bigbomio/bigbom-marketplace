@@ -99,6 +99,7 @@ class Utils {
             completed: Number(jobStatusLog[4].toString()) === 2,
             claimed: Number(jobStatusLog[4].toString()) === 5,
             reject: Number(jobStatusLog[4].toString()) === 4,
+            disputing: Number(jobStatusLog[4].toString()) === 6,
             paymentAccepted: Number(jobStatusLog[4].toString()) === 9,
             canceled: jobStatusLog[3],
             bidAccepted: bidAccepted,
@@ -106,13 +107,14 @@ class Utils {
             expired: false,
             waiting: !this.getBiddingStt(jobStatusLog) && !bidAccepted,
         };
-        if (stt.started || stt.completed || stt.claimed || stt.reject || stt.paymentAccepted) {
+        if (stt.started || stt.completed || stt.claimed || stt.reject || stt.paymentAccepted || stt.disputing) {
             stt.bidAccepted = false;
         }
         return stt;
     }
 
     getStatusJob = all => {
+        // console.log(all);
         if (all.canceled) {
             return ['Canceled'];
         } else if (all.expired) {
@@ -129,6 +131,8 @@ class Utils {
             return ['Payment Accepted'];
         } else if (all.reject) {
             return ['Rejected'];
+        } else if (all.disputing) {
+            return ['Disputing'];
         } else if (all.claimed) {
             return ['Claimed'];
         } else if (all.waiting) {
@@ -138,7 +142,6 @@ class Utils {
 
     getBiddingStt(stts) {
         // [owner, expired, budget, cancel, status, freelancer]
-
         if (stts[3]) {
             return false;
         } else if (Number(stts[1].toString()) <= Math.floor(Date.now() / 1000)) {
