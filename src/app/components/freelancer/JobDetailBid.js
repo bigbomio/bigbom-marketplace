@@ -312,6 +312,7 @@ class JobDetailBid extends Component {
         const { disputeCreated, web3 } = this.props;
         const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow, finalizeDisputeDone, paymentRejectReason } = this.state;
         const isPopperOpen = Boolean(anchorEl);
+        console.log(paymentRejectReason);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
         if (!clientRespondedDispute.responded) {
             if (jobData.status.reject && mybidAccepted.length > 0) {

@@ -48,6 +48,7 @@
                     .ct {
                         max-height: 200px;
                         overflow: hidden;
+                        padding: 0 20px 0 0;
                     }
                     .ct-full {
                         max-height: inherit;
@@ -113,20 +114,102 @@
         }
     }
 }
-.voting-options-vote {
-    .voting-options-vote-input {
-        width: 100%;
-    }
-
-    .currency {
-        justify-content: left;
-        display: flex;
-        align-items: flex-end;
-        i {
-            margin-bottom: 3px;
-            margin-left: 5px;
+.voting-options {
+    font-size: 15px;
+    .voting-options-vote {
+        background: #f9f9f9;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        .voting-options-vote-input {
+            width: 100%;
+        }
+        .currency {
+            justify-content: left;
+            display: flex;
+            align-items: center;
+            i {
+                margin-bottom: 3px;
+                margin-left: 5px;
+            }
+        }
+        &::before {
+            counter-increment: section;
+            content: '1';
+            display: inline-table;
+            color: white;
+            background: #ccc;
+            padding: 10px 17px;
+            font-size: 20px;
+            margin-right: 16px;
+            border-radius: 50%;
+            margin-left: -35px;
+            margin-top: 4px;
+        }
+        .err {
+            font-size: 12px;
+            color: red;
+            float: left;
         }
     }
+    .voting-options-secret {
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 20px 0;
+        text-align: left;
+        p {
+            padding-bottom: 10px;
+        }
+        span {
+            font-size: 18px;
+            background: #bad9e0;
+        }
+        &::before {
+            counter-increment: section;
+            content: '3';
+            display: inline-table;
+            color: white;
+            background: #ccc;
+            padding: 10px 17px;
+            font-size: 20px;
+            margin-right: 16px;
+            border-radius: 50%;
+            margin-left: -35px;
+            margin-top: 4px;
+        }
+    }
+    .voting-options-download {
+        text-align: left;
+        padding: 10px;
+        margin-top: 20px;
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        button {
+            margin-top: 15px;
+            margin-left: 10px;
+        }
+        &::before {
+            counter-increment: section;
+            content: '2';
+            display: inline-table;
+            color: white;
+            background: #ccc;
+            padding: 10px 17px;
+            font-size: 20px;
+            margin-right: 16px;
+            border-radius: 50%;
+            margin-left: -35px;
+            margin-top: 4px;
+        }
+    }
+}
+
+.none-voter {
+    font-size: 14px;
+    background: #f9f7db;
+    padding: 5px 20px;
+    color: #d46d6d;
 }
 .popper {
     z-index: 9999;

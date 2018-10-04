@@ -533,6 +533,12 @@ $orange: #f99a0c;
     .link {
         color: $blue;
     }
+    .icon-right {
+        margin-left: 5px;
+    }
+    .icon-left {
+        margin-right: 5px;
+    }
     .text-stt-success {
         color: $green;
         svg {

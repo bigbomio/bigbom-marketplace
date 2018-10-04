@@ -377,13 +377,13 @@ class abiConfigs {
     async getReasonPaymentRejected(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const eventInstance = ctInstance.instance.PaymentRejected(
-            { jobHash: jobHash },
+            { jobHash },
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log('getReasonPaymentRejected',re);
+                //console.log('getReasonPaymentRejected', re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -408,7 +408,7 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log('getEventsPollAgainsted', re);
+                console.log('getEventsPollAgainsted', re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -454,7 +454,7 @@ class abiConfigs {
                             created: blockLog.timestamp,
                             started: true,
                             jobHash: Utils.toAscii(re.args.jobHash),
-                            owner: re.args.creator,
+                            client: re.args.creator,
                             clientProofHash: re.args.proofHash ? Utils.toAscii(re.args.proofHash) : null,
                             freelancerProofHash: null,
                         };
@@ -471,6 +471,7 @@ class abiConfigs {
                                 } else {
                                     if (re.args.jobHash === pollStartedResult.args.jobHash) {
                                         results.data.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
+                                        results.data.freelancer = pollStartedResult.args.creator;
                                         callback(results);
                                     }
                                 }

@@ -87,7 +87,6 @@ class DisputeDetail extends Component {
                     dispute.jobDispute.expiredTime = result.expiredTime;
                     dispute.jobDispute.created = result.created;
                     this.clientProofFetch(dispute);
-                    //this.disputeListInit(dispute);
                 },
                 error => {
                     console.log(error);
@@ -137,28 +136,110 @@ class DisputeDetail extends Component {
         }
     };
 
+    finalVoting = async () => {
+        const { vote } = this.props;
+        const { web3, disputeData } = this.props;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        const secretHash = web3.sha3(vote.choice + vote.secretPhrase);
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHash, Utils.BBOToWei(vote.token), {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                isLoading: false,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not vote! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            isLoading: false,
+            actStt: {
+                title: '',
+                err: false,
+                text: 'Your vote has send! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+        });
+    };
+
+    // check allowance
+    checkAllowance = async () => {
+        const { web3, vote, balances } = this.props;
+        const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
+
+        /// check balance
+        if (balances.ETH <= 0) {
+            this.setState({
+                isLoading: false,
+                actStt: {
+                    title: 'Error: ',
+                    err: true,
+                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+                    link: '',
+                },
+            });
+            return;
+        } else if (Utils.BBOToWei(web3, balances.BBO) < vote.token) {
+            this.setState({
+                isLoading: false,
+                actStt: {
+                    title: 'Error: ',
+                    err: true,
+                    text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than stake deposit.',
+                    link: (
+                        <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
+                            Get free BBO
+                        </a>
+                    ),
+                },
+            });
+            return;
+        }
+
+        if (Number(allowance.toString(10)) === 0) {
+            const apprv = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
+            if (apprv) {
+                await this.finalVoting;
+            }
+        } else if (Number(allowance.toString(10)) > Utils.BBOToWei(vote.token)) {
+            await this.finalVoting;
+        } else {
+            const apprv = await abiConfig.approve(web3, 'BBVoting', 0);
+            if (apprv) {
+                const apprv2 = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
+                if (apprv2) {
+                    await this.finalVoting;
+                }
+            }
+        }
+    };
+
     votingConfirm = client => {
+        const { disputeData } = this.state;
         this.setActionBtnDisabled(true);
         if (client) {
             this.setState({
-                commitForClient: true,
-                commitForFreelancer: false,
                 open: true,
+                dialogContent: <Voting choice={disputeData.client} />,
                 dialogData: {
                     actionText: 'Submit Vote',
-                    actions: this.finalVoting,
+                    actions: this.checkAllowance,
                 },
                 actStt: { title: 'Do you want to vote for client of this job?', err: false, text: null, link: '' },
             });
         } else {
             this.setState({
-                commitForClient: false,
-                commitForFreelancer: true,
                 open: true,
-                dialogContent: <Voting />,
+                dialogContent: <Voting choice={disputeData.freelancer} />,
                 dialogData: {
                     actionText: 'Submit Vote',
-                    actions: this.finalVoting,
+                    actions: this.checkAllowance,
                 },
                 actStt: { title: 'Do you want to vote for freelancer of this job?', err: false, text: null, link: '' },
             });
@@ -193,7 +274,7 @@ class DisputeDetail extends Component {
         const { disputeData, isLoading, dialogLoading, open, actStt, dialogData, dialogContent, fullCt } = this.state;
         console.log(disputeData);
         let disputeTplRender;
-
+        const { web3 } = this.props;
         if (disputeData) {
             disputeTplRender = () => {
                 return (
@@ -254,6 +335,7 @@ class DisputeDetail extends Component {
                                     </span>
                                 </Grid>
                             </Grid>
+
                             <Grid container className="proofs">
                                 <Grid item xs={6} className="client-proof">
                                     <Grid item xs={12} className="header">
@@ -263,9 +345,13 @@ class DisputeDetail extends Component {
                                         <p>{disputeData.clientProof.proof}</p>
                                     </Grid>
                                     <Grid item xs={12} className="vote-submit">
-                                        <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(true)}>
-                                            VOTE
-                                        </ButtonBase>
+                                        {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
+                                            <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
+                                        ) : (
+                                            <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(true)}>
+                                                VOTE
+                                            </ButtonBase>
+                                        )}
                                     </Grid>
                                 </Grid>
                                 <Grid item xs={6} className="freelancer-proof">
@@ -276,9 +362,13 @@ class DisputeDetail extends Component {
                                         <p>{disputeData.freelancerProof.proof}</p>
                                     </Grid>
                                     <Grid item xs={12} className="vote-submit">
-                                        <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(false)}>
-                                            VOTE
-                                        </ButtonBase>
+                                        {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
+                                            <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
+                                        ) : (
+                                            <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(false)}>
+                                                VOTE
+                                            </ButtonBase>
+                                        )}
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -343,12 +433,16 @@ DisputeDetail.propTypes = {
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
+    vote: PropTypes.object.isRequired,
+    balances: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
+        balances: state.commonReducer.balances,
+        vote: state.voterReducer.vote,
     };
 };
 

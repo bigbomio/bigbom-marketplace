@@ -82,6 +82,34 @@ class JobDetail extends Component {
                 this.setState({
                     disputeStt: { started: event.started, clientResponseDuration },
                 });
+                const URl = abiConfig.getIpfsLink() + event.proofHash;
+                fetch(URl)
+                    .then(res => res.json())
+                    .then(
+                        result => {
+                            const freelancerProof = {
+                                text: result.proof,
+                                imgs: result.imgs,
+                            };
+                            if (this.mounted) {
+                                this.setState({
+                                    disputeStt: { started: event.started, clientResponseDuration, freelancerProof },
+                                });
+                            }
+                        },
+                        error => {
+                            console.log(error);
+                            if (this.mounted) {
+                                this.setState({
+                                    disputeStt: {
+                                        started: event.started,
+                                        clientResponseDuration,
+                                        freelancerProof: { imgs: [], text: 'Freelancer’s evidence not found!' },
+                                    },
+                                });
+                            }
+                        }
+                    );
             }
         } else {
             if (this.mounted) {
@@ -599,12 +627,11 @@ class JobDetail extends Component {
     };
 
     evidence = () => {
-        const { freelancerDispute } = this.state;
-        console.log(freelancerDispute);
+        const { disputeStt } = this.state;
         return (
             <div className="evidence-show">
-                <p className="bold">Client’s evidence:</p>
-                <p>{freelancerDispute.freelancerProof.text}</p>
+                <p className="bold">Freelancer’s evidence:</p>
+                <p>{disputeStt.freelancerProof.text}</p>
             </div>
         );
     };

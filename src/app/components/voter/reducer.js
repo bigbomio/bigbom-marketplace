@@ -3,6 +3,7 @@ import * as nameActList from './consts';
 
 const data = {
     disputes: [],
+    vote: {},
 };
 
 const initData = cloneDeep(data);
@@ -15,6 +16,15 @@ const voterReducer = (state = initData, action) => {
             return {
                 ...state,
                 disputes,
+            };
+        }
+        case nameActList.SAVE_VOTE: {
+            let vote = cloneDeep(state.vote);
+            vote = action.vote;
+            console.log(vote);
+            return {
+                ...state,
+                vote,
             };
         }
         default:

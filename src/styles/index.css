@@ -573,6 +573,12 @@ body {
 #bigbomMarketplace .link {
   color: #0ca1f9; }
 
+#bigbomMarketplace .icon-right {
+  margin-left: 5px; }
+
+#bigbomMarketplace .icon-left {
+  margin-right: 5px; }
+
 #bigbomMarketplace .text-stt-success {
   color: #40bd56; }
   #bigbomMarketplace .text-stt-success svg {
@@ -969,7 +975,8 @@ body {
   padding-bottom: 0; }
   #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct {
     max-height: 200px;
-    overflow: hidden; }
+    overflow: hidden;
+    padding: 0 20px 0 0; }
   #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct-full {
     max-height: inherit; }
   #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct {
@@ -1022,16 +1029,88 @@ body {
   position: absolute;
   width: 100%; }
 
-.voting-options-vote .voting-options-vote-input {
-  width: 100%; }
+.voting-options {
+  font-size: 15px; }
+  .voting-options .voting-options-vote {
+    background: #f9f9f9;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc; }
+    .voting-options .voting-options-vote .voting-options-vote-input {
+      width: 100%; }
+    .voting-options .voting-options-vote .currency {
+      justify-content: left;
+      display: flex;
+      align-items: center; }
+      .voting-options .voting-options-vote .currency i {
+        margin-bottom: 3px;
+        margin-left: 5px; }
+    .voting-options .voting-options-vote::before {
+      counter-increment: section;
+      content: '1';
+      display: inline-table;
+      color: white;
+      background: #ccc;
+      padding: 10px 17px;
+      font-size: 20px;
+      margin-right: 16px;
+      border-radius: 50%;
+      margin-left: -35px;
+      margin-top: 4px; }
+    .voting-options .voting-options-vote .err {
+      font-size: 12px;
+      color: red;
+      float: left; }
+  .voting-options .voting-options-secret {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 20px 0;
+    text-align: left; }
+    .voting-options .voting-options-secret p {
+      padding-bottom: 10px; }
+    .voting-options .voting-options-secret span {
+      font-size: 18px;
+      background: #bad9e0; }
+    .voting-options .voting-options-secret::before {
+      counter-increment: section;
+      content: '3';
+      display: inline-table;
+      color: white;
+      background: #ccc;
+      padding: 10px 17px;
+      font-size: 20px;
+      margin-right: 16px;
+      border-radius: 50%;
+      margin-left: -35px;
+      margin-top: 4px; }
+  .voting-options .voting-options-download {
+    text-align: left;
+    padding: 10px;
+    margin-top: 20px;
+    background: #f9f9f9;
+    border: 1px solid #ccc; }
+    .voting-options .voting-options-download button {
+      margin-top: 15px;
+      margin-left: 10px; }
+    .voting-options .voting-options-download::before {
+      counter-increment: section;
+      content: '2';
+      display: inline-table;
+      color: white;
+      background: #ccc;
+      padding: 10px 17px;
+      font-size: 20px;
+      margin-right: 16px;
+      border-radius: 50%;
+      margin-left: -35px;
+      margin-top: 4px; }
 
-.voting-options-vote .currency {
-  justify-content: left;
-  display: flex;
-  align-items: flex-end; }
-  .voting-options-vote .currency i {
-    margin-bottom: 3px;
-    margin-left: 5px; }
+.none-voter {
+  font-size: 14px;
+  background: #f9f7db;
+  padding: 5px 20px;
+  color: #d46d6d; }
 
 .popper {
   z-index: 9999; }

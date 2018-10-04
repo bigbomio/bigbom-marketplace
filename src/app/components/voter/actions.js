@@ -6,3 +6,10 @@ export const saveDisputes = disputes => {
         disputes,
     };
 };
+
+export const saveVote = vote => {
+    return {
+        type: listTypes.SAVE_VOTE,
+        vote,
+    };
+};
