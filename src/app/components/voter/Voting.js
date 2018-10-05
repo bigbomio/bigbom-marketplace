@@ -14,7 +14,7 @@ import abiConfig from '../../_services/abiConfig';
 import { setActionBtnDisabled } from '../common/actions';
 import { saveVote } from './actions';
 
-class Reasons extends Component {
+class Voting extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -77,6 +77,7 @@ class Reasons extends Component {
 
     render() {
         const { anchorEl, secretPhrase, linkDownload, voteErr } = this.state;
+        const { voteInputDisable } = this.props;
         const isPopperOpen = Boolean(anchorEl);
         return (
             <Grid item xs={12} className="voting-options">
@@ -89,6 +90,7 @@ class Reasons extends Component {
                             label="Enter the number of votes to commit"
                             defaultValue=""
                             onChange={e => this.voteOnChange(e)}
+                            disabled={voteInputDisable}
                         />
                         {voteErr && <span className="err">{voteErr}</span>}
                     </Grid>
@@ -154,16 +156,18 @@ class Reasons extends Component {
     }
 }
 
-Reasons.propTypes = {
+Voting.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
     choice: PropTypes.string.isRequired,
     saveVote: PropTypes.func.isRequired,
+    voteInputDisable: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        voteInputDisable: state.voterReducer.voteInputDisable,
     };
 };
 
@@ -176,5 +180,5 @@ export default withRouter(
     connect(
         mapStateToProps,
         mapDispatchToProps
-    )(Reasons)
+    )(Voting)
 );

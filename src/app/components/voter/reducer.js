@@ -4,6 +4,7 @@ import * as nameActList from './consts';
 const data = {
     disputes: [],
     vote: {},
+    voteInputDisable: false,
 };
 
 const initData = cloneDeep(data);
@@ -21,10 +22,17 @@ const voterReducer = (state = initData, action) => {
         case nameActList.SAVE_VOTE: {
             let vote = cloneDeep(state.vote);
             vote = action.vote;
-            console.log(vote);
             return {
                 ...state,
                 vote,
+            };
+        }
+        case nameActList.SAVE_VOTE_INPUT_DISABLE: {
+            let voteInputDisable = cloneDeep(state.voteInputDisable);
+            voteInputDisable = action.voteInputDisable;
+            return {
+                ...state,
+                voteInputDisable,
             };
         }
         default:

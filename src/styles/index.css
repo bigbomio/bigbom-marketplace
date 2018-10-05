@@ -1071,7 +1071,8 @@ body {
       padding-bottom: 10px; }
     .voting-options .voting-options-secret span {
       font-size: 18px;
-      background: #bad9e0; }
+      background: #bad9e0;
+      padding: 0 10px; }
     .voting-options .voting-options-secret::before {
       counter-increment: section;
       content: '3';

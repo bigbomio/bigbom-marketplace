@@ -115,6 +115,7 @@ class JobDetailBid extends Component {
     setDisputeStt = async event => {
         const { votingParams } = this.props;
         const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.evidenceDuration)) * 1000);
+        console.log(clientResponseDuration);
         if (clientResponseDuration > Date.now()) {
             if (this.mounted) {
                 this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
@@ -312,123 +313,126 @@ class JobDetailBid extends Component {
         const { disputeCreated, web3 } = this.props;
         const { disputeStt, anchorEl, jobData, clientRespondedDispute, evidenceShow, finalizeDisputeDone, paymentRejectReason } = this.state;
         const isPopperOpen = Boolean(anchorEl);
-        console.log(paymentRejectReason);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
-        if (!clientRespondedDispute.responded) {
-            if (jobData.status.reject && mybidAccepted.length > 0) {
-                return (
-                    <div className="dispute-actions">
-                        <span className="note">
-                            <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
-                            <Popper
-                                placement="top"
-                                anchorEl={anchorEl}
-                                id="mouse-over-popover"
-                                onClose={this.handlePopoverClose}
-                                disableRestoreFocus
-                                open={isPopperOpen}
-                                content={paymentRejectReason && api.getReason(Number(paymentRejectReason.reason)).text}
-                            />
-                            <ButtonBase
-                                className="btn btn-small btn-gray bold blue"
-                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                aria-haspopup="true"
-                                onMouseEnter={this.handlePopoverOpen}
-                                onMouseLeave={this.handlePopoverClose}
-                            >
-                                <i className="fas fa-info-circle" /> reason
-                            </ButtonBase>
-                            <ButtonBase
-                                className="btn btn-normal btn-orange btn-bid float-right"
-                                onClick={this.handleCreateDisputeClose}
-                                disabled={disputeCreated}
-                            >
-                                Create Dispute
-                            </ButtonBase>
-                        </span>
-                    </div>
-                );
-            } else if (jobData.status.disputing) {
-                return (
-                    <div className="dispute-actions">
-                        {disputeStt.clientResponseDuration > 0 ? (
+        if (mybidAccepted.length > 0) {
+            if (!clientRespondedDispute.responded) {
+                if (jobData.status.reject) {
+                    return (
+                        <div className="dispute-actions">
                             <span className="note">
-                                <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
-                            </span>
-                        ) : (
-                            <span className="note">
-                                Your client did not responded to your dispute.{' '}
+                                <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
+                                <Popper
+                                    placement="top"
+                                    anchorEl={anchorEl}
+                                    id="mouse-over-popover"
+                                    onClose={this.handlePopoverClose}
+                                    disableRestoreFocus
+                                    open={isPopperOpen}
+                                    content={paymentRejectReason && api.getReason(Number(paymentRejectReason.reason)).text}
+                                />
                                 <ButtonBase
-                                    onClick={this.confirmFinalizeDispute}
-                                    disabled={finalizeDisputeDone}
-                                    className="btn btn-normal btn-green btn-bid float-right"
+                                    className="btn btn-small btn-gray bold blue"
+                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                    aria-haspopup="true"
+                                    onMouseEnter={this.handlePopoverOpen}
+                                    onMouseLeave={this.handlePopoverClose}
                                 >
-                                    Finalized Dispute
+                                    <i className="fas fa-info-circle" /> reason
+                                </ButtonBase>
+                                <ButtonBase
+                                    className="btn btn-normal btn-orange btn-bid float-right"
+                                    onClick={this.handleCreateDisputeClose}
+                                    disabled={disputeCreated}
+                                >
+                                    Create Dispute
                                 </ButtonBase>
                             </span>
-                        )}
-                    </div>
-                );
+                        </div>
+                    );
+                } else if (jobData.status.disputing) {
+                    return (
+                        <div className="dispute-actions">
+                            {disputeStt.clientResponseDuration > 0 ? (
+                                <span className="note">
+                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
+                                </span>
+                            ) : (
+                                <span className="note">
+                                    Your client did not responded to your dispute.{' '}
+                                    <ButtonBase
+                                        onClick={this.confirmFinalizeDispute}
+                                        disabled={finalizeDisputeDone}
+                                        className="btn btn-normal btn-green btn-bid float-right"
+                                    >
+                                        Finalized Dispute
+                                    </ButtonBase>
+                                </span>
+                            )}
+                        </div>
+                    );
+                }
+            } else {
+                if (clientRespondedDispute.commitDuration > 0) {
+                    return (
+                        <div className="dispute-actions">
+                            <span className="note">
+                                <Popper
+                                    placement="top"
+                                    anchorEl={anchorEl}
+                                    id="mouse-over-popover"
+                                    onClose={this.handlePopoverClose}
+                                    disableRestoreFocus
+                                    open={isPopperOpen}
+                                    content="Your client have participated into your dipute......."
+                                />
+                                <span className="bold">Your client have participated into your dispute. Please waiting for result from Voters</span>
+                                <i
+                                    className="fas fa-info-circle icon-popper-note"
+                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                    aria-haspopup="true"
+                                    onMouseEnter={this.handlePopoverOpen}
+                                    onMouseLeave={this.handlePopoverClose}
+                                />
+                                <ButtonBase onClick={this.handleEvidenceShow} className="btn btn-normal btn-dark-green btn-bid float-right">
+                                    {evidenceShow ? (
+                                        <i className="fas fa-angle-up icon-popper-note" />
+                                    ) : (
+                                        <i className="fas fa-angle-down icon-popper-note" />
+                                    )}
+                                    Freelancer&#39;s Evidences
+                                </ButtonBase>
+                            </span>
+                            {evidenceShow && this.evidence()}
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div className="dispute-actions">
+                            <span className="note">
+                                <Popper
+                                    placement="top"
+                                    anchorEl={anchorEl}
+                                    id="mouse-over-popover"
+                                    onClose={this.handlePopoverClose}
+                                    disableRestoreFocus
+                                    open={isPopperOpen}
+                                    content="Text Description..."
+                                />
+                                <span className="bold">waiting for result from voters (Commit Duration)</span>
+                                <i
+                                    className="fas fa-info-circle icon-popper-note"
+                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                    aria-haspopup="true"
+                                    onMouseEnter={this.handlePopoverOpen}
+                                    onMouseLeave={this.handlePopoverClose}
+                                />
+                            </span>
+                        </div>
+                    );
+                }
             }
         } else {
-            if (clientRespondedDispute.commitDuration > 0) {
-                return (
-                    <div className="dispute-actions">
-                        <span className="note">
-                            <Popper
-                                placement="top"
-                                anchorEl={anchorEl}
-                                id="mouse-over-popover"
-                                onClose={this.handlePopoverClose}
-                                disableRestoreFocus
-                                open={isPopperOpen}
-                                content="Your client have participated into your dipute......."
-                            />
-                            <span className="bold">Your client have participated into your dispute. Please waiting for result from Voters</span>
-                            <i
-                                className="fas fa-info-circle icon-popper-note"
-                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                aria-haspopup="true"
-                                onMouseEnter={this.handlePopoverOpen}
-                                onMouseLeave={this.handlePopoverClose}
-                            />
-                            <ButtonBase onClick={this.handleEvidenceShow} className="btn btn-normal btn-dark-green btn-bid float-right">
-                                {evidenceShow ? (
-                                    <i className="fas fa-angle-up icon-popper-note" />
-                                ) : (
-                                    <i className="fas fa-angle-down icon-popper-note" />
-                                )}
-                                Freelancer&#39;s Evidences
-                            </ButtonBase>
-                        </span>
-                        {evidenceShow && this.evidence()}
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="dispute-actions">
-                        <span className="note">
-                            <Popper
-                                placement="top"
-                                anchorEl={anchorEl}
-                                id="mouse-over-popover"
-                                onClose={this.handlePopoverClose}
-                                disableRestoreFocus
-                                open={isPopperOpen}
-                                content="Text Description..."
-                            />
-                            <span className="bold">waiting for result from voters (Commit Duration)</span>
-                            <i
-                                className="fas fa-info-circle icon-popper-note"
-                                aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                aria-haspopup="true"
-                                onMouseEnter={this.handlePopoverOpen}
-                                onMouseLeave={this.handlePopoverClose}
-                            />
-                        </span>
-                    </div>
-                );
-            }
+            return null;
         }
     };
 
@@ -481,7 +485,6 @@ class JobDetailBid extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
-            console.log(jobStatus);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
             }

@@ -345,6 +345,7 @@ class abiConfigs {
     }
 
     async getEventsPollStarted(web3, jobHash, callback) {
+        console.log('getEventsPollStarted', jobHash);
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         const eventInstance = ctInstance.instance.PollStarted(
             {},
@@ -353,10 +354,11 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log('getEventsPollStarted', re);
+                console.log('getEventsPollStarted', re);
                 if (err) {
                     console.log(err);
                 } else {
+                    console.log(re.args.commitEndDate.toString());
                     if (jobHash === Utils.toAscii(re.args.jobHash)) {
                         const blockLog = await this.getBlock(web3, re.blockNumber);
                         const result = {
@@ -408,7 +410,7 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                console.log('getEventsPollAgainsted', re);
+                //console.log('getEventsPollAgainsted', re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -465,7 +467,8 @@ class abiConfigs {
                                 fromBlock: 4030174, // should use recent number
                                 toBlock: 'latest',
                             },
-                            async (err, pollStartedResult) => {
+                            (err, pollStartedResult) => {
+                                console.log('getAllAvailablePoll', pollStartedResult);
                                 if (err) {
                                     console.log(err);
                                 } else {

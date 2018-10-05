@@ -23,7 +23,7 @@ import { saveVotingParams } from '../freelancer/actions';
 import { saveDisputes } from '../voter/actions';
 
 let disputes = [];
-
+let watchVotingParams;
 const options = ['Latest', 'Oldest'];
 const KEYS_TO_FILTERS = ['jobDispute.title'];
 
@@ -57,6 +57,7 @@ class DisputeBrowser extends Component {
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(watchVotingParams);
     }
 
     getDisputes = () => {
@@ -72,7 +73,7 @@ class DisputeBrowser extends Component {
             }
         }, 20000);
 
-        const watchVotingParams = setInterval(() => {
+        watchVotingParams = setInterval(() => {
             const { votingParams } = this.props;
             if (votingParams.commitDuration) {
                 abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeCreatedInit);

@@ -13,3 +13,10 @@ export const saveVote = vote => {
         vote,
     };
 };
+
+export const setVoteInputDisable = voteInputDisable => {
+    return {
+        type: listTypes.SAVE_VOTE_INPUT_DISABLE,
+        voteInputDisable,
+    };
+};

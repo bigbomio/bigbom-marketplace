@@ -9,10 +9,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Utils from '../../_utils/utils';
 import { setActionBtnDisabled } from '../common/actions';
 import abiConfig from '../../_services/abiConfig';
+import api from '../../_services/settingsApi';
 
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 import Voting from './Voting';
+import { setVoteInputDisable } from './actions';
 
 class DisputeDetail extends Component {
     constructor(props) {
@@ -53,11 +55,18 @@ class DisputeDetail extends Component {
             const { web3 } = this.props;
             const { votingParams } = this.state;
             this.setState({ isLoading: true });
+
             if (votingParams.commitDuration) {
                 abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeDataInit);
                 clearInterval(watchVotingParams);
             }
         }, 100);
+    };
+
+    getReasonPaymentRejected = async paymentRejectReason => {
+        if (this.mounted) {
+            this.setState({ paymentRejectReason });
+        }
     };
 
     saveVotingParams = params => {
@@ -66,8 +75,9 @@ class DisputeDetail extends Component {
 
     disputeDataInit = async disputeData => {
         //console.log('disputeDataInit',disputeData);
-        const { match } = this.props;
+        const { match, web3 } = this.props;
         const jobHash = match.params.disputeId;
+        abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
         const URl = abiConfig.getIpfsLink() + jobHash;
         const dispute = {
             ...disputeData.data,
@@ -137,24 +147,28 @@ class DisputeDetail extends Component {
     };
 
     finalVoting = async () => {
-        const { vote } = this.props;
-        const { web3, disputeData } = this.props;
+        const { disputeData } = this.state;
+        const { web3, vote, setVoteInputDisable } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
         const secretHash = web3.sha3(vote.choice + vote.secretPhrase);
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHash, Utils.BBOToWei(vote.token), {
+        const token = Utils.BBOToWei(web3, vote.token);
+        setVoteInputDisable(true);
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHash, token, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
         if (err) {
             this.setState({
-                isLoading: false,
+                dialogLoading: false,
+                dialogContent: null,
                 actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not vote! :(', link: '' },
             });
             console.log(err);
             return;
         }
         this.setState({
-            isLoading: false,
+            dialogLoading: false,
+            dialogContent: null,
             actStt: {
                 title: '',
                 err: false,
@@ -170,13 +184,15 @@ class DisputeDetail extends Component {
 
     // check allowance
     checkAllowance = async () => {
-        const { web3, vote, balances } = this.props;
+        const { web3, vote, balances, setActionBtnDisabled } = this.props;
+        this.setState({ dialogLoading: true });
+        setActionBtnDisabled(true);
         const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
 
         /// check balance
         if (balances.ETH <= 0) {
             this.setState({
-                isLoading: false,
+                dialogLoading: false,
                 actStt: {
                     title: 'Error: ',
                     err: true,
@@ -187,7 +203,7 @@ class DisputeDetail extends Component {
             return;
         } else if (Utils.BBOToWei(web3, balances.BBO) < vote.token) {
             this.setState({
-                isLoading: false,
+                dialogLoading: false,
                 actStt: {
                     title: 'Error: ',
                     err: true,
@@ -205,16 +221,16 @@ class DisputeDetail extends Component {
         if (Number(allowance.toString(10)) === 0) {
             const apprv = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
             if (apprv) {
-                await this.finalVoting;
+                await this.finalVoting();
             }
-        } else if (Number(allowance.toString(10)) > Utils.BBOToWei(vote.token)) {
-            await this.finalVoting;
+        } else if (Number(allowance.toString(10)) > Utils.BBOToWei(web3, vote.token)) {
+            await this.finalVoting();
         } else {
             const apprv = await abiConfig.approve(web3, 'BBVoting', 0);
             if (apprv) {
                 const apprv2 = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
                 if (apprv2) {
-                    await this.finalVoting;
+                    await this.finalVoting();
                 }
             }
         }
@@ -271,7 +287,7 @@ class DisputeDetail extends Component {
     };
 
     render() {
-        const { disputeData, isLoading, dialogLoading, open, actStt, dialogData, dialogContent, fullCt } = this.state;
+        const { disputeData, isLoading, dialogLoading, open, actStt, dialogData, dialogContent, fullCt, paymentRejectReason } = this.state;
         console.log(disputeData);
         let disputeTplRender;
         const { web3 } = this.props;
@@ -333,6 +349,10 @@ class DisputeDetail extends Component {
                                         &nbsp;
                                         {disputeData.jobDispute.budget.currency}
                                     </span>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    Dispute reason:&nbsp;
+                                    <span className="bold">{paymentRejectReason && api.getReason(Number(paymentRejectReason.reason)).text}</span>
                                 </Grid>
                             </Grid>
 
@@ -435,6 +455,7 @@ DisputeDetail.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     vote: PropTypes.object.isRequired,
     balances: PropTypes.any.isRequired,
+    setVoteInputDisable: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -448,6 +469,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
     setActionBtnDisabled,
+    setVoteInputDisable,
 };
 
 export default connect(

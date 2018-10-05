@@ -40,7 +40,7 @@ class VoterContainer extends Component {
             },
             {
                 title: 'Manage',
-                path: `${match.url}/disputes`,
+                path: `${match.url}/manage`,
                 component: Manage,
             },
         ];
