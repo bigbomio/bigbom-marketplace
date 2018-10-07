@@ -50,8 +50,9 @@ class JobDetail extends Component {
             disputeStt: {
                 clientResponseDuration: 0,
                 started: false,
+                freelancerProof: { imgs: [], text: '' },
             },
-            freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } },
+            freelancerDispute: { responded: false, commitDuration: 0 },
             evidenceShow: false,
             checkedDispute: false,
         };
@@ -75,8 +76,7 @@ class JobDetail extends Component {
     }
 
     setDisputeStt = async event => {
-        const { votingParams } = this.props;
-        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.evidenceDuration)) * 1000);
+        const clientResponseDuration = event.evidenceEndDate * 1000;
         if (clientResponseDuration > Date.now()) {
             if (this.mounted) {
                 this.setState({
@@ -119,52 +119,25 @@ class JobDetail extends Component {
     };
 
     setRespondedisputeStt = async event => {
-        const { votingParams } = this.props;
-        const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
-        if (commitDuration > Date.now()) {
+        const commitDuration = event.commitEndDate * 1000;
+        const evidenceDurtion = event.evidenceEndDate * 1000;
+        if (commitDuration > Date.now() && evidenceDurtion <= Date.now()) {
             if (this.mounted) {
-                const URl = abiConfig.getIpfsLink() + event.proofHash;
-                fetch(URl)
-                    .then(res => res.json())
-                    .then(
-                        result => {
-                            const freelancerProof = {
-                                text: result.proof,
-                                imgs: result.imgs,
-                            };
-                            if (this.mounted) {
-                                this.setState({
-                                    freelancerDispute: { responded: event.responded, commitDuration, freelancerProof },
-                                    disputeStt: {
-                                        clientResponseDuration: 0,
-                                        started: true,
-                                    },
-                                });
-                            }
-                        },
-                        error => {
-                            console.log(error);
-                            if (this.mounted) {
-                                this.setState({
-                                    freelancerDispute: {
-                                        responded: event.responded,
-                                        commitDuration,
-                                        freelancerProof: { imgs: [], text: 'Freelancer’s evidence not found!' },
-                                    },
-                                    disputeStt: {
-                                        clientResponseDuration: 0,
-                                        started: true,
-                                    },
-                                });
-                            }
-                        }
-                    );
+                this.setState({
+                    freelancerDispute: { responded: event.responded, commitDuration },
+                    disputeStt: {
+                        clientResponseDuration: 0,
+                        started: true,
+                        freelancerProof: { imgs: [], text: '' },
+                    },
+                });
             }
         } else {
             if (this.mounted) {
                 this.setState({ freelancerDispute: { responded: event.responded, commitDuration: 0 } });
             }
         }
+        this.setActionBtnDisabled(false);
     };
 
     disputeSttInit = async () => {
@@ -706,7 +679,7 @@ class JobDetail extends Component {
                 );
             }
         } else {
-            if (freelancerDispute.commitDuration > 0) {
+            if (disputeStt.clientResponseDuration > 0) {
                 return (
                     <span className="note">
                         <Popper
@@ -716,9 +689,11 @@ class JobDetail extends Component {
                             onClose={this.handlePopoverClose}
                             disableRestoreFocus
                             open={isPopperOpen}
-                            content="You have participated a dipute of this job......"
+                            content="You have participated a dispute of this job. After Evidence Duration expired, your dispute will be display to voters."
                         />
-                        <span className="bold">You have participated a dipute of this job. Please waiting for result from Voters</span>
+                        <span className="bold">
+                            You have participated a dispute of this job. After Evidence Duration expired, your dispute will be display to voters.
+                        </span>
                         <i
                             className="fas fa-info-circle icon-popper-note"
                             aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -738,9 +713,9 @@ class JobDetail extends Component {
                             onClose={this.handlePopoverClose}
                             disableRestoreFocus
                             open={isPopperOpen}
-                            content="Text Description..."
+                            content="You have participated a dipute of this job......"
                         />
-                        <span className="bold">waiting for result from voters (Commit Duration)</span>
+                        <span className="bold">You have participated a dipute of this job. Please waiting for result from Voters</span>
                         <i
                             className="fas fa-info-circle icon-popper-note"
                             aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -1012,7 +987,6 @@ JobDetail.propTypes = {
     balances: PropTypes.any.isRequired,
     reason: PropTypes.number.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
-    votingParams: PropTypes.object.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     sttRespondedDispute: PropTypes.bool.isRequired,
 };
@@ -1024,7 +998,6 @@ const mapStateToProps = state => {
         reason: state.clientReducer.reason,
         actionBtnDisabled: state.commonReducer.actionBtnDisabled,
         balances: state.commonReducer.balances,
-        votingParams: state.freelancerReducer.votingParams,
         sttRespondedDispute: state.clientReducer.sttRespondedDispute,
     };
 };

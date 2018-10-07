@@ -29,7 +29,7 @@ class Reasons extends Component {
     handleMenuReasonSelect = (event, index) => {
         const { setReason, setActionBtnDisabled } = this.props;
         this.setState({ rejectReasonSelected: index, anchorEl: null });
-        setReason(index - 1);
+        setReason(index);
         setActionBtnDisabled(false);
     };
 

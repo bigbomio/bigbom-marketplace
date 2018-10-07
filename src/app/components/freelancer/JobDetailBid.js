@@ -62,6 +62,7 @@ class JobDetailBid extends Component {
             clientRespondedDispute: { responded: false, commitDuration: 0 },
             anchorEl: null,
             evidenceShow: false,
+            paymentRejectReason: '',
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -107,15 +108,14 @@ class JobDetailBid extends Component {
     }
 
     getReasonPaymentRejected = async paymentRejectReason => {
+        const reason = api.getReason(Number(paymentRejectReason.reason)).text;
         if (this.mounted) {
-            this.setState({ paymentRejectReason });
+            this.setState({ paymentRejectReason: reason });
         }
     };
 
     setDisputeStt = async event => {
-        const { votingParams } = this.props;
-        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.evidenceDuration)) * 1000);
-        console.log(clientResponseDuration);
+        const clientResponseDuration = event.evidenceEndDate * 1000;
         if (clientResponseDuration > Date.now()) {
             if (this.mounted) {
                 this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
@@ -128,9 +128,10 @@ class JobDetailBid extends Component {
     };
 
     setRespondedisputeStt = async event => {
-        const { votingParams } = this.props;
-        const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
-        if (commitDuration > Date.now()) {
+        const commitDuration = event.commitEndDate * 1000;
+        const evidenceDuration = event.evidenceEndDate * 1000;
+
+        if (commitDuration > Date.now() && evidenceDuration <= Date.now()) {
             const URl = abiConfig.getIpfsLink() + event.proofHash;
             fetch(URl)
                 .then(res => res.json())
@@ -328,7 +329,7 @@ class JobDetailBid extends Component {
                                     onClose={this.handlePopoverClose}
                                     disableRestoreFocus
                                     open={isPopperOpen}
-                                    content={paymentRejectReason && api.getReason(Number(paymentRejectReason.reason)).text}
+                                    content={paymentRejectReason && paymentRejectReason}
                                 />
                                 <ButtonBase
                                     className="btn btn-small btn-gray bold blue"
@@ -352,7 +353,7 @@ class JobDetailBid extends Component {
                 } else if (jobData.status.disputing) {
                     return (
                         <div className="dispute-actions">
-                            {disputeStt.clientResponseDuration > 0 ? (
+                            {disputeStt.clientResponseDuration > Date.now() ? (
                                 <span className="note">
                                     <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
                                 </span>
@@ -372,7 +373,34 @@ class JobDetailBid extends Component {
                     );
                 }
             } else {
-                if (clientRespondedDispute.commitDuration > 0) {
+                if (disputeStt.clientResponseDuration > Date.now()) {
+                    return (
+                        <div className="dispute-actions">
+                            <span className="note">
+                                <Popper
+                                    placement="top"
+                                    anchorEl={anchorEl}
+                                    id="mouse-over-popover"
+                                    onClose={this.handlePopoverClose}
+                                    disableRestoreFocus
+                                    open={isPopperOpen}
+                                    content="Your client have participated into your dispute. After Evidence Duration expired, your dispute will be display to voters."
+                                />
+                                <span className="bold">
+                                    Your client have participated into your dispute. After Evidence Duration expired, your dispute will be display to
+                                    voters.
+                                </span>
+                                <i
+                                    className="fas fa-info-circle icon-popper-note"
+                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
+                                    aria-haspopup="true"
+                                    onMouseEnter={this.handlePopoverOpen}
+                                    onMouseLeave={this.handlePopoverClose}
+                                />
+                            </span>
+                        </div>
+                    );
+                } else {
                     return (
                         <div className="dispute-actions">
                             <span className="note">
@@ -405,30 +433,6 @@ class JobDetailBid extends Component {
                             {evidenceShow && this.evidence()}
                         </div>
                     );
-                } else {
-                    return (
-                        <div className="dispute-actions">
-                            <span className="note">
-                                <Popper
-                                    placement="top"
-                                    anchorEl={anchorEl}
-                                    id="mouse-over-popover"
-                                    onClose={this.handlePopoverClose}
-                                    disableRestoreFocus
-                                    open={isPopperOpen}
-                                    content="Text Description..."
-                                />
-                                <span className="bold">waiting for result from voters (Commit Duration)</span>
-                                <i
-                                    className="fas fa-info-circle icon-popper-note"
-                                    aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
-                                    aria-haspopup="true"
-                                    onMouseEnter={this.handlePopoverOpen}
-                                    onMouseLeave={this.handlePopoverClose}
-                                />
-                            </span>
-                        </div>
-                    );
                 }
             }
         } else {
@@ -459,13 +463,15 @@ class JobDetailBid extends Component {
     };
 
     jobDataInit = async refresh => {
-        const { match, web3, jobs } = this.props;
+        const { match, web3, jobs, setActionBtnDisabled } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash: jobHash });
-
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
+                if (jobData[0].status.reject) {
+                    abiConfig.getReasonPaymentRejected(web3, jobData[0].jobHash, this.getReasonPaymentRejected);
+                }
                 if (jobData[0].status.disputing) {
                     this.disputeSttInit();
                 }
@@ -487,6 +493,9 @@ class JobDetailBid extends Component {
             const jobStatus = Utils.getStatus(jobStatusLog);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
+                setActionBtnDisabled(true);
+            } else {
+                setActionBtnDisabled(false);
             }
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
@@ -526,6 +535,9 @@ class JobDetailBid extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
+        if (job.status.reject) {
+            abiConfig.getReasonPaymentRejected(web3, job.jobHash, this.getReasonPaymentRejected);
+        }
         abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
     };
 
@@ -538,10 +550,6 @@ class JobDetailBid extends Component {
 
     JobsInit = jobData => {
         const { web3 } = this.props;
-        const { jobHash } = this.state;
-        if (jobData.data.status.reject) {
-            abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
-        }
         if (this.mounted) {
             this.setState({
                 jobData: jobData.data,
@@ -1045,7 +1053,7 @@ class JobDetailBid extends Component {
                                             </Grid>
                                             {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
                                             {disputeStt.started &&
-                                                (disputeStt.clientResponseDuration > 0 && (
+                                                (disputeStt.clientResponseDuration > Date.now() && (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ))}
                                             {clientRespondedDispute.responded &&
@@ -1199,7 +1207,6 @@ JobDetailBid.propTypes = {
     history: PropTypes.object.isRequired,
     jobs: PropTypes.any.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
-    votingParams: PropTypes.object.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     disputeCreated: PropTypes.bool.isRequired,
 };
@@ -1209,7 +1216,6 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
         setActionBtnDisabled: state.commonReducer.setActionBtnDisabled,
-        votingParams: state.freelancerReducer.votingParams,
         disputeCreated: state.freelancerReducer.disputeCreated,
     };
 };

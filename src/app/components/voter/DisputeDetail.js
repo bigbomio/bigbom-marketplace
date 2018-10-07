@@ -28,19 +28,17 @@ class DisputeDetail extends Component {
                 actionText: null,
                 actions: null,
             },
-            votingParams: {},
             dialogContent: null,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
 
     componentDidMount() {
-        const { isConnected, web3 } = this.props;
+        const { isConnected } = this.props;
         const { isLoading } = this.state;
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                abiConfig.getVotingParams(web3, this.saveVotingParams);
                 this.getDispute();
             }
         }
@@ -51,26 +49,15 @@ class DisputeDetail extends Component {
     }
 
     getDispute = async () => {
-        const watchVotingParams = setInterval(() => {
-            const { web3 } = this.props;
-            const { votingParams } = this.state;
-            this.setState({ isLoading: true });
-
-            if (votingParams.commitDuration) {
-                abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeDataInit);
-                clearInterval(watchVotingParams);
-            }
-        }, 100);
+        const { web3 } = this.props;
+        this.setState({ isLoading: true });
+        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit);
     };
 
     getReasonPaymentRejected = async paymentRejectReason => {
         if (this.mounted) {
             this.setState({ paymentRejectReason });
         }
-    };
-
-    saveVotingParams = params => {
-        this.setState({ votingParams: params });
     };
 
     disputeDataInit = async disputeData => {
@@ -331,7 +318,7 @@ class DisputeDetail extends Component {
                             <Grid item xs={4} className="job-info">
                                 <Grid item xs={12} className="commit-duration">
                                     <p>Remaining time</p>
-                                    <Countdown expiredTime={disputeData.commitDuration} />
+                                    <Countdown expiredTime={disputeData.commitEndDate} />
                                 </Grid>
                                 <Grid item xs={12}>
                                     Category:

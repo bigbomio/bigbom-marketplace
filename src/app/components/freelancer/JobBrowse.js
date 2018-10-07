@@ -16,7 +16,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
-import CircleProgress from '../common/circleProgress';
 
 import JobsRender from './JobsRender';
 
@@ -36,7 +35,6 @@ class JobBrowser extends Component {
             searchTerm: '',
             isLoading: false,
             stt: { err: false, text: null },
-            circleProgressRender: false,
         };
         this.timer = null;
         this.mounted = false;
@@ -59,7 +57,7 @@ class JobBrowser extends Component {
 
     getJobs = () => {
         const { web3 } = this.props;
-        this.setState({ isLoading: true, circleProgressRender: false });
+        this.setState({ isLoading: true });
         jobs = [];
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
@@ -147,7 +145,7 @@ class JobBrowser extends Component {
         this.handleMenuItemSort(null, selectedIndex, jobs);
         if (this.mounted) {
             saveJobs(uqJobs);
-            this.setState({ isLoading: false, circleProgressRender: true });
+            this.setState({ isLoading: false });
         }
     };
 
@@ -234,7 +232,7 @@ class JobBrowser extends Component {
     };
 
     render() {
-        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt } = this.state;
         const { jobs } = this.props;
         const filteredJobs = jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         const categories = settingsApi.getCategories();
@@ -251,7 +249,6 @@ class JobBrowser extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid className="top-actions">
-                            <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getJobs} />}</div>
                             <Grid className="action reload-btn">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getJobs}>
                                     <i className="fas fa-sync-alt" />

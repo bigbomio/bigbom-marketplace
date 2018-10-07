@@ -38,7 +38,7 @@ class DisputesRender extends Component {
                                             <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
                                         </Grid>
                                         <Grid item xs={3} className="commit-duration">
-                                            <Countdown expiredTime={dispute.commitDuration} />
+                                            <Countdown expiredTime={dispute.commitEndDate} />
                                             <Grid className="vote-btn">
                                                 <ButtonBase className="btn btn-normal btn-green">Vote</ButtonBase>
                                             </Grid>

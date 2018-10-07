@@ -345,20 +345,18 @@ class abiConfigs {
     }
 
     async getEventsPollStarted(web3, jobHash, callback) {
-        console.log('getEventsPollStarted', jobHash);
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         const eventInstance = ctInstance.instance.PollStarted(
-            {},
+            { jobHash },
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
-                console.log('getEventsPollStarted', re);
+                //console.log('getEventsPollStarted', re);
                 if (err) {
                     console.log(err);
                 } else {
-                    console.log(re.args.commitEndDate.toString());
                     if (jobHash === Utils.toAscii(re.args.jobHash)) {
                         const blockLog = await this.getBlock(web3, re.blockNumber);
                         const result = {
@@ -367,6 +365,9 @@ class abiConfigs {
                             created: blockLog.timestamp,
                             started: true,
                             proofHash: Utils.toAscii(re.args.proofHash),
+                            commitEndDate: re.args.commitEndDate.toString(),
+                            evidenceEndDate: re.args.evidenceEndDate.toString(),
+                            revealEndDate: re.args.revealEndDate.toString(),
                         };
                         callback(result);
                     }
@@ -389,39 +390,11 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    const result = {
-                        reason: re.args.reason.toString(),
-                        created: re.args.rejectedTimestamp.toString(),
-                        owner: re.args.sender,
-                    };
-                    callback(result);
-                }
-            }
-        );
-        eventInstance.stopWatching();
-    }
-
-    async getEventsPollAgainsted(web3, jobHash, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const eventInstance = ctInstance.instance.PollAgainsted(
-            {},
-            {
-                fromBlock: 4030174, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, re) => {
-                //console.log('getEventsPollAgainsted', re);
-                if (err) {
-                    console.log(err);
-                } else {
                     if (jobHash === Utils.toAscii(re.args.jobHash)) {
-                        const blockLog = await this.getBlock(web3, re.blockNumber);
                         const result = {
-                            created: blockLog.timestamp,
-                            responded: true,
-                            jobHash,
-                            owner: re.args.creator,
-                            proofHash: Utils.toAscii(re.args.proofHash),
+                            reason: re.args.reason.toString(),
+                            created: re.args.rejectedTimestamp.toString(),
+                            owner: re.args.sender,
                         };
                         callback(result);
                     }
@@ -431,61 +404,111 @@ class abiConfigs {
         eventInstance.stopWatching();
     }
 
-    async getAllAvailablePoll(web3, votingParams, callback) {
+    async getEventsPollAgainsted(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        let results = {
-            data: null,
-        };
         const eventInstance = ctInstance.instance.PollAgainsted(
-            {},
+            { jobHash },
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log('getAllAvailablePoll', re);
+                // console.log('getEventsPollAgainsted', re);
                 if (err) {
                     console.log(err);
                 } else {
                     const blockLog = await this.getBlock(web3, re.blockNumber);
-                    const commitDuration = Math.floor(new Date(blockLog.timestamp + Number(votingParams.commitDuration)) * 1000);
-                    if (commitDuration > Date.now()) {
-                        results.data = {
-                            id: re.args.jobHash,
-                            commitDuration: commitDuration,
-                            created: blockLog.timestamp,
-                            started: true,
-                            jobHash: Utils.toAscii(re.args.jobHash),
-                            client: re.args.creator,
-                            clientProofHash: re.args.proofHash ? Utils.toAscii(re.args.proofHash) : null,
-                            freelancerProofHash: null,
+                    const result = {
+                        created: blockLog.timestamp,
+                        responded: true,
+                        jobHash,
+                        owner: re.args.creator,
+                        proofHash: Utils.toAscii(re.args.proofHash),
+                    };
+                    // get freelancer proofhash
+                    const pollStartedEventInstance = ctInstance.instance.PollStarted(
+                        { jobHash },
+                        {
+                            fromBlock: 4030174, // should use recent number
+                            toBlock: 'latest',
+                        },
+                        (err, pollStartedResult) => {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                result.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
+                                result.freelancer = pollStartedResult.args.creator;
+                                result.commitEndDate = pollStartedResult.args.commitEndDate.toString();
+                                result.evidenceEndDate = pollStartedResult.args.evidenceEndDate.toString();
+                                result.revealEndDate = pollStartedResult.args.revealEndDate.toString();
+                                callback(result);
+                            }
+                        }
+                    );
+                    pollStartedEventInstance.stopWatching();
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
+
+    async getAllAvailablePoll(web3, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const pollStartedEventInstance = ctInstance.instance.PollStarted(
+            {},
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            (err, pollStartedResult) => {
+                //console.log('getAllAvailablePoll', pollStartedResult);
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (
+                        pollStartedResult.args.evidenceEndDate.toString() * 1000 <= Date.now() &&
+                        pollStartedResult.args.commitEndDate.toString() * 1000 > Date.now()
+                    ) {
+                        let results = {
+                            data: {
+                                freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
+                                freelancer: pollStartedResult.args.creator,
+                                commitEndDate: pollStartedResult.args.commitEndDate.toString() * 1000,
+                                evidenceEndDate: pollStartedResult.args.evidenceEndDate.toString() * 1000,
+                                revealEndDate: pollStartedResult.args.revealEndDate.toString() * 1000,
+                            },
                         };
-                        // get freelancer proofhash
-                        const pollStartedEventInstance = ctInstance.instance.PollStarted(
-                            {},
+
+                        const eventInstance = ctInstance.instance.PollAgainsted(
+                            { jobHash: Utils.toAscii(pollStartedResult.args.jobHash) },
                             {
                                 fromBlock: 4030174, // should use recent number
                                 toBlock: 'latest',
                             },
-                            (err, pollStartedResult) => {
-                                console.log('getAllAvailablePoll', pollStartedResult);
+                            async (err, re) => {
+                                //console.log('getAllAvailablePoll', re);
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    if (re.args.jobHash === pollStartedResult.args.jobHash) {
-                                        results.data.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
-                                        results.data.freelancer = pollStartedResult.args.creator;
+                                    if (pollStartedResult.args.jobHash === re.args.jobHash) {
+                                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                                        results.data.id = re.args.jobHash;
+                                        results.data.created = blockLog.timestamp;
+                                        results.data.started = true;
+                                        results.data.jobHash = Utils.toAscii(re.args.jobHash);
+                                        results.data.client = re.args.creator;
+                                        results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
                                         callback(results);
                                     }
                                 }
                             }
                         );
-                        pollStartedEventInstance.stopWatching();
+                        eventInstance.stopWatching();
                     }
                 }
             }
         );
-        eventInstance.stopWatching();
+        pollStartedEventInstance.stopWatching();
     }
 }
 

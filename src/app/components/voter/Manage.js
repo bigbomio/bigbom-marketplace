@@ -16,14 +16,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
-import CircleProgress from '../common/circleProgress';
 
 import DisputesRendeManage from './DisputesRendeManage';
-import { saveVotingParams } from '../freelancer/actions';
 import { saveDisputes } from './actions';
 
 let disputes = [];
-let watchVotingParams;
 const options = ['Latest', 'Oldest'];
 const KEYS_TO_FILTERS = ['jobDispute.title'];
 
@@ -36,20 +33,18 @@ class Manage extends Component {
             searchTerm: '',
             isLoading: false,
             stt: { err: false, text: null },
-            circleProgressRender: false,
         };
         this.timer = null;
         this.mounted = false;
     }
 
     componentDidMount() {
-        const { isConnected, web3, saveVotingParams } = this.props;
+        const { isConnected } = this.props;
         const { isLoading } = this.state;
 
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                abiConfig.getVotingParams(web3, saveVotingParams);
                 this.getDisputes();
             }
         }
@@ -57,12 +52,11 @@ class Manage extends Component {
 
     componentWillUnmount() {
         this.mounted = false;
-        clearInterval(watchVotingParams);
     }
 
     getDisputes = () => {
         const { web3 } = this.props;
-        this.setState({ isLoading: true, circleProgressRender: false });
+        this.setState({ isLoading: true });
         disputes = [];
 
         // time out 20s
@@ -73,13 +67,7 @@ class Manage extends Component {
             }
         }, 20000);
 
-        watchVotingParams = setInterval(() => {
-            const { votingParams } = this.props;
-            if (votingParams.commitDuration) {
-                abiConfig.getAllAvailablePoll(web3, votingParams, this.disputeCreatedInit);
-                clearInterval(watchVotingParams);
-            }
-        }, 100);
+        abiConfig.getAllAvailablePoll(web3, this.disputeCreatedInit);
     };
 
     disputeCreatedInit = async eventLog => {
@@ -121,7 +109,7 @@ class Manage extends Component {
         this.handleMenuItemSort(null, selectedIndex, disputes);
         if (this.mounted) {
             saveDisputes(uqDisputes);
-            this.setState({ isLoading: false, circleProgressRender: true });
+            this.setState({ isLoading: false });
         }
     };
 
@@ -184,7 +172,7 @@ class Manage extends Component {
     };
 
     render() {
-        const { selectedCategory, anchorEl, isLoading, stt, circleProgressRender } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt } = this.state;
         const { disputes } = this.props;
         const filteredDisputes = disputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         const categories = settingsApi.getCategories();
@@ -201,7 +189,6 @@ class Manage extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid className="top-actions">
-                            <div className="action timerReload">{circleProgressRender && <CircleProgress callback={this.getDisputes} />}</div>
                             <Grid className="action reload-btn">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getDisputes}>
                                     <i className="fas fa-sync-alt" />
@@ -279,19 +266,16 @@ Manage.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     saveDisputes: PropTypes.func.isRequired,
     disputes: PropTypes.any.isRequired,
-    votingParams: PropTypes.object.isRequired,
-    saveVotingParams: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
-        votingParams: state.freelancerReducer.votingParams,
     };
 };
 
-const mapDispatchToProps = { saveDisputes, saveVotingParams };
+const mapDispatchToProps = { saveDisputes };
 
 export default connect(
     mapStateToProps,
