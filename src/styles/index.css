@@ -970,6 +970,10 @@ body {
     color: #fff;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     background: #5ac95a; }
+  #bigbomMarketplace #voter .commit-duration.orange .job-detail-col {
+    background: #f7b95e; }
+  #bigbomMarketplace #voter .commit-duration.orange .btn {
+    background: #f99a0c; }
 
 #bigbomMarketplace #voter .job-detail .single-body .job-detail-description {
   padding-bottom: 0; }
@@ -1003,6 +1007,8 @@ body {
       text-align: center;
       color: #fff;
       background: #40bd56; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.orange p {
+      background: #f99a0c; }
 
 #bigbomMarketplace #voter .job-detail .single-body .proofs .client-proof {
   border-right: 1px solid #c3d8c3;
@@ -1106,6 +1112,24 @@ body {
       border-radius: 50%;
       margin-left: -35px;
       margin-top: 4px; }
+    .voting-options .voting-options-download.upload::before {
+      display: none; }
+  .voting-options .voting-choice > div {
+    padding: 10px 20px;
+    margin-bottom: 20px; }
+    .voting-options .voting-choice > div span {
+      padding: 6px 30px;
+      font-weight: bold;
+      background: #fdfcf9;
+      color: #a7a7a7;
+      border: 3px solid #e0e0e0;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 0 10px; }
+      .voting-options .voting-choice > div span.selected {
+        background: #fceccc;
+        color: #f7882e;
+        border: 3px solid #fca55f; }
 
 .none-voter {
   font-size: 14px;
@@ -1115,6 +1139,10 @@ body {
 
 .popper {
   z-index: 9999; }
+
+.reveal-submit {
+  justify-content: center;
+  padding: 20px 0; }
 
 body {
   padding: 0;

@@ -67,7 +67,7 @@ class Manage extends Component {
             }
         }, 20000);
 
-        abiConfig.getAllAvailablePoll(web3, this.disputeCreatedInit);
+        abiConfig.getMyVoting(web3, this.disputeCreatedInit);
     };
 
     disputeCreatedInit = async eventLog => {

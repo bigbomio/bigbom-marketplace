@@ -12,7 +12,7 @@ import Popper from '../common/Popper';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 import { setActionBtnDisabled } from '../common/actions';
-import { saveVote } from './actions';
+import { saveVote, setVoteInputDisable } from './actions';
 
 class Voting extends Component {
     constructor(props) {
@@ -20,6 +20,9 @@ class Voting extends Component {
         this.state = {
             anchorEl: null,
             votingParams: {},
+            choice: this.props.choice,
+            secretPhrase: Utils.makeId(12),
+            downloadDisable: true,
         };
     }
 
@@ -30,15 +33,28 @@ class Voting extends Component {
         this.getSecretPhrase();
     }
 
+    componentWillUnmount() {
+        const { setVoteInputDisable } = this.props;
+        setVoteInputDisable(false);
+    }
+
     getSecretPhrase() {
-        const secretPhrase = Utils.makeId(12);
-        const { choice } = this.props;
-        const data = [
+        const { choice, secretPhrase } = this.state;
+        const { options } = this.props;
+        let data = [
             {
-                choice,
+                choice: options.clientChoice.address,
                 secretPhrase,
             },
         ];
+        if (choice === 'freelancer') {
+            data = [
+                {
+                    choice: options.freelancerChoice.address,
+                    secretPhrase,
+                },
+            ];
+        }
         const fileData = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
         this.setState({ secretPhrase, linkDownload: fileData, vote: { ...data[0] } });
     }
@@ -50,15 +66,15 @@ class Voting extends Component {
         const min = Utils.WeiToBBO(web3, votingParams.minVotes);
         const max = Utils.WeiToBBO(web3, votingParams.maxVotes);
         if (Number(val) < min) {
-            this.setState({ voteErr: `Please enter at least  ${min}  BBO.` });
+            this.setState({ voteErr: `Please enter at least  ${min}  BBO.`, downloadDisable: true });
             setActionBtnDisabled(true);
             return;
         } else if (Number(val) > max) {
-            this.setState({ voteErr: `Please enter at most  ${max}  BBO.` });
+            this.setState({ voteErr: `Please enter at most  ${max}  BBO.`, downloadDisable: true });
             setActionBtnDisabled(true);
             return;
         }
-        this.setState({ voteErr: null });
+        this.setState({ voteErr: null, downloadDisable: false });
         saveVote({ ...vote, token: Number(val) });
         setActionBtnDisabled(false);
     };
@@ -75,12 +91,32 @@ class Voting extends Component {
         this.setState({ anchorEl: null });
     };
 
+    choice = client => {
+        if (client) {
+            this.setState({ choice: 'client' });
+        } else {
+            this.setState({ choice: 'freelancer' });
+        }
+        this.getSecretPhrase();
+    };
+
     render() {
-        const { anchorEl, secretPhrase, linkDownload, voteErr } = this.state;
-        const { voteInputDisable } = this.props;
+        const { anchorEl, secretPhrase, linkDownload, voteErr, choice, downloadDisable } = this.state;
+        const { voteInputDisable, options } = this.props;
         const isPopperOpen = Boolean(anchorEl);
         return (
             <Grid item xs={12} className="voting-options">
+                <Grid container className="voting-choice">
+                    <Grid item xs={12}>
+                        Your choice:
+                        <span onClick={() => this.choice(true)} className={choice === 'client' ? 'selected' : ''}>
+                            {options.clientChoice.name}
+                        </span>
+                        <span onClick={() => this.choice(false)} className={choice === 'freelancer' ? 'selected' : ''}>
+                            {options.freelancerChoice.name}
+                        </span>
+                    </Grid>
+                </Grid>
                 <Grid container className="voting-options-vote">
                     <Grid item xs={8}>
                         <TextField
@@ -135,11 +171,17 @@ class Voting extends Component {
                         />
                     </Grid>
                     <Grid item xs={4}>
-                        <a href={linkDownload} download="Your-secret-phrase.json" target="_blank" rel="noopener noreferrer">
-                            <ButtonBase className="btn btn-normal btn-blue">
+                        {!downloadDisable ? (
+                            <a href={linkDownload} download="Your-secret-phrase.json" target="_blank" rel="noopener noreferrer">
+                                <ButtonBase className="btn btn-normal btn-blue">
+                                    Download <i className="fas fa-arrow-down icon-right" />
+                                </ButtonBase>
+                            </a>
+                        ) : (
+                            <ButtonBase className="btn btn-normal btn-blue" disabled>
                                 Download <i className="fas fa-arrow-down icon-right" />
                             </ButtonBase>
-                        </a>
+                        )}
                     </Grid>
                 </Grid>
                 {secretPhrase && (
@@ -160,8 +202,10 @@ Voting.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
     choice: PropTypes.string.isRequired,
+    options: PropTypes.object.isRequired,
     saveVote: PropTypes.func.isRequired,
     voteInputDisable: PropTypes.bool.isRequired,
+    setVoteInputDisable: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -174,6 +218,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
     setActionBtnDisabled,
     saveVote,
+    setVoteInputDisable,
 };
 
 export default withRouter(

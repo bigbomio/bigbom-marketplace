@@ -14,6 +14,7 @@ import api from '../../_services/settingsApi';
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 import Voting from './Voting';
+import Reveal from './Reveal';
 import { setVoteInputDisable } from './actions';
 
 class DisputeDetail extends Component {
@@ -49,9 +50,10 @@ class DisputeDetail extends Component {
     }
 
     getDispute = async () => {
-        const { web3 } = this.props;
+        const { web3, match } = this.props;
+        const jobHash = match.params.disputeId;
         this.setState({ isLoading: true });
-        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit);
+        abiConfig.checkDisputeStatus(web3, jobHash, this.disputeDataInit);
     };
 
     getReasonPaymentRejected = async paymentRejectReason => {
@@ -70,6 +72,9 @@ class DisputeDetail extends Component {
             ...disputeData.data,
             jobDispute: {},
         };
+        if (disputeData.data.commitEndDate <= Date.now()) {
+            this.setState({ reveal: true });
+        }
         fetch(URl)
             .then(res => res.json())
             .then(
@@ -225,28 +230,52 @@ class DisputeDetail extends Component {
 
     votingConfirm = client => {
         const { disputeData } = this.state;
+        const options = {
+            clientChoice: {
+                address: disputeData.client,
+                name: 'Client',
+            },
+            freelancerChoice: {
+                address: disputeData.freelancer,
+                name: 'Freelancer',
+            },
+        };
+
         this.setActionBtnDisabled(true);
         if (client) {
             this.setState({
                 open: true,
-                dialogContent: <Voting choice={disputeData.client} />,
+                dialogContent: <Voting choice="client" options={options} />,
                 dialogData: {
                     actionText: 'Submit Vote',
                     actions: this.checkAllowance,
                 },
-                actStt: { title: 'Do you want to vote for client of this job?', err: false, text: null, link: '' },
+                actStt: { title: 'Do you want to vote for this job?', err: false, text: null, link: '' },
             });
         } else {
             this.setState({
                 open: true,
-                dialogContent: <Voting choice={disputeData.freelancer} />,
+                dialogContent: <Voting choice="freelancer" options={options} />,
                 dialogData: {
                     actionText: 'Submit Vote',
                     actions: this.checkAllowance,
                 },
-                actStt: { title: 'Do you want to vote for freelancer of this job?', err: false, text: null, link: '' },
+                actStt: { title: 'Do you want to vote for this job?', err: false, text: null, link: '' },
             });
         }
+    };
+
+    revealConfirm = () => {
+        this.setActionBtnDisabled(true);
+        this.setState({
+            open: true,
+            dialogContent: <Reveal />,
+            dialogData: {
+                actionText: 'Reveal Vote',
+                actions: this.checkAllowance,
+            },
+            actStt: { title: 'Do you want to reveal your vote?', err: false, text: null, link: '' },
+        });
     };
 
     handleClose = () => {
@@ -274,8 +303,7 @@ class DisputeDetail extends Component {
     };
 
     render() {
-        const { disputeData, isLoading, dialogLoading, open, actStt, dialogData, dialogContent, fullCt, paymentRejectReason } = this.state;
-        console.log(disputeData);
+        const { disputeData, isLoading, dialogLoading, open, actStt, dialogData, dialogContent, fullCt, paymentRejectReason, reveal } = this.state;
         let disputeTplRender;
         const { web3 } = this.props;
         if (disputeData) {
@@ -316,9 +344,13 @@ class DisputeDetail extends Component {
                                 </Grid>
                             </Grid>
                             <Grid item xs={4} className="job-info">
-                                <Grid item xs={12} className="commit-duration">
+                                <Grid item xs={12} className={!reveal ? 'commit-duration' : 'commit-duration orange'}>
                                     <p>Remaining time</p>
-                                    <Countdown expiredTime={disputeData.commitEndDate} />
+                                    {!reveal ? (
+                                        <Countdown expiredTime={disputeData.commitEndDate} />
+                                    ) : (
+                                        <Countdown expiredTime={disputeData.revealEndDate} />
+                                    )}
                                 </Grid>
                                 <Grid item xs={12}>
                                     Category:
@@ -351,15 +383,17 @@ class DisputeDetail extends Component {
                                     <Grid item xs={12} className="proof-text">
                                         <p>{disputeData.clientProof.proof}</p>
                                     </Grid>
-                                    <Grid item xs={12} className="vote-submit">
-                                        {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
-                                            <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
-                                        ) : (
-                                            <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(true)}>
-                                                VOTE
-                                            </ButtonBase>
-                                        )}
-                                    </Grid>
+                                    {!reveal && (
+                                        <Grid item xs={12} className="vote-submit">
+                                            {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
+                                                <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
+                                            ) : (
+                                                <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(true)}>
+                                                    VOTE
+                                                </ButtonBase>
+                                            )}
+                                        </Grid>
+                                    )}
                                 </Grid>
                                 <Grid item xs={6} className="freelancer-proof">
                                     <Grid item xs={12} className="header">
@@ -368,17 +402,26 @@ class DisputeDetail extends Component {
                                     <Grid item xs={12} className="proof-text">
                                         <p>{disputeData.freelancerProof.proof}</p>
                                     </Grid>
-                                    <Grid item xs={12} className="vote-submit">
-                                        {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
-                                            <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
-                                        ) : (
-                                            <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(false)}>
-                                                VOTE
-                                            </ButtonBase>
-                                        )}
-                                    </Grid>
+                                    {!reveal && (
+                                        <Grid item xs={12} className="vote-submit">
+                                            {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
+                                                <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
+                                            ) : (
+                                                <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(false)}>
+                                                    VOTE
+                                                </ButtonBase>
+                                            )}
+                                        </Grid>
+                                    )}
                                 </Grid>
                             </Grid>
+                            {reveal && (
+                                <Grid container className="reveal-submit">
+                                    <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
+                                        Reveal Vote
+                                    </ButtonBase>
+                                </Grid>
+                            )}
                         </Grid>
                     </Grid>
                 );

@@ -25,6 +25,7 @@ class DisputesRendeManage extends Component {
 
     render() {
         const { disputes } = this.state;
+        console.log(disputes);
         return (
             <Grid container className="job-item-list dispute-list">
                 {disputes.length > 0 &&
@@ -37,12 +38,22 @@ class DisputesRendeManage extends Component {
                                             <p>{dispute.jobDispute.title}</p>
                                             <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
                                         </Grid>
-                                        <Grid item xs={3} className="commit-duration">
-                                            <Countdown expiredTime={dispute.commitEndDate} />
-                                            <Grid className="vote-btn">
-                                                <ButtonBase className="btn btn-normal btn-green">Vote</ButtonBase>
+
+                                        {dispute.commitEndDate > Date.now() ? (
+                                            <Grid item xs={3} className="commit-duration">
+                                                <Countdown expiredTime={dispute.commitEndDate} />
+                                                <Grid className="vote-btn">
+                                                    <ButtonBase className="btn btn-normal btn-green">Vote</ButtonBase>
+                                                </Grid>
                                             </Grid>
-                                        </Grid>
+                                        ) : (
+                                            <Grid item xs={3} className="commit-duration orange">
+                                                <Countdown expiredTime={dispute.revealEndDate} />
+                                                <Grid className="vote-btn">
+                                                    <ButtonBase className="btn btn-normal btn-green">Reveal</ButtonBase>
+                                                </Grid>
+                                            </Grid>
+                                        )}
                                     </Grid>
                                 </Grid>
                             </Link>

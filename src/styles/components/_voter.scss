@@ -40,6 +40,14 @@
                 text-shadow: $thinShadow;
                 background: #5ac95a;
             }
+            &.orange {
+                .job-detail-col {
+                    background: #f7b95e;
+                }
+                .btn {
+                    background: $orange;
+                }
+            }
         }
         .job-detail {
             .single-body {
@@ -81,6 +89,11 @@
                         }
                         padding: 0;
                         margin-bottom: 10px;
+                        &.orange {
+                            p {
+                                background: $orange;
+                            }
+                        }
                     }
                 }
                 .proofs {
@@ -203,6 +216,32 @@
             margin-left: -35px;
             margin-top: 4px;
         }
+        &.upload {
+            &::before {
+                display: none;
+            }
+        }
+    }
+    .voting-choice {
+        & > div {
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            span {
+                padding: 6px 30px;
+                font-weight: bold;
+                background: #fdfcf9;
+                color: #a7a7a7;
+                border: 3px solid #e0e0e0;
+                border-radius: 30px;
+                cursor: pointer;
+                margin: 0 10px;
+                &.selected {
+                    background: #fceccc;
+                    color: #f7882e;
+                    border: 3px solid #fca55f;
+                }
+            }
+        }
     }
 }
 
@@ -214,4 +253,9 @@
 }
 .popper {
     z-index: 9999;
+}
+
+.reveal-submit {
+    justify-content: center;
+    padding: 20px 0;
 }
