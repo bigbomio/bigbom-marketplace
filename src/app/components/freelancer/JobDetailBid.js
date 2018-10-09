@@ -128,55 +128,48 @@ class JobDetailBid extends Component {
     };
 
     setRespondedisputeStt = async event => {
-        const commitDuration = event.commitEndDate * 1000;
+        let commitDuration = event.commitEndDate * 1000;
         const evidenceDuration = event.evidenceEndDate * 1000;
 
-        if (commitDuration > Date.now() && evidenceDuration <= Date.now()) {
-            const URl = abiConfig.getIpfsLink() + event.proofHash;
-            fetch(URl)
-                .then(res => res.json())
-                .then(
-                    result => {
-                        const clientProof = {
-                            text: result.proof,
-                            imgs: result.imgs,
-                        };
-                        if (this.mounted) {
-                            this.setState({
-                                clientRespondedDispute: {
-                                    responded: event.responded,
-                                    commitDuration,
-                                    clientProof,
-                                },
-                                disputeStt: {
-                                    clientResponseDuration: 0,
-                                    started: true,
-                                },
-                            });
-                        }
-                    },
-                    error => {
-                        console.log(error);
-                        if (this.mounted) {
-                            this.setState({
-                                clientRespondedDispute: {
-                                    responded: event.responded,
-                                    commitDuration,
-                                    clientProof: { imgs: [], text: 'Client’s evidence not found!' },
-                                },
-                                disputeStt: {
-                                    clientResponseDuration: 0,
-                                    started: true,
-                                },
-                            });
-                        }
-                    }
-                );
-        } else {
-            if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
-            }
+        if (commitDuration <= Date.now() && evidenceDuration > Date.now()) {
+            commitDuration = 0;
         }
+        const URl = abiConfig.getIpfsLink() + event.proofHash;
+        fetch(URl)
+            .then(res => res.json())
+            .then(
+                result => {
+                    const clientProof = {
+                        text: result.proof,
+                        imgs: result.imgs,
+                    };
+                    if (this.mounted) {
+                        this.setState({
+                            clientRespondedDispute: {
+                                responded: event.responded,
+                                commitDuration,
+                                clientProof,
+                            },
+                        });
+                    }
+                },
+                error => {
+                    console.log(error);
+                    if (this.mounted) {
+                        this.setState({
+                            clientRespondedDispute: {
+                                responded: event.responded,
+                                commitDuration,
+                                clientProof: { imgs: [], text: 'Client’s evidence not found!' },
+                            },
+                        });
+                    }
+                }
+            );
+    };
+
+    setFinalizedStt = event => {
+        console.log(event);
     };
 
     finalizeDispute = async () => {
@@ -444,7 +437,7 @@ class JobDetailBid extends Component {
         const { match, web3 } = this.props;
         const jobHash = match.params.jobId;
         abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
-
+        abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
         // check client dispute response status
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobHash, {
@@ -1053,12 +1046,13 @@ class JobDetailBid extends Component {
                                             </Grid>
                                             {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
                                             {disputeStt.started &&
-                                                (disputeStt.clientResponseDuration > Date.now() && (
+                                                (disputeStt.clientResponseDuration > 0 ? (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
-                                                ))}
-                                            {clientRespondedDispute.responded &&
-                                                (clientRespondedDispute.commitDuration > 0 && (
-                                                    <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                                ) : (
+                                                    clientRespondedDispute.responded &&
+                                                    (clientRespondedDispute.commitDuration > 0 && (
+                                                        <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                                    ))
                                                 ))}
                                         </Grid>
                                     </Grid>

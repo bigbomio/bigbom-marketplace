@@ -76,46 +76,38 @@ class JobDetail extends Component {
     }
 
     setDisputeStt = async event => {
-        const clientResponseDuration = event.evidenceEndDate * 1000;
-        if (clientResponseDuration > Date.now()) {
-            if (this.mounted) {
-                this.setState({
-                    disputeStt: { started: event.started, clientResponseDuration },
-                });
-                const URl = abiConfig.getIpfsLink() + event.proofHash;
-                fetch(URl)
-                    .then(res => res.json())
-                    .then(
-                        result => {
-                            const freelancerProof = {
-                                text: result.proof,
-                                imgs: result.imgs,
-                            };
-                            if (this.mounted) {
-                                this.setState({
-                                    disputeStt: { started: event.started, clientResponseDuration, freelancerProof },
-                                });
-                            }
-                        },
-                        error => {
-                            console.log(error);
-                            if (this.mounted) {
-                                this.setState({
-                                    disputeStt: {
-                                        started: event.started,
-                                        clientResponseDuration,
-                                        freelancerProof: { imgs: [], text: 'Freelancer’s evidence not found!' },
-                                    },
-                                });
-                            }
-                        }
-                    );
-            }
-        } else {
-            if (this.mounted) {
-                this.setState({ disputeStt: { started: event.started, clientResponseDuration: 0 } });
-            }
+        let clientResponseDuration = event.evidenceEndDate * 1000;
+        const URl = abiConfig.getIpfsLink() + event.proofHash;
+        if (clientResponseDuration <= Date.now()) {
+            clientResponseDuration = 0;
         }
+        fetch(URl)
+            .then(res => res.json())
+            .then(
+                result => {
+                    const freelancerProof = {
+                        text: result.proof,
+                        imgs: result.imgs,
+                    };
+                    if (this.mounted) {
+                        this.setState({
+                            disputeStt: { started: event.started, clientResponseDuration, freelancerProof },
+                        });
+                    }
+                },
+                error => {
+                    console.log(error);
+                    if (this.mounted) {
+                        this.setState({
+                            disputeStt: {
+                                started: event.started,
+                                clientResponseDuration,
+                                freelancerProof: { imgs: [], text: 'Freelancer’s evidence not found!' },
+                            },
+                        });
+                    }
+                }
+            );
     };
 
     setRespondedisputeStt = async event => {

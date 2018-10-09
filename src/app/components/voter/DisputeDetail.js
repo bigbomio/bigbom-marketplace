@@ -174,6 +174,45 @@ class DisputeDetail extends Component {
         });
     };
 
+    submitReveal = async () => {
+        const { disputeData } = this.state;
+        const { web3, revealVote } = this.props;
+        console.log(revealVote);
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
+            disputeData.jobHash,
+            revealVote.addressChoice,
+            revealVote.secretHash,
+            {
+                from: ctInstance.defaultAccount,
+                gasPrice: +ctInstance.gasPrice.toString(10),
+            }
+        );
+        if (err) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not reveal voting! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            dialogLoading: false,
+            dialogContent: null,
+            actStt: {
+                title: '',
+                err: false,
+                text: 'Your reveal has send! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+        });
+    };
+
     // check allowance
     checkAllowance = async () => {
         const { web3, vote, balances, setActionBtnDisabled } = this.props;
@@ -245,7 +284,7 @@ class DisputeDetail extends Component {
         if (client) {
             this.setState({
                 open: true,
-                dialogContent: <Voting choice="client" options={options} />,
+                dialogContent: <Voting choice="client" dispute={disputeData} options={options} />,
                 dialogData: {
                     actionText: 'Submit Vote',
                     actions: this.checkAllowance,
@@ -255,7 +294,7 @@ class DisputeDetail extends Component {
         } else {
             this.setState({
                 open: true,
-                dialogContent: <Voting choice="freelancer" options={options} />,
+                dialogContent: <Voting choice="freelancer" dispute={disputeData} options={options} />,
                 dialogData: {
                     actionText: 'Submit Vote',
                     actions: this.checkAllowance,
@@ -266,13 +305,14 @@ class DisputeDetail extends Component {
     };
 
     revealConfirm = () => {
+        const { disputeData } = this.state;
         this.setActionBtnDisabled(true);
         this.setState({
             open: true,
-            dialogContent: <Reveal />,
+            dialogContent: <Reveal dispute={disputeData} />,
             dialogData: {
                 actionText: 'Reveal Vote',
-                actions: this.checkAllowance,
+                actions: this.submitReveal,
             },
             actStt: { title: 'Do you want to reveal your vote?', err: false, text: null, link: '' },
         });
@@ -486,6 +526,7 @@ DisputeDetail.propTypes = {
     vote: PropTypes.object.isRequired,
     balances: PropTypes.any.isRequired,
     setVoteInputDisable: PropTypes.func.isRequired,
+    revealVote: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -494,6 +535,7 @@ const mapStateToProps = state => {
         disputes: state.voterReducer.disputes,
         balances: state.commonReducer.balances,
         vote: state.voterReducer.vote,
+        revealVote: state.voterReducer.revealVote,
     };
 };
 

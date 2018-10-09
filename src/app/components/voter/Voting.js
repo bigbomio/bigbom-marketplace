@@ -39,12 +39,13 @@ class Voting extends Component {
     }
 
     getSecretPhrase() {
-        const { choice, secretPhrase } = this.state;
+        const { choice, secretPhrase, voteNum } = this.state;
         const { options } = this.props;
         let data = [
             {
                 choice: options.clientChoice.address,
                 secretPhrase,
+                voteNum,
             },
         ];
         if (choice === 'freelancer') {
@@ -52,6 +53,7 @@ class Voting extends Component {
                 {
                     choice: options.freelancerChoice.address,
                     secretPhrase,
+                    voteNum,
                 },
             ];
         }
@@ -74,9 +76,10 @@ class Voting extends Component {
             setActionBtnDisabled(true);
             return;
         }
-        this.setState({ voteErr: null, downloadDisable: false });
+        this.setState({ voteErr: null, downloadDisable: false, voteNum: Number(val) });
         saveVote({ ...vote, token: Number(val) });
         setActionBtnDisabled(false);
+        this.getSecretPhrase();
     };
 
     saveVotingParams = params => {
@@ -102,7 +105,7 @@ class Voting extends Component {
 
     render() {
         const { anchorEl, secretPhrase, linkDownload, voteErr, choice, downloadDisable } = this.state;
-        const { voteInputDisable, options } = this.props;
+        const { voteInputDisable, options, dispute } = this.props;
         const isPopperOpen = Boolean(anchorEl);
         return (
             <Grid item xs={12} className="voting-options">
@@ -172,7 +175,7 @@ class Voting extends Component {
                     </Grid>
                     <Grid item xs={4}>
                         {!downloadDisable ? (
-                            <a href={linkDownload} download="Your-secret-phrase.json" target="_blank" rel="noopener noreferrer">
+                            <a href={linkDownload} download={dispute.jobHash + '.json'} target="_blank" rel="noopener noreferrer">
                                 <ButtonBase className="btn btn-normal btn-blue">
                                     Download <i className="fas fa-arrow-down icon-right" />
                                 </ButtonBase>
@@ -206,6 +209,7 @@ Voting.propTypes = {
     saveVote: PropTypes.func.isRequired,
     voteInputDisable: PropTypes.bool.isRequired,
     setVoteInputDisable: PropTypes.func.isRequired,
+    dispute: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => {

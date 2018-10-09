@@ -14,6 +14,13 @@ export const saveVote = vote => {
     };
 };
 
+export const saveRevealVote = revealVote => {
+    return {
+        type: listTypes.SAVE_REVEAL_VOTE,
+        revealVote,
+    };
+};
+
 export const setVoteInputDisable = voteInputDisable => {
     return {
         type: listTypes.SAVE_VOTE_INPUT_DISABLE,

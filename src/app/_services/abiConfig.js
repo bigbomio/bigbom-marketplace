@@ -344,10 +344,30 @@ class abiConfigs {
         );
     }
 
+    async getDisputeFinalized(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const eventInstance = ctInstance.instance.DisputeFinalized(
+            { indexJobHash: web3.sha3(jobHash) },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                //console.log('getDisputeFinalized', re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    callback(re.args);
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
+
     async getEventsPollStarted(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         const eventInstance = ctInstance.instance.PollStarted(
-            { jobHash },
+            { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
@@ -357,20 +377,33 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
-                        const blockLog = await this.getBlock(web3, re.blockNumber);
-                        const result = {
-                            jobHash,
-                            owner: re.args.creator,
-                            created: blockLog.timestamp,
-                            started: true,
-                            proofHash: Utils.toAscii(re.args.proofHash),
-                            commitEndDate: re.args.commitEndDate.toString(),
-                            evidenceEndDate: re.args.evidenceEndDate.toString(),
-                            revealEndDate: re.args.revealEndDate.toString(),
-                        };
-                        callback(result);
-                    }
+                    ctInstance.instance.getPollTiming(
+                        jobHash,
+                        {},
+                        {
+                            fromBlock: 4030174, // should use recent number
+                            toBlock: 'latest',
+                        },
+                        async (err, timmingResult) => {
+                            //console.log('timmingResult', timmingResult);
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                const blockLog = await this.getBlock(web3, re.blockNumber);
+                                const result = {
+                                    jobHash,
+                                    owner: re.args.creator,
+                                    created: blockLog.timestamp,
+                                    started: true,
+                                    proofHash: Utils.toAscii(re.args.proofHash),
+                                    commitEndDate: Number(timmingResult[1].toString()),
+                                    evidenceEndDate: Number(timmingResult[0].toString()),
+                                    revealEndDate: Number(timmingResult[2].toString()),
+                                };
+                                callback(result);
+                            }
+                        }
+                    );
                 }
             }
         );
@@ -436,12 +469,27 @@ class abiConfigs {
                             if (err) {
                                 console.log(err);
                             } else {
-                                result.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
-                                result.freelancer = pollStartedResult.args.creator;
-                                result.commitEndDate = pollStartedResult.args.commitEndDate.toString();
-                                result.evidenceEndDate = pollStartedResult.args.evidenceEndDate.toString();
-                                result.revealEndDate = pollStartedResult.args.revealEndDate.toString();
-                                callback(result);
+                                ctInstance.instance.getPollTiming(
+                                    jobHash,
+                                    {},
+                                    {
+                                        fromBlock: 4030174, // should use recent number
+                                        toBlock: 'latest',
+                                    },
+                                    async (err, timmingResult) => {
+                                        //console.log('timmingResult', timmingResult);
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            result.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
+                                            result.freelancer = pollStartedResult.args.creator;
+                                            result.commitEndDate = Number(timmingResult[1].toString());
+                                            result.evidenceEndDate = Number(timmingResult[0].toString());
+                                            result.revealEndDate = Number(timmingResult[2].toString());
+                                            callback(result);
+                                        }
+                                    }
+                                );
                             }
                         }
                     );
@@ -454,18 +502,19 @@ class abiConfigs {
 
     async checkDisputeStatus(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        // get freelancer proofhash
-        const pollStartedEventInstance = ctInstance.instance.PollStarted(
-            { indexJobHash: web3.sha3(jobHash) },
+        ctInstance.instance.getPollTiming(
+            jobHash,
+            {},
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
             },
-            (err, pollStartedResult) => {
+            async (err, timmingResult) => {
+                //console.log('timmingResult', timmingResult);
                 if (err) {
                     console.log(err);
                 } else {
-                    if (pollStartedResult.args.commitEndDate.toString() > Date.now()) {
+                    if (timmingResult[1].toString() * 1000 > Date.now()) {
                         this.getAllAvailablePoll(web3, callback, jobHash);
                     } else {
                         this.getMyVoting(web3, callback, jobHash);
@@ -473,7 +522,6 @@ class abiConfigs {
                 }
             }
         );
-        pollStartedEventInstance.stopWatching();
     }
 
     async getAllAvailablePoll(web3, callback, jobHash) {
@@ -496,45 +544,55 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    if (
-                        pollStartedResult.args.evidenceEndDate.toString() * 1000 <= Date.now() &&
-                        pollStartedResult.args.commitEndDate.toString() * 1000 > Date.now()
-                    ) {
-                        let results = {
-                            data: {
-                                freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
-                                freelancer: pollStartedResult.args.creator,
-                                commitEndDate: pollStartedResult.args.commitEndDate.toString() * 1000,
-                                evidenceEndDate: pollStartedResult.args.evidenceEndDate.toString() * 1000,
-                                revealEndDate: pollStartedResult.args.revealEndDate.toString() * 1000,
-                            },
-                        };
+                    ctInstance.instance.getPollTiming(
+                        Utils.toAscii(pollStartedResult.args.jobHash),
+                        {},
+                        {
+                            fromBlock: 4030174, // should use recent number
+                            toBlock: 'latest',
+                        },
+                        async (err, timmingResult) => {
+                            //console.log('timmingResult', timmingResult);
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                if (timmingResult[1].toString() * 1000 > Date.now()) {
+                                    let results = {
+                                        data: {
+                                            freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
+                                            freelancer: pollStartedResult.args.creator,
+                                            commitEndDate: timmingResult[1].toString() * 1000,
+                                            evidenceEndDate: timmingResult[0].toString() * 1000,
+                                            revealEndDate: timmingResult[2].toString() * 1000,
+                                        },
+                                    };
 
-                        const eventInstance = ctInstance.instance.PollAgainsted(
-                            {},
-                            {
-                                fromBlock: 4030174, // should use recent number
-                                toBlock: 'latest',
-                            },
-                            async (err, re) => {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    if (pollStartedResult.args.jobHash === re.args.jobHash) {
-                                        const blockLog = await this.getBlock(web3, re.blockNumber);
-                                        results.data.id = re.args.jobHash;
-                                        results.data.created = blockLog.timestamp;
-                                        results.data.started = true;
-                                        results.data.jobHash = Utils.toAscii(re.args.jobHash);
-                                        results.data.client = re.args.creator;
-                                        results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
-                                        callback(results);
-                                    }
+                                    const eventInstance = ctInstance.instance.PollAgainsted(
+                                        { indexJobHash: web3.sha3(Utils.toAscii(pollStartedResult.args.jobHash)) },
+                                        {
+                                            fromBlock: 4030174, // should use recent number
+                                            toBlock: 'latest',
+                                        },
+                                        async (err, re) => {
+                                            if (err) {
+                                                console.log(err);
+                                            } else {
+                                                const blockLog = await this.getBlock(web3, re.blockNumber);
+                                                results.data.id = re.args.jobHash;
+                                                results.data.created = blockLog.timestamp;
+                                                results.data.started = true;
+                                                results.data.jobHash = Utils.toAscii(re.args.jobHash);
+                                                results.data.client = re.args.creator;
+                                                results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
+                                                callback(results);
+                                            }
+                                        }
+                                    );
+                                    eventInstance.stopWatching();
                                 }
                             }
-                        );
-                        eventInstance.stopWatching();
-                    }
+                        }
+                    );
                 }
             }
         );
@@ -561,56 +619,71 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    let results = {
-                        data: {
-                            freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
-                            freelancer: pollStartedResult.args.creator,
-                            commitEndDate: pollStartedResult.args.commitEndDate.toString() * 1000,
-                            evidenceEndDate: pollStartedResult.args.evidenceEndDate.toString() * 1000,
-                            revealEndDate: pollStartedResult.args.revealEndDate.toString() * 1000,
-                        },
-                    };
-
-                    const eventVotingInstance = votingInstance.instance.VoteCommitted(
-                        { voter: web3.eth.defaultAccount },
+                    ctInstance.instance.getPollTiming(
+                        Utils.toAscii(pollStartedResult.args.jobHash),
+                        {},
                         {
                             fromBlock: 4030174, // should use recent number
                             toBlock: 'latest',
                         },
-                        async (err, votingResult) => {
+                        async (err, timmingResult) => {
+                            //console.log('timmingResult', timmingResult);
                             if (err) {
                                 console.log(err);
                             } else {
-                                if (votingResult.args.jobHash === pollStartedResult.args.jobHash) {
-                                    const eventInstance = ctInstance.instance.PollAgainsted(
-                                        {},
-                                        {
-                                            fromBlock: 4030174, // should use recent number
-                                            toBlock: 'latest',
-                                        },
-                                        async (err, re) => {
-                                            if (err) {
-                                                console.log(err);
-                                            } else {
-                                                if (pollStartedResult.args.jobHash === re.args.jobHash) {
-                                                    const blockLog = await this.getBlock(web3, re.blockNumber);
-                                                    results.data.id = re.args.jobHash;
-                                                    results.data.created = blockLog.timestamp;
-                                                    results.data.started = true;
-                                                    results.data.jobHash = Utils.toAscii(re.args.jobHash);
-                                                    results.data.client = re.args.creator;
-                                                    results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
-                                                    callback(results);
-                                                }
+                                let results = {
+                                    data: {
+                                        freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
+                                        freelancer: pollStartedResult.args.creator,
+                                        commitEndDate: timmingResult[1].toString() * 1000,
+                                        evidenceEndDate: timmingResult[0].toString() * 1000,
+                                        revealEndDate: timmingResult[2].toString() * 1000,
+                                    },
+                                };
+
+                                const eventVotingInstance = votingInstance.instance.VoteCommitted(
+                                    { voter: web3.eth.defaultAccount },
+                                    {
+                                        fromBlock: 4030174, // should use recent number
+                                        toBlock: 'latest',
+                                    },
+                                    async (err, votingResult) => {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            if (votingResult.args.jobHash === pollStartedResult.args.jobHash) {
+                                                const eventInstance = ctInstance.instance.PollAgainsted(
+                                                    {},
+                                                    {
+                                                        fromBlock: 4030174, // should use recent number
+                                                        toBlock: 'latest',
+                                                    },
+                                                    async (err, re) => {
+                                                        if (err) {
+                                                            console.log(err);
+                                                        } else {
+                                                            if (pollStartedResult.args.jobHash === re.args.jobHash) {
+                                                                const blockLog = await this.getBlock(web3, re.blockNumber);
+                                                                results.data.id = re.args.jobHash;
+                                                                results.data.created = blockLog.timestamp;
+                                                                results.data.started = true;
+                                                                results.data.jobHash = Utils.toAscii(re.args.jobHash);
+                                                                results.data.client = re.args.creator;
+                                                                results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
+                                                                callback(results);
+                                                            }
+                                                        }
+                                                    }
+                                                );
+                                                eventInstance.stopWatching();
                                             }
                                         }
-                                    );
-                                    eventInstance.stopWatching();
-                                }
+                                    }
+                                );
+                                eventVotingInstance.stopWatching();
                             }
                         }
                     );
-                    eventVotingInstance.stopWatching();
                 }
             }
         );

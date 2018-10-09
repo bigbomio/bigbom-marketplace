@@ -28,17 +28,34 @@ class DisputesRendeManage extends Component {
         console.log(disputes);
         return (
             <Grid container className="job-item-list dispute-list">
+                <Grid container className="dispute-list-header">
+                    <Grid item xs={6}>
+                        Job title
+                    </Grid>
+                    <Grid item xs={3} className="status">
+                        Stage
+                    </Grid>
+                    <Grid item xs={3} className="time">
+                        Remain time
+                    </Grid>
+                </Grid>
                 {disputes.length > 0 &&
                     disputes.map((dispute, i) => {
                         return (
                             <Link to={'disputes/' + dispute.jobHash} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
-                                        <Grid item xs={9} className="title">
+                                        <Grid item xs={6} className="title">
                                             <p>{dispute.jobDispute.title}</p>
                                             <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
                                         </Grid>
-
+                                        <Grid item xs={3} className="status">
+                                            {dispute.commitEndDate > Date.now() ? (
+                                                <span>{dispute.evidenceEndDate > Date.now() ? 'Evidence' : 'Commit vote'}</span>
+                                            ) : (
+                                                <span>Reveal vote</span>
+                                            )}
+                                        </Grid>
                                         {dispute.commitEndDate > Date.now() ? (
                                             <Grid item xs={3} className="commit-duration">
                                                 <Countdown expiredTime={dispute.commitEndDate} />

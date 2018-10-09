@@ -948,18 +948,42 @@ body {
   #bigbomMarketplace #voter .dispute-list .job-item > div {
     padding: 0; }
   #bigbomMarketplace #voter .dispute-list .job-item .header .title {
-    padding: 20px; }
+    padding: 10px 20px;
+    font-size: 18px;
+    line-height: 25px; }
     #bigbomMarketplace #voter .dispute-list .job-item .header .title span {
       font-size: 12px;
       color: #888;
       font-weight: normal; }
+  #bigbomMarketplace #voter .dispute-list .job-item .header .status {
+    justify-content: center;
+    display: flex;
+    align-items: flex-start; }
+    #bigbomMarketplace #voter .dispute-list .job-item .header .status span {
+      padding: 8px 15px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      color: #378299; }
+
+#bigbomMarketplace #voter .dispute-list .dispute-list-header {
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #f9f9f9;
+  font-size: 14px;
+  font-weight: bold;
+  color: #777; }
+  #bigbomMarketplace #voter .dispute-list .dispute-list-header .status,
+  #bigbomMarketplace #voter .dispute-list .dispute-list-header .time {
+    text-align: center; }
 
 #bigbomMarketplace #voter .commit-duration {
   margin: -1px 0 0 0;
   background: #eee; }
   #bigbomMarketplace #voter .commit-duration .vote-btn {
     text-align: center;
-    padding-top: 13px; }
+    padding-top: 10px;
+    padding-bottom: 10px; }
     #bigbomMarketplace #voter .commit-duration .vote-btn .btn {
       text-transform: uppercase;
       font-weight: bold; }
@@ -1112,6 +1136,13 @@ body {
       border-radius: 50%;
       margin-left: -35px;
       margin-top: 4px; }
+    .voting-options .voting-options-download.upload > div {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+      .voting-options .voting-options-download.upload > div.file-name {
+        margin-top: 20px;
+        color: #888; }
     .voting-options .voting-options-download.upload::before {
       display: none; }
   .voting-options .voting-choice > div {
@@ -1130,6 +1161,17 @@ body {
         background: #fceccc;
         color: #f7882e;
         border: 3px solid #fca55f; }
+  .voting-options .voting-choice.reveal {
+    padding: 30px 0 0 0; }
+    .voting-options .voting-choice.reveal .reveal-field {
+      text-align: left;
+      margin-bottom: 0;
+      color: #777; }
+      .voting-options .voting-choice.reveal .reveal-field div {
+        display: inline-block;
+        color: #444;
+        font-size: 18px;
+        margin-left: 10px; }
 
 .none-voter {
   font-size: 14px;

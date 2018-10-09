@@ -48,8 +48,8 @@ class DialogPopup extends Component {
                             <span>Waiting...</span>
                         </div>
                     ) : (
-                        <div className="alert-dialog-description">
-                            {stt && (
+                        stt.text && (
+                            <div className="alert-dialog-description">
                                 <div className="dialog-result">
                                     {stt.err ? (
                                         <div className="err">
@@ -63,8 +63,8 @@ class DialogPopup extends Component {
                                         </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )
                     )}
                 </DialogContent>
                 <DialogActions>
