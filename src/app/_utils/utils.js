@@ -308,11 +308,22 @@ class Utils {
         return '';
     }
 
-    makeId(length) {
+    makeIdString(length) {
         let text = '';
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
         return text;
+    }
+
+    makeIdNumber(length) {
+        let text = '';
+        const possible = '0123456789';
+        for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
+        return text;
+    }
+
+    toWidth(a, b) {
+        return (a + b / 100) * a + '%';
     }
 }
 

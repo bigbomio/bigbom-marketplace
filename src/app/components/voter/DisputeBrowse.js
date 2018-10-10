@@ -13,15 +13,18 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
+import DisputesRender from './DisputesRender';
+import SwitchIOS from '../common/switchIOS';
+
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
-import DisputesRender from './DisputesRender';
 import { saveVotingParams } from '../freelancer/actions';
 import { saveDisputes } from '../voter/actions';
 
 let disputes = [];
+let disputesSource = [];
 const options = ['Latest', 'Oldest'];
 const KEYS_TO_FILTERS = ['jobDispute.title'];
 
@@ -110,6 +113,7 @@ class DisputeBrowser extends Component {
         this.handleMenuItemSort(null, selectedIndex, disputes);
         if (this.mounted) {
             saveDisputes(uqDisputes);
+            disputesSource = uqDisputes;
             this.setState({ isLoading: false });
         }
     };
@@ -129,6 +133,19 @@ class DisputeBrowser extends Component {
             }
         }
     }
+
+    stageListSwitch = switched => {
+        const { disputes, saveDisputes } = this.props;
+        const { selectedIndex } = this.state;
+        if (!switched) {
+            const disputeFiltered = disputes.filter(dispute => dispute.evidenceEndDate <= Date.now());
+            saveDisputes(disputeFiltered);
+            this.handleMenuItemSort(null, selectedIndex, disputes);
+        } else {
+            saveDisputes(disputesSource);
+            this.handleMenuItemSort(null, selectedIndex, disputes);
+        }
+    };
 
     searchUpdated(term) {
         this.setState({ searchTerm: term });
@@ -190,6 +207,7 @@ class DisputeBrowser extends Component {
                 <div className="container-wrp main-ct">
                     <div className="container wrapper">
                         <Grid className="top-actions">
+                            <SwitchIOS className="stage-switch" text="Include Evidence Stage" action={this.stageListSwitch} />
                             <Grid className="action reload-btn">
                                 <ButtonBase className="btn btn-normal btn-green" onClick={this.getDisputes}>
                                     <i className="fas fa-sync-alt" />

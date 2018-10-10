@@ -413,7 +413,7 @@ class abiConfigs {
     async getReasonPaymentRejected(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const eventInstance = ctInstance.instance.PaymentRejected(
-            { jobHash },
+            { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 4030174, // should use recent number
                 toBlock: 'latest',
@@ -688,6 +688,25 @@ class abiConfigs {
             }
         );
         pollStartedEventInstance.stopWatching();
+    }
+
+    async getVotingResult(web3, callback, jobHash) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        ctInstance.instance.getPoll(
+            jobHash,
+            {},
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log('getVotingResult', result);
+                }
+            }
+        );
     }
 }
 

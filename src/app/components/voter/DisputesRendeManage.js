@@ -64,7 +64,11 @@ class DisputesRendeManage extends Component {
                                                 </Grid>
                                             </Grid>
                                         ) : (
-                                            <Grid item xs={3} className="commit-duration orange">
+                                            <Grid
+                                                item
+                                                xs={3}
+                                                className={dispute.revealEndDate > Date.now() ? 'commit-duration orange' : 'commit-duration gray'}
+                                            >
                                                 <Countdown expiredTime={dispute.revealEndDate} />
                                                 <Grid className="vote-btn">
                                                     <ButtonBase className="btn btn-normal btn-green">Reveal</ButtonBase>

@@ -7,6 +7,9 @@ import Grid from '@material-ui/core/Grid';
 import { ButtonBase } from '@material-ui/core';
 import Popper from '../common/Popper';
 
+import Utils from '../../_utils/utils';
+import abiConfig from '../../_services/abiConfig';
+
 import { setActionBtnDisabled } from '../common/actions';
 import { saveRevealVote } from './actions';
 
@@ -32,23 +35,28 @@ class Reveal extends Component {
         realFileBtn.click();
         realFileBtn.addEventListener('change', handleFileSelect, false);
         let that = this;
+
+        function fetchJson(file) {
+            let reader = new FileReader();
+            reader.onload = (() => {
+                return e => {
+                    try {
+                        json = JSON.parse(e.target.result);
+                        that.voteRender(json[0]);
+                    } catch (ex) {
+                        //console.log('ex when trying to parse json = ' + ex);
+                    }
+                };
+            })(file);
+            reader.readAsText(file);
+        }
+
         function handleFileSelect(evt) {
             const files = evt.target.files;
             if (files.length > 0) {
                 for (let f of files) {
                     customTxt.innerHTML = f.name;
-                    let reader = new FileReader();
-                    reader.onload = (() => {
-                        return e => {
-                            try {
-                                json = JSON.parse(e.target.result);
-                                that.voteRender(json[0]);
-                            } catch (ex) {
-                                //console.log('ex when trying to parse json = ' + ex);
-                            }
-                        };
-                    })(f);
-                    reader.readAsText(f);
+                    fetchJson(f);
                 }
             } else {
                 customTxt.innerHTML = 'No file chosen, yet.';
@@ -56,14 +64,16 @@ class Reveal extends Component {
         }
     };
 
-    voteRender = vote => {
-        console.log(vote);
+    voteRender = async vote => {
         const { dispute, setActionBtnDisabled, saveRevealVote } = this.props;
+        const { web3 } = this.props;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
         let revealVote = {
             choice: '',
             voteNum: 0,
             secretHash: '',
         };
+
         if (vote.choice === dispute.client) {
             revealVote = {
                 choice: 'client',
@@ -79,6 +89,23 @@ class Reveal extends Component {
                 secretHash: vote.secretPhrase,
             };
         }
+
+        const [errCheckHash, re] = await Utils.callMethod(ctInstance.instance.checkHash)(vote.jobHash, vote.addressChoice, Number(vote.secretHash), {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (re) {
+            if (!re) {
+                this.setState({ err: 'Invalid json file, this file is not json file for this job.' });
+                return;
+            } else {
+                this.setState({ err: null });
+            }
+        } else {
+            console.log(errCheckHash);
+            return;
+        }
+
         this.setState({ revealVote });
         saveRevealVote(revealVote);
         setActionBtnDisabled(false);
@@ -93,8 +120,10 @@ class Reveal extends Component {
     };
 
     render() {
-        const { anchorEl, revealVote } = this.state;
+        const { anchorEl, revealVote, err } = this.state;
         const isPopperOpen = Boolean(anchorEl);
+        const clientWidth = { width: Utils.toWidth(100, 200) };
+        const freelancerWidth = { width: Utils.toWidth(200, 100) };
         return (
             <Grid item xs={12} className="voting-options">
                 <Grid container>
@@ -144,6 +173,13 @@ class Reveal extends Component {
                         </Grid>
                     </Grid>
                 )}
+                <Grid container className="result-show">
+                    <div className="result-bar">
+                        <div className="client" style={clientWidth} />
+                        <div className="freelancer" style={freelancerWidth} />
+                    </div>
+                </Grid>
+                {err && <Grid className="err">{err}</Grid>}
             </Grid>
         );
     }

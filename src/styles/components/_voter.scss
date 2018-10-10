@@ -39,7 +39,7 @@
                 margin-bottom: 20px;
                 background: #f9f9f9;
                 font-size: 14px;
-                font-weight: bold;
+                text-transform: uppercase;
                 color: #777;
                 .status,
                 .time {
@@ -73,6 +73,14 @@
                 }
                 .btn {
                     background: $orange;
+                }
+            }
+            &.gray {
+                .job-detail-col {
+                    background: #cecece;
+                }
+                .btn {
+                    background: #a7a6a6;
                 }
             }
         }
@@ -294,6 +302,10 @@
             }
         }
     }
+    .err {
+        color: red;
+        padding-top: 20px;
+    }
 }
 
 .none-voter {
@@ -309,4 +321,19 @@
 .reveal-submit {
     justify-content: center;
     padding: 20px 0;
+}
+
+.voting-stage {
+    float: right;
+    margin-top: -30px;
+    padding: 6px 20px;
+    font-size: 14px;
+    color: #378299;
+    background: #f9f9f9;
+    text-transform: uppercase;
+    border: 1px solid rgb(120, 149, 187);
+}
+
+.stage-switch {
+    float: left;
 }

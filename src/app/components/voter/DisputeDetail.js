@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import leftPad from 'left-pad';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
@@ -60,6 +61,35 @@ class DisputeDetail extends Component {
         if (this.mounted) {
             this.setState({ paymentRejectReason });
         }
+    };
+
+    getDisputeResult = async jobHash => {
+        const { web3 } = this.props;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            dialogLoading: false,
+            dialogContent: null,
+            actStt: {
+                title: 'Reveal vote: ',
+                err: false,
+                text: '',
+                link: '',
+            },
+        });
+        console.log(result);
     };
 
     disputeDataInit = async disputeData => {
@@ -138,14 +168,35 @@ class DisputeDetail extends Component {
         }
     };
 
+    keccak256(...args) {
+        const { web3 } = this.props;
+        args = args.map(arg => {
+            if (typeof arg === 'string') {
+                if (arg.substring(0, 2) === '0x') {
+                    return arg.slice(2);
+                } else {
+                    return web3.toHex(arg).slice(2);
+                }
+            }
+
+            if (typeof arg === 'number') {
+                return leftPad(arg.toString(16), 64, 0);
+            } else {
+                return '';
+            }
+        });
+        args = args.join('');
+        return web3.sha3(args, { encoding: 'hex' });
+    }
+
     finalVoting = async () => {
         const { disputeData } = this.state;
         const { web3, vote, setVoteInputDisable } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
-        const secretHash = web3.sha3(vote.choice + vote.secretPhrase);
+        const secretHashString = this.keccak256(vote.choice, Number(vote.secretPhrase));
         const token = Utils.BBOToWei(web3, vote.token);
         setVoteInputDisable(true);
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHash, token, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHashString, token, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -177,18 +228,17 @@ class DisputeDetail extends Component {
     submitReveal = async () => {
         const { disputeData } = this.state;
         const { web3, revealVote } = this.props;
-        console.log(revealVote);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
         const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
             disputeData.jobHash,
             revealVote.addressChoice,
-            revealVote.secretHash,
+            Number(revealVote.secretHash),
             {
                 from: ctInstance.defaultAccount,
                 gasPrice: +ctInstance.gasPrice.toString(10),
             }
         );
-        if (err) {
+        if (!tx) {
             this.setState({
                 dialogLoading: false,
                 dialogContent: null,
@@ -197,20 +247,7 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
-        this.setState({
-            dialogLoading: false,
-            dialogContent: null,
-            actStt: {
-                title: '',
-                err: false,
-                text: 'Your reveal has send! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
-            },
-        });
+        this.getDisputeResult(disputeData.jobHash);
     };
 
     // check allowance
@@ -360,6 +397,13 @@ class DisputeDetail extends Component {
                                     <i className="fas fa-sync-alt" />
                                     Refresh
                                 </ButtonBase>
+                                <div className="voting-stage">
+                                    {disputeData.evidenceEndDate > Date.now()
+                                        ? 'Evidence'
+                                        : disputeData.commitEndDate > Date.now()
+                                            ? 'Commit Vote'
+                                            : disputeData.revealEndDate > Date.now() && 'Reveal Vote'}
+                                </div>
                             </div>
 
                             <Grid item xs={8} className="job-detail-description">
@@ -387,7 +431,11 @@ class DisputeDetail extends Component {
                                 <Grid item xs={12} className={!reveal ? 'commit-duration' : 'commit-duration orange'}>
                                     <p>Remaining time</p>
                                     {!reveal ? (
-                                        <Countdown expiredTime={disputeData.commitEndDate} />
+                                        disputeData.evidenceEndDate > Date.now() ? (
+                                            <Countdown expiredTime={disputeData.evidenceEndDate} />
+                                        ) : (
+                                            <Countdown expiredTime={disputeData.commitEndDate} />
+                                        )
                                     ) : (
                                         <Countdown expiredTime={disputeData.revealEndDate} />
                                     )}
@@ -428,7 +476,11 @@ class DisputeDetail extends Component {
                                             {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
                                                 <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
                                             ) : (
-                                                <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(true)}>
+                                                <ButtonBase
+                                                    className="btn btn-normal btn-blue"
+                                                    onClick={() => this.votingConfirm(true)}
+                                                    disabled={disputeData.evidenceEndDate > Date.now()}
+                                                >
                                                     VOTE
                                                 </ButtonBase>
                                             )}
@@ -447,7 +499,11 @@ class DisputeDetail extends Component {
                                             {disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
                                                 <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
                                             ) : (
-                                                <ButtonBase className="btn btn-normal btn-blue" onClick={() => this.votingConfirm(false)}>
+                                                <ButtonBase
+                                                    className="btn btn-normal btn-blue"
+                                                    onClick={() => this.votingConfirm(false)}
+                                                    disabled={disputeData.evidenceEndDate > Date.now()}
+                                                >
                                                     VOTE
                                                 </ButtonBase>
                                             )}

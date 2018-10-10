@@ -21,7 +21,7 @@ class Voting extends Component {
             anchorEl: null,
             votingParams: {},
             choice: this.props.choice,
-            secretPhrase: Utils.makeId(12),
+            secretPhrase: Utils.makeIdNumber(3),
             downloadDisable: true,
         };
     }
@@ -38,14 +38,15 @@ class Voting extends Component {
         setVoteInputDisable(false);
     }
 
-    getSecretPhrase() {
-        const { choice, secretPhrase, voteNum } = this.state;
-        const { options } = this.props;
+    getSecretPhrase(voteNum) {
+        const { choice, secretPhrase } = this.state;
+        const { options, dispute } = this.props;
         let data = [
             {
                 choice: options.clientChoice.address,
                 secretPhrase,
                 voteNum,
+                jobHash: dispute.jobHash,
             },
         ];
         if (choice === 'freelancer') {
@@ -54,6 +55,7 @@ class Voting extends Component {
                     choice: options.freelancerChoice.address,
                     secretPhrase,
                     voteNum,
+                    jobHash: dispute.jobHash,
                 },
             ];
         }
@@ -76,10 +78,10 @@ class Voting extends Component {
             setActionBtnDisabled(true);
             return;
         }
-        this.setState({ voteErr: null, downloadDisable: false, voteNum: Number(val) });
+        this.setState({ voteErr: null, downloadDisable: false });
         saveVote({ ...vote, token: Number(val) });
         setActionBtnDisabled(false);
-        this.getSecretPhrase();
+        this.getSecretPhrase(Number(val));
     };
 
     saveVotingParams = params => {

@@ -971,7 +971,7 @@ body {
   margin-bottom: 20px;
   background: #f9f9f9;
   font-size: 14px;
-  font-weight: bold;
+  text-transform: uppercase;
   color: #777; }
   #bigbomMarketplace #voter .dispute-list .dispute-list-header .status,
   #bigbomMarketplace #voter .dispute-list .dispute-list-header .time {
@@ -998,6 +998,10 @@ body {
     background: #f7b95e; }
   #bigbomMarketplace #voter .commit-duration.orange .btn {
     background: #f99a0c; }
+  #bigbomMarketplace #voter .commit-duration.gray .job-detail-col {
+    background: #cecece; }
+  #bigbomMarketplace #voter .commit-duration.gray .btn {
+    background: #a7a6a6; }
 
 #bigbomMarketplace #voter .job-detail .single-body .job-detail-description {
   padding-bottom: 0; }
@@ -1172,6 +1176,9 @@ body {
         color: #444;
         font-size: 18px;
         margin-left: 10px; }
+  .voting-options .err {
+    color: red;
+    padding-top: 20px; }
 
 .none-voter {
   font-size: 14px;
@@ -1185,6 +1192,19 @@ body {
 .reveal-submit {
   justify-content: center;
   padding: 20px 0; }
+
+.voting-stage {
+  float: right;
+  margin-top: -30px;
+  padding: 6px 20px;
+  font-size: 14px;
+  color: #378299;
+  background: #f9f9f9;
+  text-transform: uppercase;
+  border: 1px solid #7895bb; }
+
+.stage-switch {
+  float: left; }
 
 body {
   padding: 0;
