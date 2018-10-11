@@ -25,7 +25,7 @@ class DisputesRender extends Component {
 
     render() {
         const { disputes } = this.state;
-        return (
+        return disputes.length > 0 ? (
             <Grid container className="job-item-list dispute-list">
                 <Grid container className="dispute-list-header">
                     <Grid item xs={6}>
@@ -38,36 +38,41 @@ class DisputesRender extends Component {
                         Remain time
                     </Grid>
                 </Grid>
-                {disputes.length > 0 &&
-                    disputes.map((dispute, i) => {
-                        return (
-                            <Link to={'voter/disputes/' + dispute.jobHash} key={i} className="job-item">
-                                <Grid item xs={12}>
-                                    <Grid container className="header">
-                                        <Grid item xs={6} className="title">
-                                            <p>{dispute.jobDispute.title}</p>
-                                            <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
-                                        </Grid>
-                                        <Grid item xs={3} className="status">
-                                            <span>{dispute.evidenceEndDate > Date.now() ? 'Evidence' : 'Commit vote'}</span>
-                                        </Grid>
-                                        <Grid item xs={3} className="commit-duration">
-                                            {dispute.evidenceEndDate > Date.now() ? (
-                                                <Countdown expiredTime={dispute.evidenceEndDate} />
-                                            ) : (
-                                                <Countdown expiredTime={dispute.commitEndDate} />
-                                            )}
-                                            <Grid className="vote-btn">
-                                                <ButtonBase className="btn btn-normal btn-green" disabled={dispute.evidenceEndDate > Date.now()}>
-                                                    Vote
-                                                </ButtonBase>
-                                            </Grid>
+                {disputes.map((dispute, i) => {
+                    return (
+                        <Link to={'voter/disputes/' + dispute.jobHash} key={i} className="job-item">
+                            <Grid item xs={12}>
+                                <Grid container className="header">
+                                    <Grid item xs={6} className="title">
+                                        <p>{dispute.jobDispute.title}</p>
+                                        <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
+                                    </Grid>
+                                    <Grid item xs={3} className="status">
+                                        <span>{dispute.evidenceEndDate > Date.now() ? 'Evidence' : 'Commit vote'}</span>
+                                    </Grid>
+                                    <Grid item xs={3} className="commit-duration">
+                                        {dispute.evidenceEndDate > Date.now() ? (
+                                            <Countdown expiredTime={dispute.evidenceEndDate} />
+                                        ) : (
+                                            <Countdown expiredTime={dispute.commitEndDate} />
+                                        )}
+                                        <Grid className="vote-btn">
+                                            <ButtonBase className="btn btn-normal btn-green" disabled={dispute.evidenceEndDate > Date.now()}>
+                                                Vote
+                                            </ButtonBase>
                                         </Grid>
                                     </Grid>
                                 </Grid>
-                            </Link>
-                        );
-                    })}
+                            </Grid>
+                        </Link>
+                    );
+                })}
+            </Grid>
+        ) : (
+            <Grid container className="job-item-list dispute-list">
+                <Grid container className="no-data">
+                    Have no any dispute to show.
+                </Grid>
             </Grid>
         );
     }

@@ -98,7 +98,7 @@ DialogPopup.propTypes = {
 
 DialogPopup.defaultProps = {
     actions: null,
-    title: null,
+    title: ' ',
     actionText: null,
     content: null,
 };

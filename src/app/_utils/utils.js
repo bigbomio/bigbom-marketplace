@@ -323,7 +323,7 @@ class Utils {
     }
 
     toWidth(a, b) {
-        return (a + b / 100) * a + '%';
+        return a / ((a + b) / 100);
     }
 }
 

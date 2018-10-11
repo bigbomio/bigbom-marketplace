@@ -16,6 +16,8 @@ import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 import Voting from './Voting';
 import Reveal from './Reveal';
+import VoteResult from './VoteResult';
+
 import { setVoteInputDisable } from './actions';
 
 class DisputeDetail extends Component {
@@ -42,6 +44,7 @@ class DisputeDetail extends Component {
             if (!isLoading) {
                 this.mounted = true;
                 this.getDispute();
+                this.checkGetRewardRight();
             }
         }
     }
@@ -54,7 +57,7 @@ class DisputeDetail extends Component {
         const { web3, match } = this.props;
         const jobHash = match.params.disputeId;
         this.setState({ isLoading: true });
-        abiConfig.checkDisputeStatus(web3, jobHash, this.disputeDataInit);
+        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobHash);
     };
 
     getReasonPaymentRejected = async paymentRejectReason => {
@@ -65,6 +68,7 @@ class DisputeDetail extends Component {
 
     getDisputeResult = async jobHash => {
         const { web3 } = this.props;
+        let voteResult = {};
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
             from: ctInstance.defaultAccount,
@@ -79,21 +83,98 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
+        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+        voteResult = {
+            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+        };
+        this.setState({
+            dialogLoading: false,
+            dialogContent: <VoteResult voteResult={voteResult} />,
+            dialogData: {
+                actionText: null,
+                actions: null,
+            },
+            actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
+        });
+    };
+
+    getReward = async () => {
+        const { match, web3 } = this.props;
+        const jobHash = match.params.disputeId;
+        this.setState({ dialogLoading: true });
+        this.setActionBtnDisabled(true);
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (!tx) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not claim your reward! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
         this.setState({
             dialogLoading: false,
             dialogContent: null,
             actStt: {
-                title: 'Reveal vote: ',
+                title: '',
                 err: false,
-                text: '',
-                link: '',
+                text: 'Your request has send! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
             },
         });
-        console.log(result);
+    };
+
+    getRewardConfirm = () => {
+        this.setState({
+            open: true,
+            dialogData: {
+                actionText: 'Get Reward',
+                actions: this.getReward,
+            },
+            actStt: { title: 'Do you want to get your reward now?', err: false, text: null, link: '' },
+        });
+        this.setActionBtnDisabled(false);
+    };
+
+    checkGetRewardRight = async () => {
+        const { match, web3 } = this.props;
+        const jobHash = match.params.disputeId;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.calcReward)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            console.log(err);
+            return;
+        }
+        if (Number(result.toString()) > 0) {
+            this.setState({ getRewardRight: true });
+        }
+    };
+
+    viewVoteResult = () => {
+        const { match } = this.props;
+        const jobHash = match.params.disputeId;
+        this.getDisputeResult(jobHash);
+        this.setState({
+            open: true,
+            dialogLoading: true,
+        });
     };
 
     disputeDataInit = async disputeData => {
-        //console.log('disputeDataInit',disputeData);
+        //console.log('disputeDataInit', disputeData);
         const { match, web3 } = this.props;
         const jobHash = match.params.disputeId;
         abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
@@ -380,7 +461,19 @@ class DisputeDetail extends Component {
     };
 
     render() {
-        const { disputeData, isLoading, dialogLoading, open, actStt, dialogData, dialogContent, fullCt, paymentRejectReason, reveal } = this.state;
+        const {
+            disputeData,
+            isLoading,
+            dialogLoading,
+            open,
+            actStt,
+            dialogData,
+            dialogContent,
+            fullCt,
+            paymentRejectReason,
+            reveal,
+            getRewardRight,
+        } = this.state;
         let disputeTplRender;
         const { web3 } = this.props;
         if (disputeData) {
@@ -402,7 +495,7 @@ class DisputeDetail extends Component {
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
                                             ? 'Commit Vote'
-                                            : disputeData.revealEndDate > Date.now() && 'Reveal Vote'}
+                                            : 'Reveal Vote'}
                                 </div>
                             </div>
 
@@ -428,7 +521,17 @@ class DisputeDetail extends Component {
                                 </Grid>
                             </Grid>
                             <Grid item xs={4} className="job-info">
-                                <Grid item xs={12} className={!reveal ? 'commit-duration' : 'commit-duration orange'}>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    className={
+                                        !reveal
+                                            ? 'commit-duration'
+                                            : disputeData.revealEndDate > Date.now()
+                                                ? 'commit-duration orange'
+                                                : 'commit-duration blue'
+                                    }
+                                >
                                     <p>Remaining time</p>
                                     {!reveal ? (
                                         disputeData.evidenceEndDate > Date.now() ? (
@@ -513,9 +616,20 @@ class DisputeDetail extends Component {
                             </Grid>
                             {reveal && (
                                 <Grid container className="reveal-submit">
-                                    <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
-                                        Reveal Vote
-                                    </ButtonBase>
+                                    {disputeData.revealEndDate > Date.now() ? (
+                                        <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
+                                            Reveal Vote
+                                        </ButtonBase>
+                                    ) : (
+                                        <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
+                                            View Vote Result
+                                        </ButtonBase>
+                                    )}
+                                    {getRewardRight && (
+                                        <ButtonBase className="btn btn-normal btn-orange btn-right" onClick={this.getRewardConfirm}>
+                                            Get Reward
+                                        </ButtonBase>
+                                    )}
                                 </Grid>
                             )}
                         </Grid>

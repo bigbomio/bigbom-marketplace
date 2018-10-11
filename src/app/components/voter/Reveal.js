@@ -13,6 +13,8 @@ import abiConfig from '../../_services/abiConfig';
 import { setActionBtnDisabled } from '../common/actions';
 import { saveRevealVote } from './actions';
 
+import VoteResult from './VoteResult';
+
 let json;
 
 class Reveal extends Component {
@@ -90,20 +92,22 @@ class Reveal extends Component {
             };
         }
 
-        const [errCheckHash, re] = await Utils.callMethod(ctInstance.instance.checkHash)(vote.jobHash, vote.addressChoice, Number(vote.secretHash), {
-            from: ctInstance.defaultAccount,
-            gasPrice: +ctInstance.gasPrice.toString(10),
-        });
-        if (re) {
+        const [errCheckHash, re] = await Utils.callMethod(ctInstance.instance.checkHash)(
+            vote.jobHash,
+            revealVote.addressChoice,
+            Number(revealVote.secretHash),
+            {
+                from: ctInstance.defaultAccount,
+                gasPrice: +ctInstance.gasPrice.toString(10),
+            }
+        );
+        if (!errCheckHash) {
             if (!re) {
                 this.setState({ err: 'Invalid json file, this file is not json file for this job.' });
                 return;
             } else {
                 this.setState({ err: null });
             }
-        } else {
-            console.log(errCheckHash);
-            return;
         }
 
         this.setState({ revealVote });
@@ -121,10 +125,9 @@ class Reveal extends Component {
 
     render() {
         const { anchorEl, revealVote, err } = this.state;
+        const { viewResult } = this.props;
         const isPopperOpen = Boolean(anchorEl);
-        const clientWidth = { width: Utils.toWidth(100, 200) };
-        const freelancerWidth = { width: Utils.toWidth(200, 100) };
-        return (
+        return !viewResult ? (
             <Grid item xs={12} className="voting-options">
                 <Grid container>
                     <Popper
@@ -173,14 +176,10 @@ class Reveal extends Component {
                         </Grid>
                     </Grid>
                 )}
-                <Grid container className="result-show">
-                    <div className="result-bar">
-                        <div className="client" style={clientWidth} />
-                        <div className="freelancer" style={freelancerWidth} />
-                    </div>
-                </Grid>
                 {err && <Grid className="err">{err}</Grid>}
             </Grid>
+        ) : (
+            <VoteResult />
         );
     }
 }
@@ -189,6 +188,11 @@ Reveal.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     dispute: PropTypes.object.isRequired,
     saveRevealVote: PropTypes.func.isRequired,
+    viewResult: PropTypes.bool,
+};
+
+Reveal.defaultProps = {
+    viewResult: false,
 };
 
 const mapStateToProps = state => {

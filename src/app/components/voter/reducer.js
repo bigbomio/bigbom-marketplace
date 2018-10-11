@@ -6,6 +6,7 @@ const data = {
     vote: {},
     voteInputDisable: false,
     revealVote: {},
+    voteResult: {},
 };
 
 const initData = cloneDeep(data);
@@ -15,7 +16,6 @@ const voterReducer = (state = initData, action) => {
         case nameActList.SAVE_DISPUTES: {
             let disputes = cloneDeep(state.disputes);
             disputes = action.disputes;
-            console.log(disputes);
             return {
                 ...state,
                 disputes,

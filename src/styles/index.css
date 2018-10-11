@@ -362,6 +362,12 @@ body {
 #bigbomMarketplace .btn-icon.btn-medium {
   font-size: 26px; }
 
+#bigbomMarketplace .btn-right {
+  margin-left: 10px; }
+
+#bigbomMarketplace .btn-left {
+  margin-right: 10px; }
+
 #bigbomMarketplace .green {
   color: #40bd56; }
 
@@ -1037,6 +1043,10 @@ body {
       background: #40bd56; }
     #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.orange p {
       background: #f99a0c; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.blue .job-detail-col {
+      background: #a2d0de; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.blue p {
+      background: #6c9cb3; }
 
 #bigbomMarketplace #voter .job-detail .single-body .proofs .client-proof {
   border-right: 1px solid #c3d8c3;
@@ -1205,6 +1215,63 @@ body {
 
 .stage-switch {
   float: left; }
+
+.result-show {
+  padding: 20px 0;
+  margin: 20px 0; }
+  .result-show h3 {
+    justify-content: center;
+    width: 100%;
+    font-size: 18px;
+    color: #545454;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-bottom: 20px; }
+  .result-show .result-bar {
+    width: 100%;
+    background: #eee;
+    height: 35px;
+    border-radius: 20px; }
+    .result-show .result-bar .client {
+      background: #f7c71a;
+      height: 35px;
+      border-radius: 20px 0 0 20px;
+      float: left;
+      color: #fff;
+      justify-content: center;
+      align-items: center;
+      display: flex; }
+    .result-show .result-bar .freelancer {
+      height: 35px;
+      border-radius: 0 20px 20px 0;
+      background: #f9783b;
+      float: left;
+      color: #fff;
+      justify-content: center;
+      align-items: center;
+      display: flex; }
+    .result-show .result-bar .full {
+      border-radius: 20px; }
+    .result-show .result-bar.label {
+      background: none; }
+      .result-show .result-bar.label .client,
+      .result-show .result-bar.label .freelancer {
+        background: none;
+        color: #f7c71a;
+        text-transform: uppercase;
+        width: 50% !important;
+        justify-content: flex-start; }
+        .result-show .result-bar.label .client .rec,
+        .result-show .result-bar.label .freelancer .rec {
+          width: 16px;
+          height: 16px;
+          margin-right: 5px;
+          background: #f7c71a; }
+      .result-show .result-bar.label .freelancer {
+        justify-content: flex-end;
+        color: #f9783b; }
+        .result-show .result-bar.label .freelancer .rec {
+          background: #f9783b; }
 
 body {
   padding: 0;

@@ -25,7 +25,6 @@ class DisputesRendeManage extends Component {
 
     render() {
         const { disputes } = this.state;
-        console.log(disputes);
         return (
             <Grid container className="job-item-list dispute-list">
                 <Grid container className="dispute-list-header">

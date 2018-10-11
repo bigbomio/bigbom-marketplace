@@ -192,7 +192,8 @@ class DisputeBrowser extends Component {
     render() {
         const { selectedCategory, anchorEl, isLoading, stt } = this.state;
         const { disputes } = this.props;
-        const filteredDisputes = disputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
+        const availableDisputes = disputes.filter(dispute => dispute.commitEndDate > Date.now());
+        const filteredDisputes = availableDisputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         const categories = settingsApi.getCategories();
         return (
             <div id="freelancer" className="container-wrp">
