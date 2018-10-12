@@ -10,6 +10,23 @@ $transition: all 0.3s ease-in;
 $red: red;
 $orange: #f99a0c;
 #bigbomMarketplace {
+    i {
+        &.orange {
+            color: $orange;
+        }
+        &.green {
+            color: $green;
+        }
+        &.blue {
+            color: $blue;
+        }
+        &.red {
+            color: $red;
+        }
+        &.dark {
+            color: $blue;
+        }
+    }
     .not-support-err {
         line-height: 30px;
         background: #fff;

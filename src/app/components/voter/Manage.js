@@ -33,6 +33,7 @@ class Manage extends Component {
             searchTerm: '',
             isLoading: false,
             stt: { err: false, text: null },
+            finalDisputes: {},
         };
         this.timer = null;
         this.mounted = false;
@@ -70,6 +71,38 @@ class Manage extends Component {
         abiConfig.getMyVoting(web3, this.disputeCreatedInit);
     };
 
+    setFinalStt = async jobHash => {
+        const { web3 } = this.props;
+        const { finalDisputes } = this.state;
+        let finalDispute = {};
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const eventInstance = ctInstance.instance.DisputeFinalized(
+            { indexJobHash: web3.sha3(jobHash) },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+
+            async (err, re) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    finalDispute.jobHash = jobHash;
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        finalDisputes[jobHash] = true;
+                    } else {
+                        finalDisputes[jobHash] = false;
+                    }
+
+                    if (this.mounted) {
+                        this.setState({ finalDisputes });
+                    }
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    };
+
     disputeCreatedInit = async eventLog => {
         //console.log('disputeCreatedInit success: ', eventLog);
         const event = eventLog.data;
@@ -91,6 +124,7 @@ class Manage extends Component {
                     dispute.jobDispute.estimatedTime = result.estimatedTime;
                     dispute.jobDispute.expiredTime = result.expiredTime;
                     dispute.jobDispute.created = result.created;
+                    this.setFinalStt(event.jobHash);
                     this.disputeListInit(dispute);
                 },
                 error => {
@@ -172,7 +206,7 @@ class Manage extends Component {
     };
 
     render() {
-        const { selectedCategory, anchorEl, isLoading, stt } = this.state;
+        const { selectedCategory, anchorEl, isLoading, stt, finalDisputes } = this.state;
         const { disputes } = this.props;
         const filteredDisputes = disputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
         const categories = settingsApi.getCategories();
@@ -243,7 +277,7 @@ class Manage extends Component {
                             </Grid>
                             {!isLoading ? (
                                 !stt.err ? (
-                                    <DisputesRendeManage disputes={filteredDisputes} />
+                                    <DisputesRendeManage finalDisputes={finalDisputes} disputes={filteredDisputes} />
                                 ) : (
                                     <div className="no-data">{stt.text}</div>
                                 )

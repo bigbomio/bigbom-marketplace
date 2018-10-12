@@ -137,6 +137,21 @@ body {
   background: #f9f9f9;
   font-family: 'Open Sans', sans-serif; }
 
+#bigbomMarketplace i.orange {
+  color: #f99a0c; }
+
+#bigbomMarketplace i.green {
+  color: #40bd56; }
+
+#bigbomMarketplace i.blue {
+  color: #0ca1f9; }
+
+#bigbomMarketplace i.red {
+  color: red; }
+
+#bigbomMarketplace i.dark {
+  color: #0ca1f9; }
+
 #bigbomMarketplace .not-support-err {
   line-height: 30px;
   background: #fff;
@@ -1008,6 +1023,10 @@ body {
     background: #cecece; }
   #bigbomMarketplace #voter .commit-duration.gray .btn {
     background: #a7a6a6; }
+  #bigbomMarketplace #voter .commit-duration.blue .job-detail-col {
+    background: #82a8cc; }
+  #bigbomMarketplace #voter .commit-duration.blue .btn {
+    background: #b6cbdd; }
 
 #bigbomMarketplace #voter .job-detail .single-body .job-detail-description {
   padding-bottom: 0; }
@@ -1272,6 +1291,13 @@ body {
         color: #f9783b; }
         .result-show .result-bar.label .freelancer .rec {
           background: #f9783b; }
+
+.final-stt {
+  border: 1px solid #ccc;
+  color: #777;
+  padding: 8px 20px;
+  float: right;
+  background: rgba(255, 255, 255, 0.5); }
 
 body {
   padding: 0;

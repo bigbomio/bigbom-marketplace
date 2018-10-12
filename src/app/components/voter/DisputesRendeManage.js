@@ -20,11 +20,11 @@ class DisputesRendeManage extends Component {
         if (nextProps.disputes === prevState.disputes) {
             return null;
         }
-        return { disputes: nextProps.disputes };
+        return { disputes: nextProps.disputes, finalDisputes: nextProps.finalDisputes };
     }
 
     render() {
-        const { disputes } = this.state;
+        const { disputes, finalDisputes } = this.state;
         return (
             <Grid container className="job-item-list dispute-list">
                 <Grid container className="dispute-list-header">
@@ -51,6 +51,8 @@ class DisputesRendeManage extends Component {
                                         <Grid item xs={3} className="status">
                                             {dispute.commitEndDate > Date.now() ? (
                                                 <span>{dispute.evidenceEndDate > Date.now() ? 'Evidence' : 'Commit vote'}</span>
+                                            ) : finalDisputes[dispute.jobHash] ? (
+                                                <span>Finalized</span>
                                             ) : (
                                                 <span>Reveal vote</span>
                                             )}
@@ -66,7 +68,13 @@ class DisputesRendeManage extends Component {
                                             <Grid
                                                 item
                                                 xs={3}
-                                                className={dispute.revealEndDate > Date.now() ? 'commit-duration orange' : 'commit-duration gray'}
+                                                className={
+                                                    dispute.revealEndDate > Date.now()
+                                                        ? 'commit-duration orange'
+                                                        : !finalDisputes[dispute.jobHash]
+                                                            ? 'commit-duration gray'
+                                                            : 'commit-duration blue'
+                                                }
                                             >
                                                 <Countdown expiredTime={dispute.revealEndDate} />
                                                 <Grid className="vote-btn">

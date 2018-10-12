@@ -15,6 +15,7 @@ import { setActionBtnDisabled } from '../common/actions';
 import { saveVotingParams } from '../freelancer/actions';
 import Popper from '../common/Popper';
 import ResponseDispute from './ResponseDispute';
+import VoteResult from '../voter/VoteResult';
 
 const skillShow = jobSkills => {
     return (
@@ -76,10 +77,16 @@ class JobDetail extends Component {
     }
 
     setDisputeStt = async event => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
         let clientResponseDuration = event.evidenceEndDate * 1000;
         const URl = abiConfig.getIpfsLink() + event.proofHash;
         if (clientResponseDuration <= Date.now()) {
             clientResponseDuration = 0;
+        }
+        if (event.revealEndDate <= Date.now()) {
+            abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
+            this.getDisputeResult();
         }
         fetch(URl)
             .then(res => res.json())
@@ -110,9 +117,14 @@ class JobDetail extends Component {
             );
     };
 
+    setFinalizedStt = isFinal => {
+        this.setState({ isFinal });
+    };
+
     setRespondedisputeStt = async event => {
         const commitDuration = event.commitEndDate * 1000;
         const evidenceDurtion = event.evidenceEndDate * 1000;
+        this.setState({ disputeDurations: event });
         if (commitDuration > Date.now() && evidenceDurtion <= Date.now()) {
             if (this.mounted) {
                 this.setState({
@@ -130,6 +142,87 @@ class JobDetail extends Component {
             }
         }
         this.setActionBtnDisabled(false);
+    };
+
+    getDisputeResult = async () => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        let voteResult = {};
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+        voteResult = {
+            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+        };
+        if (voteResult.clientVotes > voteResult.freelancerVotes) {
+            this.setState({ voteResult, voteWinner: 'client' });
+        } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
+            this.setState({ voteResult, voteWinner: 'freelancer' });
+        } else {
+            this.setState({ voteResult, voteWinner: 'drawn' });
+        }
+    };
+
+    viewVotingResult = () => {
+        const { voteResult } = this.state;
+        this.setState({
+            open: true,
+            dialogLoading: false,
+            dialogContent: <VoteResult voteResult={voteResult} />,
+            dialogData: {
+                actionText: null,
+                actions: null,
+            },
+            actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
+        });
+    };
+
+    finalizeDispute = async () => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        this.setState({ dialogLoading: true });
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizePoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not finalize dispute! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setState({
+            actStt: {
+                title: '',
+                err: false,
+                text: 'Your dispute has been finalized! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+            finalizeDisputeDone: true,
+            dialogLoading: false,
+        });
+        this.setActionBtnDisabled(true);
     };
 
     disputeSttInit = async () => {
@@ -477,6 +570,19 @@ class JobDetail extends Component {
         });
     };
 
+    confirmFinalizeDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Finalize',
+                actions: this.finalizeDispute,
+            },
+            open: true,
+            actStt: { title: 'Do you want to finalize this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
     confirmPayment = () => {
         this.setActionBtnDisabled(false);
         this.setState({
@@ -602,7 +708,7 @@ class JobDetail extends Component {
     };
 
     disputeActions = () => {
-        const { disputeStt, anchorEl, evidenceShow, freelancerDispute } = this.state;
+        const { disputeStt, anchorEl, evidenceShow, freelancerDispute, disputeDurations, voteWinner, finalizeDisputeDone, isFinal } = this.state;
         const { sttRespondedDispute } = this.props;
         const isPopperOpen = Boolean(anchorEl);
 
@@ -696,7 +802,32 @@ class JobDetail extends Component {
                     </span>
                 );
             } else {
-                return (
+                return disputeDurations.revealEndDate <= Date.now() ? (
+                    <span className="note">
+                        <span className="bold">
+                            <i className="fas fa-check-circle orange" />
+                            {voteWinner === 'client'
+                                ? 'Your dispute has had result and you are winner.'
+                                : voteWinner === 'freelancer'
+                                    ? 'Your dispute has had result and you are losers.'
+                                    : 'Your dispute has had result, but there is not winner.'}
+                        </span>
+                        <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
+                            View voting result
+                        </ButtonBase>
+                        {isFinal ? (
+                            <span className="final-stt">Dispute finalized</span>
+                        ) : (
+                            <ButtonBase
+                                onClick={this.confirmFinalizeDispute}
+                                className="btn btn-normal btn-green float-right"
+                                disabled={finalizeDisputeDone}
+                            >
+                                Finalize Dispute
+                            </ButtonBase>
+                        )}
+                    </span>
+                ) : (
                     <span className="note">
                         <Popper
                             placement="top"

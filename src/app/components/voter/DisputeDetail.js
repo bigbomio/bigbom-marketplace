@@ -99,6 +99,10 @@ class DisputeDetail extends Component {
         });
     };
 
+    setFinalizedStt = isFinal => {
+        this.setState({ isFinal });
+    };
+
     getReward = async () => {
         const { match, web3 } = this.props;
         const jobHash = match.params.disputeId;
@@ -185,6 +189,9 @@ class DisputeDetail extends Component {
         };
         if (disputeData.data.commitEndDate <= Date.now()) {
             this.setState({ reveal: true });
+        }
+        if (disputeData.data.revealEndDate <= Date.now()) {
+            abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
         }
         fetch(URl)
             .then(res => res.json())
@@ -473,6 +480,7 @@ class DisputeDetail extends Component {
             paymentRejectReason,
             reveal,
             getRewardRight,
+            isFinal,
         } = this.state;
         let disputeTplRender;
         const { web3 } = this.props;
@@ -495,7 +503,9 @@ class DisputeDetail extends Component {
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
                                             ? 'Commit Vote'
-                                            : 'Reveal Vote'}
+                                            : !isFinal
+                                                ? 'Reveal Vote'
+                                                : 'Dispute finalized'}
                                 </div>
                             </div>
 

@@ -353,11 +353,15 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                //console.log('getDisputeFinalized', re);
                 if (err) {
                     console.log(err);
                 } else {
-                    callback(re.args);
+                    //console.log('getDisputeFinalized', re);
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        callback(true);
+                    } else {
+                        callback(false);
+                    }
                 }
             }
         );
@@ -644,6 +648,7 @@ class abiConfigs {
                                                                 results.data.jobHash = Utils.toAscii(re.args.jobHash);
                                                                 results.data.client = re.args.creator;
                                                                 results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
+                                                                results.data.isFinal = false;
                                                                 callback(results);
                                                             }
                                                         }
