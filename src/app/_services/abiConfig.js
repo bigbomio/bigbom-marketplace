@@ -368,6 +368,30 @@ class abiConfigs {
         eventInstance.stopWatching();
     }
 
+    async getDisputeFinalizedDisputeContract(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        const eventInstance = ctInstance.instance.PollFinalized(
+            { indexJobHash: web3.sha3(jobHash) },
+            {
+                fromBlock: 4030174, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    //console.log('getDisputeFinalized', re);
+                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
+                        callback(true);
+                    } else {
+                        callback(false);
+                    }
+                }
+            }
+        );
+        eventInstance.stopWatching();
+    }
+
     async getEventsPollStarted(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         const eventInstance = ctInstance.instance.PollStarted(

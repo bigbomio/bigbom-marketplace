@@ -180,6 +180,10 @@ class JobDetailBid extends Component {
         this.setState({ isFinal });
     };
 
+    setFinalizedWithoutAgainstStt = isFinalWithoutAgainst => {
+        this.setState({ isFinalWithoutAgainst });
+    };
+
     getDisputeResult = async () => {
         const { web3 } = this.props;
         const { jobHash } = this.state;
@@ -258,6 +262,47 @@ class JobDetailBid extends Component {
             },
         });
         this.setActionBtnDisabled(true);
+    };
+
+    updateDispute = async giveUp => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        this.setState({ dialogLoading: true });
+        this.setActionBtnDisabled(true);
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.updatePoll)(jobHash, giveUp, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        let text = 'Your request has been sent! Please waiting for confirm from your network.';
+        if (err) {
+            text = 'Something went wrong! Can not renewal of the dispute! :(';
+            if (giveUp) {
+                text = 'Something went wrong! Can not give up the dispute! :(';
+            }
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text, link: '' },
+            });
+            console.log(err);
+            this.setActionBtnDisabled(false);
+            return;
+        }
+        this.setState({
+            actStt: {
+                title: '',
+                err: false,
+                text,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+            updateDisputeDone: true,
+            dialogLoading: false,
+        });
     };
 
     actions = () => {
@@ -370,6 +415,8 @@ class JobDetailBid extends Component {
             disputeDurations,
             voteWinner,
             isFinal,
+            isFinalWithoutAgainst,
+            updateDisputeDone,
         } = this.state;
         const isPopperOpen = Boolean(anchorEl);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
@@ -418,13 +465,17 @@ class JobDetailBid extends Component {
                             ) : (
                                 <span className="note">
                                     Your client did not responded to your dispute.{' '}
-                                    <ButtonBase
-                                        onClick={this.confirmFinalizeDispute}
-                                        disabled={finalizeDisputeDone}
-                                        className="btn btn-normal btn-green btn-bid float-right"
-                                    >
-                                        Finalized Dispute
-                                    </ButtonBase>
+                                    {isFinalWithoutAgainst ? (
+                                        <span className="final-stt">Dispute finalized</span>
+                                    ) : (
+                                        <ButtonBase
+                                            onClick={this.confirmFinalizeDispute}
+                                            className="btn btn-normal btn-green float-right"
+                                            disabled={finalizeDisputeDone}
+                                        >
+                                            Finalize Dispute
+                                        </ButtonBase>
+                                    )}
                                 </span>
                             )}
                         </div>
@@ -475,6 +526,23 @@ class JobDetailBid extends Component {
                                 </ButtonBase>
                                 {isFinal ? (
                                     <span className="final-stt">Dispute finalized</span>
+                                ) : voteWinner === 'drawn' ? (
+                                    <span className="float-right">
+                                        <ButtonBase
+                                            onClick={this.confirmRenewalDispute}
+                                            className="btn btn-normal btn-green "
+                                            disabled={updateDisputeDone}
+                                        >
+                                            Renewal
+                                        </ButtonBase>
+                                        <ButtonBase
+                                            onClick={this.confirmGiveUpDispute}
+                                            className="btn btn-normal btn-red btn-right"
+                                            disabled={updateDisputeDone}
+                                        >
+                                            Give up
+                                        </ButtonBase>
+                                    </span>
                                 ) : (
                                     <ButtonBase
                                         onClick={this.confirmFinalizeDispute}
@@ -530,6 +598,7 @@ class JobDetailBid extends Component {
         const jobHash = match.params.jobId;
         abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
         abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
+        abiConfig.getDisputeFinalizedDisputeContract(web3, jobHash, this.setFinalizedWithoutAgainstStt);
         // check client dispute response status
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobHash, {
@@ -920,6 +989,32 @@ class JobDetailBid extends Component {
             },
             dialogContent: null,
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
+        });
+    };
+
+    confirmGiveUpDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Give up',
+                actions: () => this.updateDispute(true),
+            },
+            open: true,
+            actStt: { title: 'Do you want to give up this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
+    confirmRenewalDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Renewal',
+                actions: () => this.updateDispute(false),
+            },
+            open: true,
+            actStt: { title: 'Do you want to renewal of this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
         });
     };
 

@@ -225,6 +225,47 @@ class JobDetail extends Component {
         this.setActionBtnDisabled(true);
     };
 
+    updateDispute = async giveUp => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        this.setState({ dialogLoading: true });
+        this.setActionBtnDisabled(true);
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.updatePoll)(jobHash, giveUp, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        let text = 'Your request has been sent! Please waiting for confirm from your network.';
+        if (err) {
+            text = 'Something went wrong! Can not renewal of the dispute! :(';
+            if (giveUp) {
+                text = 'Something went wrong! Can not give up the dispute! :(';
+            }
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text, link: '' },
+            });
+            console.log(err);
+            this.setActionBtnDisabled(false);
+            return;
+        }
+        this.setState({
+            actStt: {
+                title: '',
+                err: false,
+                text,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+            updateDisputeDone: true,
+            dialogLoading: false,
+        });
+    };
+
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
         const jobHash = match.params.jobId;
@@ -583,6 +624,32 @@ class JobDetail extends Component {
         });
     };
 
+    confirmGiveUpDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Give up',
+                actions: () => this.updateDispute(true),
+            },
+            open: true,
+            actStt: { title: 'Do you want to give up this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
+    confirmRenewalDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Renewal',
+                actions: () => this.updateDispute(false),
+            },
+            open: true,
+            actStt: { title: 'Do you want to renewal of this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
     confirmPayment = () => {
         this.setActionBtnDisabled(false);
         this.setState({
@@ -708,7 +775,17 @@ class JobDetail extends Component {
     };
 
     disputeActions = () => {
-        const { disputeStt, anchorEl, evidenceShow, freelancerDispute, disputeDurations, voteWinner, finalizeDisputeDone, isFinal } = this.state;
+        const {
+            disputeStt,
+            anchorEl,
+            evidenceShow,
+            freelancerDispute,
+            disputeDurations,
+            voteWinner,
+            finalizeDisputeDone,
+            isFinal,
+            updateDisputeDone,
+        } = this.state;
         const { sttRespondedDispute } = this.props;
         const isPopperOpen = Boolean(anchorEl);
 
@@ -804,6 +881,15 @@ class JobDetail extends Component {
             } else {
                 return disputeDurations.revealEndDate <= Date.now() ? (
                     <span className="note">
+                        <Popper
+                            placement="top"
+                            anchorEl={anchorEl}
+                            id="mouse-over-drawn"
+                            onClose={this.handlePopoverClose}
+                            disableRestoreFocus
+                            open={isPopperOpen}
+                            content="Your dispute has had result, but there is not winner..."
+                        />
                         <span className="bold">
                             <i className="fas fa-check-circle orange" />
                             {voteWinner === 'client'
@@ -811,12 +897,32 @@ class JobDetail extends Component {
                                 : voteWinner === 'freelancer'
                                     ? 'Your dispute has had result and you are losers.'
                                     : 'Your dispute has had result, but there is not winner.'}
+                            <i
+                                className="fas fa-info-circle icon-popper-note"
+                                aria-owns={isPopperOpen ? 'mouse-over-drawn' : null}
+                                aria-haspopup="true"
+                                onMouseEnter={this.handlePopoverOpen}
+                                onMouseLeave={this.handlePopoverClose}
+                            />
                         </span>
                         <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                             View voting result
                         </ButtonBase>
                         {isFinal ? (
                             <span className="final-stt">Dispute finalized</span>
+                        ) : voteWinner === 'drawn' ? (
+                            <span className="float-right">
+                                <ButtonBase onClick={this.confirmRenewalDispute} className="btn btn-normal btn-green " disabled={updateDisputeDone}>
+                                    Renewal
+                                </ButtonBase>
+                                <ButtonBase
+                                    onClick={this.confirmGiveUpDispute}
+                                    className="btn btn-normal btn-red btn-right"
+                                    disabled={updateDisputeDone}
+                                >
+                                    Give up
+                                </ButtonBase>
+                            </span>
                         ) : (
                             <ButtonBase
                                 onClick={this.confirmFinalizeDispute}
