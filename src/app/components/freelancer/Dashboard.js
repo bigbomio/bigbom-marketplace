@@ -13,6 +13,7 @@ import Select from 'react-select';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
+import { setReload } from '../common/actions';
 import { saveJobs } from '../client/actions';
 
 const categories = settingsApi.getCategories();
@@ -46,11 +47,15 @@ class FreelancerDashboard extends Component {
                 this.getJobs();
                 this.mounted = true;
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.checkMetamaskID);
     }
 
     getJobs = async () => {
@@ -121,6 +126,14 @@ class FreelancerDashboard extends Component {
                         this.BidCreatedInit(jobTpl);
                     }
                 );
+        }
+    };
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.getJobs();
+            setReload(false);
         }
     };
 
@@ -451,15 +464,18 @@ FreelancerDashboard.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     saveJobs: PropTypes.func.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
     };
 };
 
-const mapDispatchToProps = { saveJobs };
+const mapDispatchToProps = { saveJobs, setReload };
 
 export default connect(
     mapStateToProps,

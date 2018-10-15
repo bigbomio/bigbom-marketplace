@@ -41,7 +41,11 @@ class JobBrowser extends Component {
     }
 
     componentDidMount() {
-        const { isConnected } = this.props;
+        const { isConnected, web3 } = this.props;
+        web3.eth.getBlockNumber((error, result) => {
+            console.log(result); // 2744
+        });
+
         const { isLoading } = this.state;
         if (isConnected) {
             if (!isLoading) {

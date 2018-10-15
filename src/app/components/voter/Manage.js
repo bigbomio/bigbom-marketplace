@@ -19,6 +19,7 @@ import abiConfig from '../../_services/abiConfig';
 
 import DisputesRendeManage from './DisputesRendeManage';
 import { saveDisputes } from './actions';
+import { setReload } from '../common/actions';
 
 let disputes = [];
 const options = ['Latest', 'Oldest'];
@@ -48,11 +49,15 @@ class Manage extends Component {
                 this.mounted = true;
                 this.getDisputes();
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.checkMetamaskID);
     }
 
     getDisputes = () => {
@@ -101,6 +106,14 @@ class Manage extends Component {
             }
         );
         eventInstance.stopWatching();
+    };
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.getDisputes();
+            setReload(false);
+        }
     };
 
     disputeCreatedInit = async eventLog => {
@@ -300,16 +313,19 @@ Manage.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     saveDisputes: PropTypes.func.isRequired,
     disputes: PropTypes.any.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
+        reload: state.commonReducer.reload,
     };
 };
 
-const mapDispatchToProps = { saveDisputes };
+const mapDispatchToProps = { saveDisputes, setReload };
 
 export default connect(
     mapStateToProps,

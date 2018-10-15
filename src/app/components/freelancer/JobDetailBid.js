@@ -16,7 +16,7 @@ import Popper from '../common/Popper';
 import DialogPopup from '../common/dialog';
 import VoteResult from '../voter/VoteResult';
 import CreateDispute from '../freelancer/CreateDispute';
-import { setActionBtnDisabled } from '../common/actions';
+import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from './actions';
 
 let myAddress;
@@ -79,11 +79,16 @@ class JobDetailBid extends Component {
                 this.mounted = true;
                 this.jobDataInit(false);
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        this.setActionBtnDisabled(false);
+        clearInterval(this.checkMetamaskID);
     }
 
     getMyBid() {
@@ -213,6 +218,14 @@ class JobDetailBid extends Component {
             this.setState({ voteResult, voteWinner: 'freelancer' });
         } else {
             this.setState({ voteResult, voteWinner: 'drawn' });
+        }
+    };
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.jobDataInit(true);
+            setReload(false);
         }
     };
 
@@ -363,17 +376,21 @@ class JobDetailBid extends Component {
                                     >
                                         Complete
                                     </ButtonBase>
+                                ) : !jobData.status.claimed ? (
+                                    claim && (
+                                        <span className="note">
+                                            <span className="bold">Your client did not respond, you can claim payment by yourself.</span>
+                                            <ButtonBase
+                                                className="btn btn-normal btn-orange btn-right"
+                                                onClick={this.confirmClaimPayment}
+                                                disabled={claimPaymentDone}
+                                            >
+                                                Claim Payment
+                                            </ButtonBase>
+                                        </span>
+                                    )
                                 ) : (
-                                    !jobData.status.claimed &&
-                                    (claim && (
-                                        <ButtonBase
-                                            className="btn btn-normal btn-orange btn-back btn-bid"
-                                            onClick={this.confirmClaimPayment}
-                                            disabled={claimPaymentDone}
-                                        >
-                                            Claim Payment
-                                        </ButtonBase>
-                                    ))
+                                    <span className="note bold">Please waiting for payment from your client.</span>
                                 )}
                             </span>
                         );
@@ -464,7 +481,7 @@ class JobDetailBid extends Component {
                                 </span>
                             ) : (
                                 <span className="note">
-                                    Your client did not responded to your dispute.{' '}
+                                    Your client did not respond to your dispute.{' '}
                                     {isFinalWithoutAgainst ? (
                                         <span className="final-stt">Dispute finalized</span>
                                     ) : (
@@ -1397,10 +1414,13 @@ JobDetailBid.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     disputeCreated: PropTypes.bool.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
         setActionBtnDisabled: state.commonReducer.setActionBtnDisabled,
@@ -1411,6 +1431,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
     setActionBtnDisabled,
     saveVotingParams,
+    setReload,
 };
 
 export default connect(

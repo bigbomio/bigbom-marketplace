@@ -8,7 +8,7 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
-import { setActionBtnDisabled } from '../common/actions';
+import { setActionBtnDisabled, setReload } from '../common/actions';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
 
@@ -46,11 +46,15 @@ class DisputeDetail extends Component {
                 this.getDispute();
                 this.checkGetRewardRight();
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.checkMetamaskID);
     }
 
     getDispute = async () => {
@@ -213,6 +217,14 @@ class DisputeDetail extends Component {
                     dispute.err = 'Can not fetch data from server';
                 }
             );
+    };
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.getJobs();
+            setReload(false);
+        }
     };
 
     clientProofFetch = async dispute => {
@@ -707,10 +719,13 @@ DisputeDetail.propTypes = {
     balances: PropTypes.any.isRequired,
     setVoteInputDisable: PropTypes.func.isRequired,
     revealVote: PropTypes.object.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
         balances: state.commonReducer.balances,
@@ -722,6 +737,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
     setActionBtnDisabled,
     setVoteInputDisable,
+    setReload,
 };
 
 export default connect(

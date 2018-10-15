@@ -10,46 +10,91 @@ import BBVoting from '../_services/abi/BBVoting.json';
 import BBParams from '../_services/abi/BBParams.json';
 
 class abiConfigs {
+    // getContract(type) {
+    //     switch (type) {
+    //         case 'BBFreelancerJob':
+    //             return {
+    //                 address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+    //                 abi: BBFreelancerJob.abi,
+    //             };
+    //         case 'BBFreelancerBid':
+    //             return {
+    //                 address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+    //                 abi: BBFreelancerBid.abi,
+    //             };
+    //         case 'BBFreelancerPayment':
+    //             return {
+    //                 address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+    //                 abi: BBFreelancerPayment.abi,
+    //             };
+    //         case 'BigbomTokenExtended':
+    //             return {
+    //                 address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+    //                 abi: BigbomTokenExtended.abi,
+    //             };
+    //         case 'BBDispute':
+    //             return {
+    //                 address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+    //                 abi: BBDispute.abi,
+    //             };
+    //         case 'BBVoting':
+    //             return {
+    //                 address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+    //                 abi: BBVoting.abi,
+    //             };
+    //         case 'BBParams':
+    //             return {
+    //                 address: '0x2866cef47dce5db897678695d08f0633102f164a',
+    //                 abi: BBParams.abi,
+    //             };
+    //         default:
+    //             return {
+    //                 address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+    //                 abi: BBFreelancerJob.abi,
+    //             };
+    //     }
+    // }
+
     getContract(type) {
         switch (type) {
             case 'BBFreelancerJob':
                 return {
-                    address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+                    address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
                     abi: BBFreelancerJob.abi,
                 };
             case 'BBFreelancerBid':
                 return {
-                    address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+                    address: '0xf01cc898b9245930a345bec82423b87f602cb8e4',
                     abi: BBFreelancerBid.abi,
                 };
             case 'BBFreelancerPayment':
                 return {
-                    address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+                    address: '0x22ce61d3c44e5a005a9b9f4485cfbc660c1c2ef3',
                     abi: BBFreelancerPayment.abi,
                 };
             case 'BigbomTokenExtended':
                 return {
-                    address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+                    address: '0x2ddc511802a37039c42c6bdb36028b2f8992b0fe',
                     abi: BigbomTokenExtended.abi,
                 };
             case 'BBDispute':
                 return {
-                    address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+                    address: '0x278636913d5203a057adb7e0521b8df9431bdaa5',
                     abi: BBDispute.abi,
                 };
             case 'BBVoting':
                 return {
-                    address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+                    address: '0x54a7cb877948518444e4c97c426cf47718ac94c3',
                     abi: BBVoting.abi,
                 };
             case 'BBParams':
                 return {
-                    address: '0x2866cef47dce5db897678695d08f0633102f164a',
+                    address: '0xb1b1e7f9223bca9d66aa97b773935d4aec13165d',
                     abi: BBParams.abi,
                 };
             default:
                 return {
-                    address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+                    address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
                     abi: BBFreelancerJob.abi,
                 };
         }
@@ -130,7 +175,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 4030174, // should use recent number
+            fromBlock: 3165089, // should use recent number
             toBlock: 'latest',
         });
 
@@ -151,7 +196,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: 4030174, // should use recent number
+            fromBlock: 3165089, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, bidCanceledEvents) {
@@ -182,7 +227,7 @@ class abiConfigs {
         };
 
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 4030174, // should use recent number
+            fromBlock: 3165089, // should use recent number
             toBlock: 'latest',
         });
 
@@ -232,7 +277,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 4030174, // should use recent number
+            fromBlock: 3165089, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, events) {
@@ -285,11 +330,11 @@ class abiConfigs {
         const getSingleEvent = contractInstance.instance[event](
             filter,
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
-                //console.log('job single event -----', eventResult);
+                // console.log('job single event -----', eventResult);
                 resultsInit(error, eventResult);
             }
         );
@@ -298,7 +343,7 @@ class abiConfigs {
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 4030174, // should use recent number
+            fromBlock: 3165089, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {
@@ -349,7 +394,7 @@ class abiConfigs {
         const eventInstance = ctInstance.instance.DisputeFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -373,7 +418,7 @@ class abiConfigs {
         const eventInstance = ctInstance.instance.PollFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -397,7 +442,7 @@ class abiConfigs {
         const eventInstance = ctInstance.instance.PollStarted(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -409,7 +454,7 @@ class abiConfigs {
                         jobHash,
                         {},
                         {
-                            fromBlock: 4030174, // should use recent number
+                            fromBlock: 3165089, // should use recent number
                             toBlock: 'latest',
                         },
                         async (err, timmingResult) => {
@@ -443,7 +488,7 @@ class abiConfigs {
         const eventInstance = ctInstance.instance.PaymentRejected(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -470,7 +515,7 @@ class abiConfigs {
         const eventInstance = ctInstance.instance.PollAgainsted(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -490,7 +535,7 @@ class abiConfigs {
                     const pollStartedEventInstance = ctInstance.instance.PollStarted(
                         { indexJobHash: web3.sha3(jobHash) },
                         {
-                            fromBlock: 4030174, // should use recent number
+                            fromBlock: 3165089, // should use recent number
                             toBlock: 'latest',
                         },
                         (err, pollStartedResult) => {
@@ -501,7 +546,7 @@ class abiConfigs {
                                     jobHash,
                                     {},
                                     {
-                                        fromBlock: 4030174, // should use recent number
+                                        fromBlock: 3165089, // should use recent number
                                         toBlock: 'latest',
                                     },
                                     async (err, timmingResult) => {
@@ -540,7 +585,7 @@ class abiConfigs {
         const pollStartedEventInstance = ctInstance.instance.PollStarted(
             filter,
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             (err, pollStartedResult) => {
@@ -552,7 +597,7 @@ class abiConfigs {
                         Utils.toAscii(pollStartedResult.args.jobHash),
                         {},
                         {
-                            fromBlock: 4030174, // should use recent number
+                            fromBlock: 3165089, // should use recent number
                             toBlock: 'latest',
                         },
                         async (err, timmingResult) => {
@@ -573,7 +618,7 @@ class abiConfigs {
                                 const eventInstance = ctInstance.instance.PollAgainsted(
                                     { indexJobHash: web3.sha3(Utils.toAscii(pollStartedResult.args.jobHash)) },
                                     {
-                                        fromBlock: 4030174, // should use recent number
+                                        fromBlock: 3165089, // should use recent number
                                         toBlock: 'latest',
                                     },
                                     async (err, re) => {
@@ -613,7 +658,7 @@ class abiConfigs {
         const pollStartedEventInstance = ctInstance.instance.PollStarted(
             filter,
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             (err, pollStartedResult) => {
@@ -625,7 +670,7 @@ class abiConfigs {
                         Utils.toAscii(pollStartedResult.args.jobHash),
                         {},
                         {
-                            fromBlock: 4030174, // should use recent number
+                            fromBlock: 3165089, // should use recent number
                             toBlock: 'latest',
                         },
                         async (err, timmingResult) => {
@@ -646,7 +691,7 @@ class abiConfigs {
                                 const eventVotingInstance = votingInstance.instance.VoteCommitted(
                                     { voter: web3.eth.defaultAccount },
                                     {
-                                        fromBlock: 4030174, // should use recent number
+                                        fromBlock: 3165089, // should use recent number
                                         toBlock: 'latest',
                                     },
                                     async (err, votingResult) => {
@@ -657,7 +702,7 @@ class abiConfigs {
                                                 const eventInstance = ctInstance.instance.PollAgainsted(
                                                     {},
                                                     {
-                                                        fromBlock: 4030174, // should use recent number
+                                                        fromBlock: 3165089, // should use recent number
                                                         toBlock: 'latest',
                                                     },
                                                     async (err, re) => {

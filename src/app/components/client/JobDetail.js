@@ -11,7 +11,7 @@ import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 
 import Reasons from '../client/Reasons';
-import { setActionBtnDisabled } from '../common/actions';
+import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from '../freelancer/actions';
 import Popper from '../common/Popper';
 import ResponseDispute from './ResponseDispute';
@@ -69,11 +69,15 @@ class JobDetail extends Component {
                 this.jobDataInit(false);
                 abiConfig.getVotingParams(web3, saveVotingParams);
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.checkMetamaskID);
     }
 
     setDisputeStt = async event => {
@@ -173,6 +177,14 @@ class JobDetail extends Component {
             this.setState({ voteResult, voteWinner: 'freelancer' });
         } else {
             this.setState({ voteResult, voteWinner: 'drawn' });
+        }
+    };
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.jobDataInit(true);
+            setReload(false);
         }
     };
 
@@ -1218,6 +1230,8 @@ JobDetail.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     sttRespondedDispute: PropTypes.bool.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -1225,6 +1239,7 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
         reason: state.clientReducer.reason,
+        reload: state.commonReducer.reload,
         actionBtnDisabled: state.commonReducer.actionBtnDisabled,
         balances: state.commonReducer.balances,
         sttRespondedDispute: state.clientReducer.sttRespondedDispute,
@@ -1234,6 +1249,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
     setActionBtnDisabled,
     saveVotingParams,
+    setReload,
 };
 
 export default connect(

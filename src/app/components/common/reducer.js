@@ -8,6 +8,11 @@ const data = {
     },
     view: 0,
     actionBtnDisabled: true,
+    yourNetwork: {
+        id: 0,
+        name: '',
+    },
+    reload: false,
 };
 
 const initData = cloneDeep(data);
@@ -48,6 +53,22 @@ const commonReducer = (state = initData, action) => {
             return {
                 ...state,
                 actionBtnDisabled,
+            };
+        }
+        case nameActList.SET_YOUR_NETWORK: {
+            let yourNetwork = cloneDeep(state.yourNetwork);
+            yourNetwork = action.yourNetwork;
+            return {
+                ...state,
+                yourNetwork,
+            };
+        }
+        case nameActList.SET_RELOAD: {
+            let reload = cloneDeep(state.reload);
+            reload = action.reload;
+            return {
+                ...state,
+                reload,
             };
         }
         default:
