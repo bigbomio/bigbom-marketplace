@@ -33,6 +33,7 @@ class Routers extends PureComponent {
         setWeb3(global.web3);
         this.checkMetamaskID = setInterval(() => {
             this.checkMetamask();
+            this.getBalance();
         }, 1000);
     }
 
@@ -95,7 +96,6 @@ class Routers extends PureComponent {
                     setAccount(account);
                     setNetwork(network);
                     this.getNetwork();
-                    this.getBalance();
                     if (defaultAccount) {
                         setReload(true);
                         //logoutMetamask();

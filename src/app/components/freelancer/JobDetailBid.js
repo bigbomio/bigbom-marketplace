@@ -184,7 +184,7 @@ class JobDetailBid extends Component {
 
     setPaymentStt = paymentStt => {
         if (this.mounted) {
-            this.setState(paymentStt);
+            this.setState({ ...paymentStt });
         }
     };
 
@@ -1136,6 +1136,7 @@ class JobDetailBid extends Component {
             paymentDuration,
         } = this.state;
         //console.log(jobData);
+
         const { web3, disputeCreated } = this.props;
         let jobTplRender;
 
@@ -1252,7 +1253,7 @@ class JobDetailBid extends Component {
                                                         <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
                                                     ))
                                                 ))}
-                                            {paymentDuration &&
+                                            {paymentDuration !== 0 &&
                                                 (!jobData.status.reject &&
                                                     (!jobData.status.disputing && (
                                                         <Countdown name="Payment duration" expiredTime={paymentDuration} />

@@ -9,6 +9,8 @@ import BBDispute from '../_services/abi/BBDispute.json';
 import BBVoting from '../_services/abi/BBVoting.json';
 import BBParams from '../_services/abi/BBParams.json';
 
+const fromBlock = 3165089;
+
 class abiConfigs {
     // getContract(type) {
     //     switch (type) {
@@ -176,7 +178,7 @@ class abiConfigs {
         } else {
             callback({
                 claim: true,
-                paymentDuration: paymentLog[1].toString() * 1000,
+                paymentDuration: 0,
             });
         }
     }
@@ -203,7 +205,7 @@ class abiConfigs {
         }
 
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3165089, // should use recent number
+            fromBlock: fromBlock, // should use recent number
             toBlock: 'latest',
         });
 
@@ -222,7 +224,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: 3165089, // should use recent number
+            fromBlock: fromBlock, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, bidCanceledEvents) {
@@ -252,7 +254,7 @@ class abiConfigs {
         };
 
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3165089, // should use recent number
+            fromBlock: fromBlock, // should use recent number
             toBlock: 'latest',
         });
 
@@ -301,7 +303,7 @@ class abiConfigs {
             data: {},
         };
         const events = contractInstance.instance[event](filter, {
-            fromBlock: 3165089, // should use recent number
+            fromBlock: fromBlock, // should use recent number
             toBlock: 'latest',
         });
         events.get(function(error, events) {
@@ -353,7 +355,7 @@ class abiConfigs {
         contractInstance.instance[event](
             filter,
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             (error, eventResult) => {
@@ -364,7 +366,7 @@ class abiConfigs {
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: 3165089, // should use recent number
+            fromBlock: fromBlock, // should use recent number
             toBlock: 'latest',
         });
         eventInstance.get(function(err, allEvent) {
@@ -413,7 +415,7 @@ class abiConfigs {
         ctInstance.instance.DisputeFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -436,7 +438,7 @@ class abiConfigs {
         ctInstance.instance.PollFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -454,13 +456,13 @@ class abiConfigs {
         );
     }
 
-    async getTimeDurations(web3, jobHash, callback) {
+    async getTimeDurations(web3, result, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         ctInstance.instance.getPollTiming(
-            jobHash,
+            result.jobHash,
             {},
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, timmingResult) => {
@@ -468,12 +470,13 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    const result = {
+                    const mResult = {
                         commitEndDate: Number(timmingResult[1].toString()),
                         evidenceEndDate: Number(timmingResult[0].toString()),
                         revealEndDate: Number(timmingResult[2].toString()),
+                        ...result,
                     };
-                    callback(result);
+                    callback(mResult);
                 }
             }
         );
@@ -484,7 +487,7 @@ class abiConfigs {
         ctInstance.instance.PollStarted(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -492,33 +495,15 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    ctInstance.instance.getPollTiming(
+                    const blockLog = await this.getBlock(web3, re.blockNumber);
+                    const result = {
                         jobHash,
-                        {},
-                        {
-                            fromBlock: 3165089, // should use recent number
-                            toBlock: 'latest',
-                        },
-                        async (err, timmingResult) => {
-                            //console.log('timmingResult', timmingResult);
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                const blockLog = await this.getBlock(web3, re.blockNumber);
-                                const result = {
-                                    jobHash,
-                                    owner: re.args.creator,
-                                    created: blockLog.timestamp,
-                                    started: true,
-                                    proofHash: Utils.toAscii(re.args.proofHash),
-                                    commitEndDate: Number(timmingResult[1].toString()),
-                                    evidenceEndDate: Number(timmingResult[0].toString()),
-                                    revealEndDate: Number(timmingResult[2].toString()),
-                                };
-                                callback(result);
-                            }
-                        }
-                    );
+                        owner: re.args.creator,
+                        created: blockLog.timestamp,
+                        started: true,
+                        proofHash: Utils.toAscii(re.args.proofHash),
+                    };
+                    this.getTimeDurations(web3, result, callback);
                 }
             }
         );
@@ -529,7 +514,7 @@ class abiConfigs {
         ctInstance.instance.PaymentRejected(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -555,7 +540,7 @@ class abiConfigs {
         ctInstance.instance.PollAgainsted(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -575,34 +560,16 @@ class abiConfigs {
                     ctInstance.instance.PollStarted(
                         { indexJobHash: web3.sha3(jobHash) },
                         {
-                            fromBlock: 3165089, // should use recent number
+                            fromBlock: fromBlock, // should use recent number
                             toBlock: 'latest',
                         },
                         (err, pollStartedResult) => {
                             if (err) {
                                 console.log(err);
                             } else {
-                                ctInstance.instance.getPollTiming(
-                                    jobHash,
-                                    {},
-                                    {
-                                        fromBlock: 3165089, // should use recent number
-                                        toBlock: 'latest',
-                                    },
-                                    async (err, timmingResult) => {
-                                        //console.log('timmingResult', timmingResult);
-                                        if (err) {
-                                            console.log(err);
-                                        } else {
-                                            result.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
-                                            result.freelancer = pollStartedResult.args.creator;
-                                            result.commitEndDate = Number(timmingResult[1].toString());
-                                            result.evidenceEndDate = Number(timmingResult[0].toString());
-                                            result.revealEndDate = Number(timmingResult[2].toString());
-                                            callback(result);
-                                        }
-                                    }
-                                );
+                                result.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
+                                result.freelancer = pollStartedResult.args.creator;
+                                this.getTimeDurations(web3, result, callback);
                             }
                         }
                     );
@@ -622,7 +589,7 @@ class abiConfigs {
         ctInstance.instance.PollStarted(
             filter,
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             (err, pollStartedResult) => {
@@ -634,7 +601,7 @@ class abiConfigs {
                         Utils.toAscii(pollStartedResult.args.jobHash),
                         {},
                         {
-                            fromBlock: 3165089, // should use recent number
+                            fromBlock: fromBlock, // should use recent number
                             toBlock: 'latest',
                         },
                         async (err, timmingResult) => {
@@ -655,7 +622,7 @@ class abiConfigs {
                                 ctInstance.instance.PollAgainsted(
                                     { indexJobHash: web3.sha3(Utils.toAscii(pollStartedResult.args.jobHash)) },
                                     {
-                                        fromBlock: 3165089, // should use recent number
+                                        fromBlock: fromBlock, // should use recent number
                                         toBlock: 'latest',
                                     },
                                     async (err, re) => {
@@ -693,7 +660,7 @@ class abiConfigs {
         ctInstance.instance.PollStarted(
             filter,
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             (err, pollStartedResult) => {
@@ -705,7 +672,7 @@ class abiConfigs {
                         Utils.toAscii(pollStartedResult.args.jobHash),
                         {},
                         {
-                            fromBlock: 3165089, // should use recent number
+                            fromBlock: fromBlock, // should use recent number
                             toBlock: 'latest',
                         },
                         async (err, timmingResult) => {
@@ -726,7 +693,7 @@ class abiConfigs {
                                 votingInstance.instance.VoteCommitted(
                                     { voter: web3.eth.defaultAccount },
                                     {
-                                        fromBlock: 3165089, // should use recent number
+                                        fromBlock: fromBlock, // should use recent number
                                         toBlock: 'latest',
                                     },
                                     async (err, votingResult) => {
@@ -737,7 +704,7 @@ class abiConfigs {
                                                 ctInstance.instance.PollAgainsted(
                                                     {},
                                                     {
-                                                        fromBlock: 3165089, // should use recent number
+                                                        fromBlock: fromBlock, // should use recent number
                                                         toBlock: 'latest',
                                                     },
                                                     async (err, re) => {

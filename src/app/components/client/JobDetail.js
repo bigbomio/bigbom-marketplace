@@ -56,6 +56,7 @@ class JobDetail extends Component {
             freelancerDispute: { responded: false, commitDuration: 0 },
             evidenceShow: false,
             checkedDispute: false,
+            paymentDuration: 0,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -179,6 +180,12 @@ class JobDetail extends Component {
             } else {
                 this.setState({ voteResult, voteWinner: 'drawn' });
             }
+        }
+    };
+
+    setPaymentStt = paymentStt => {
+        if (this.mounted) {
+            this.setState({ ...paymentStt });
         }
     };
 
@@ -410,12 +417,6 @@ class JobDetail extends Component {
             jobData.data,
             this.JobsInit
         );
-    };
-
-    setPaymentStt = paymentStt => {
-        if (this.mounted) {
-            this.setState(paymentStt);
-        }
     };
 
     JobsInit = jobData => {
@@ -1084,8 +1085,11 @@ class JobDetail extends Component {
                                                 (freelancerDispute.commitDuration > 0 && (
                                                     <Countdown name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
                                                 ))}
-                                            {paymentDuration &&
-                                                (!jobData.status.reject && <Countdown name="Payment duration" expiredTime={paymentDuration} />)}
+                                            {paymentDuration !== 0 &&
+                                                (!jobData.status.reject &&
+                                                    (!jobData.status.disputing && (
+                                                        <Countdown name="Payment duration" expiredTime={paymentDuration} />
+                                                    )))}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
