@@ -72,7 +72,6 @@ class Manage extends Component {
                 return;
             }
         }, 20000);
-
         abiConfig.getMyVoting(web3, this.disputeCreatedInit);
     };
 
@@ -84,11 +83,11 @@ class Manage extends Component {
         const eventInstance = ctInstance.instance.DisputeFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4030174, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
-
             async (err, re) => {
+                console.log(err, re);
                 if (err) {
                     console.log(err);
                 } else {
@@ -117,7 +116,7 @@ class Manage extends Component {
     };
 
     disputeCreatedInit = async eventLog => {
-        //console.log('disputeCreatedInit success: ', eventLog);
+        ///console.log('disputeCreatedInit success: ', eventLog);
         const event = eventLog.data;
         const URl = abiConfig.getIpfsLink() + event.jobHash;
         let dispute = {

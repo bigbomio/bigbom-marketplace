@@ -145,8 +145,9 @@ class DisputeDetail extends Component {
     getRewardConfirm = () => {
         this.setState({
             open: true,
+            dialogContent: null,
             dialogData: {
-                actionText: 'Get Reward',
+                actionText: 'Claim Reward',
                 actions: this.getReward,
             },
             actStt: { title: 'Do you want to get your reward now?', err: false, text: null, link: '' },
@@ -167,7 +168,9 @@ class DisputeDetail extends Component {
             return;
         }
         if (Number(result.toString()) > 0) {
-            this.setState({ getRewardRight: true });
+            if (this.mounted) {
+                this.setState({ getRewardRight: true });
+            }
         }
     };
 
@@ -192,7 +195,9 @@ class DisputeDetail extends Component {
             jobDispute: {},
         };
         if (disputeData.data.commitEndDate <= Date.now()) {
-            this.setState({ reveal: true });
+            if (this.mounted) {
+                this.setState({ reveal: true });
+            }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
             abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
@@ -222,7 +227,7 @@ class DisputeDetail extends Component {
     checkAccount = () => {
         const { reload, setReload } = this.props;
         if (reload) {
-            this.getJobs();
+            this.getDispute();
             setReload(false);
         }
     };
@@ -347,6 +352,7 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
+        console.log(tx);
         this.getDisputeResult(disputeData.jobHash);
     };
 
@@ -636,24 +642,29 @@ class DisputeDetail extends Component {
                                     )}
                                 </Grid>
                             </Grid>
-                            {reveal && (
-                                <Grid container className="reveal-submit">
-                                    {disputeData.revealEndDate > Date.now() ? (
-                                        <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
-                                            Reveal Vote
-                                        </ButtonBase>
-                                    ) : (
-                                        <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
-                                            View Vote Result
-                                        </ButtonBase>
-                                    )}
-                                    {getRewardRight && (
-                                        <ButtonBase className="btn btn-normal btn-orange btn-right" onClick={this.getRewardConfirm}>
-                                            Get Reward
-                                        </ButtonBase>
-                                    )}
-                                </Grid>
-                            )}
+                            {reveal &&
+                                (disputeData.client === web3.eth.defaultAccount || disputeData.freelancer === web3.eth.defaultAccount ? (
+                                    <Grid container className="reveal-submit">
+                                        <span className="none-voter">Sorry, Participants in the dispute do not have the right to vote</span>
+                                    </Grid>
+                                ) : (
+                                    <Grid container className="reveal-submit">
+                                        {disputeData.revealEndDate > Date.now() ? (
+                                            <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
+                                                Reveal Vote
+                                            </ButtonBase>
+                                        ) : (
+                                            <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
+                                                View Vote Result
+                                            </ButtonBase>
+                                        )}
+                                        {getRewardRight && (
+                                            <ButtonBase className="btn btn-normal btn-orange btn-right" onClick={this.getRewardConfirm}>
+                                                Claim Reward
+                                            </ButtonBase>
+                                        )}
+                                    </Grid>
+                                ))}
                         </Grid>
                     </Grid>
                 );

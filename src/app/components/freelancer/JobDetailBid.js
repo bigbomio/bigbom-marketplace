@@ -65,6 +65,7 @@ class JobDetailBid extends Component {
             anchorEl: null,
             evidenceShow: false,
             paymentRejectReason: '',
+            paymentDuration: 0,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -179,6 +180,12 @@ class JobDetailBid extends Component {
                     }
                 }
             );
+    };
+
+    setPaymentStt = paymentStt => {
+        if (this.mounted) {
+            this.setState(paymentStt);
+        }
     };
 
     setFinalizedStt = isFinal => {
@@ -376,8 +383,9 @@ class JobDetailBid extends Component {
                                     >
                                         Complete
                                     </ButtonBase>
-                                ) : !jobData.status.claimed ? (
-                                    claim && (
+                                ) : (
+                                    !jobData.status.claimed &&
+                                    (claim ? (
                                         <span className="note">
                                             <span className="bold">Your client did not respond, you can claim payment by yourself.</span>
                                             <ButtonBase
@@ -388,9 +396,9 @@ class JobDetailBid extends Component {
                                                 Claim Payment
                                             </ButtonBase>
                                         </span>
-                                    )
-                                ) : (
-                                    <span className="note bold">Please waiting for payment from your client.</span>
+                                    ) : (
+                                        <span className="note bold">Please waiting for payment from your client.</span>
+                                    ))
                                 )}
                             </span>
                         );
@@ -475,11 +483,7 @@ class JobDetailBid extends Component {
                 } else if (jobData.status.disputing) {
                     return (
                         <div className="dispute-actions">
-                            {disputeStt.clientResponseDuration > Date.now() ? (
-                                <span className="note">
-                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
-                                </span>
-                            ) : (
+                            {disputeStt.clientResponseDuration <= Date.now() ? (
                                 <span className="note">
                                     Your client did not respond to your dispute.{' '}
                                     {isFinalWithoutAgainst ? (
@@ -493,6 +497,10 @@ class JobDetailBid extends Component {
                                             Finalize Dispute
                                         </ButtonBase>
                                     )}
+                                </span>
+                            ) : (
+                                <span className="note">
+                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
                                 </span>
                             )}
                         </div>
@@ -527,7 +535,7 @@ class JobDetailBid extends Component {
                         </div>
                     );
                 } else {
-                    return disputeDurations.revealEndDate <= Date.now() ? (
+                    return disputeDurations.revealEndDate * 1000 <= Date.now() ? (
                         <div className="dispute-actions">
                             <span className="note">
                                 <span className="bold">
@@ -646,7 +654,7 @@ class JobDetailBid extends Component {
                 if (jobData[0].status.disputing) {
                     this.disputeSttInit();
                 }
-                this.checkPayment(jobHash);
+                abiConfig.checkPayment(web3, jobHash, this.setPaymentStt);
                 this.setState({ jobData: jobData[0], isLoading: false, isOwner: web3.eth.defaultAccount === jobData[0].owner });
                 return;
             }
@@ -716,7 +724,7 @@ class JobDetailBid extends Component {
         const { web3 } = this.props;
         const { jobHash } = this.state;
         abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
-        this.checkPayment(jobHash);
+        abiConfig.checkPayment(web3, jobHash, this.setPaymentStt);
     };
 
     JobsInit = jobData => {
@@ -727,27 +735,6 @@ class JobDetailBid extends Component {
                 isOwner: web3.eth.defaultAccount === jobData.data.owner,
                 isLoading: false,
             });
-        }
-    };
-
-    checkPayment = async jobHash => {
-        const { web3 } = this.props;
-        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const now = Date.now();
-        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.checkPayment)(jobHash, {
-            from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            console.log(err);
-            return;
-        }
-        if (paymentLog) {
-            if (paymentLog[1].toString() * 1000 <= now) {
-                this.setState({
-                    claim: true,
-                });
-            }
         }
     };
 
@@ -1146,6 +1133,7 @@ class JobDetailBid extends Component {
             disputeStt,
             clientRespondedDispute,
             dialogContent,
+            paymentDuration,
         } = this.state;
         //console.log(jobData);
         const { web3, disputeCreated } = this.props;
@@ -1264,6 +1252,11 @@ class JobDetailBid extends Component {
                                                         <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
                                                     ))
                                                 ))}
+                                            {paymentDuration &&
+                                                (!jobData.status.reject &&
+                                                    (!jobData.status.disputing && (
+                                                        <Countdown name="Payment duration" expiredTime={paymentDuration} />
+                                                    )))}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>

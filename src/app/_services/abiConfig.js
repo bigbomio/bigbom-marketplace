@@ -109,8 +109,12 @@ class abiConfigs {
         //return 'https://cloudflare-ipfs.com/ipfs/';
     }
 
+    // getTXlink() {
+    //     return 'https://ropsten.etherscan.io/tx/';
+    // }
+
     getTXlink() {
-        return 'https://ropsten.etherscan.io/tx/';
+        return 'https://rinkeby.etherscan.io/tx/';
     }
 
     async contractInstanceGenerator(web3, type) {
@@ -153,6 +157,30 @@ class abiConfigs {
         return true;
     }
 
+    async checkPayment(web3, jobHash, callback) {
+        const jobInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const now = Date.now();
+        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.checkPayment)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            console.log(err);
+            return;
+        }
+        if (paymentLog[1].toString() * 1000 > now) {
+            callback({
+                claim: false,
+                paymentDuration: paymentLog[1].toString() * 1000,
+            });
+        } else {
+            callback({
+                claim: true,
+                paymentDuration: paymentLog[1].toString() * 1000,
+            });
+        }
+    }
+
     async getPastEvents(web3, type, event, filter, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
@@ -186,8 +214,6 @@ class abiConfigs {
         eventInstance.get(function(error, eventResult) {
             resultsInit(error, eventResult);
         });
-
-        eventInstance.stopWatching();
     }
 
     async getBidCancalled(web3, filter, mergeData, callback) {
@@ -217,7 +243,6 @@ class abiConfigs {
             results.status = { err: false, text: 'get events log success!' };
             callback(results);
         });
-        events.stopWatching();
     }
 
     async getPastEventsMergeBidToJob(web3, type, event, filter, mergeData, callback) {
@@ -268,7 +293,6 @@ class abiConfigs {
             results.status = { err: false, text: 'get events log success!' };
             this.getBidCancalled(web3, filter, results.data, callback);
         });
-        events.stopWatching();
     }
 
     async getPastEventsBidAccepted(web3, type, event, filter, jobData, callback) {
@@ -306,7 +330,6 @@ class abiConfigs {
             results.status = { err: false, text: 'get events log success!' };
             callback(results);
         });
-        events.stopWatching();
     }
 
     async getPastSingleEvent(web3, type, event, filter, callback) {
@@ -327,7 +350,7 @@ class abiConfigs {
             }
         }
 
-        const getSingleEvent = contractInstance.instance[event](
+        contractInstance.instance[event](
             filter,
             {
                 fromBlock: 3165089, // should use recent number
@@ -338,8 +361,6 @@ class abiConfigs {
                 resultsInit(error, eventResult);
             }
         );
-
-        getSingleEvent.stopWatching();
 
         // check no data case
         const eventInstance = contractInstance.instance[event](filter, {
@@ -352,8 +373,6 @@ class abiConfigs {
                 callback(results);
             }
         });
-
-        eventInstance.stopWatching();
     }
 
     async getBlock(web3, blockNumber) {
@@ -391,7 +410,7 @@ class abiConfigs {
 
     async getDisputeFinalized(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const eventInstance = ctInstance.instance.DisputeFinalized(
+        ctInstance.instance.DisputeFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 3165089, // should use recent number
@@ -410,12 +429,11 @@ class abiConfigs {
                 }
             }
         );
-        eventInstance.stopWatching();
     }
 
     async getDisputeFinalizedDisputeContract(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const eventInstance = ctInstance.instance.PollFinalized(
+        ctInstance.instance.PollFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 3165089, // should use recent number
@@ -434,12 +452,36 @@ class abiConfigs {
                 }
             }
         );
-        eventInstance.stopWatching();
+    }
+
+    async getTimeDurations(web3, jobHash, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        ctInstance.instance.getPollTiming(
+            jobHash,
+            {},
+            {
+                fromBlock: 3165089, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, timmingResult) => {
+                //console.log('timmingResult', timmingResult);
+                if (err) {
+                    console.log(err);
+                } else {
+                    const result = {
+                        commitEndDate: Number(timmingResult[1].toString()),
+                        evidenceEndDate: Number(timmingResult[0].toString()),
+                        revealEndDate: Number(timmingResult[2].toString()),
+                    };
+                    callback(result);
+                }
+            }
+        );
     }
 
     async getEventsPollStarted(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const eventInstance = ctInstance.instance.PollStarted(
+        ctInstance.instance.PollStarted(
             { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 3165089, // should use recent number
@@ -480,12 +522,11 @@ class abiConfigs {
                 }
             }
         );
-        eventInstance.stopWatching();
     }
 
     async getReasonPaymentRejected(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const eventInstance = ctInstance.instance.PaymentRejected(
+        ctInstance.instance.PaymentRejected(
             { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 3165089, // should use recent number
@@ -507,12 +548,11 @@ class abiConfigs {
                 }
             }
         );
-        eventInstance.stopWatching();
     }
 
     async getEventsPollAgainsted(web3, jobHash, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const eventInstance = ctInstance.instance.PollAgainsted(
+        ctInstance.instance.PollAgainsted(
             { indexJobHash: web3.sha3(jobHash) },
             {
                 fromBlock: 3165089, // should use recent number
@@ -532,7 +572,7 @@ class abiConfigs {
                         proofHash: Utils.toAscii(re.args.proofHash),
                     };
                     // get freelancer proofhash
-                    const pollStartedEventInstance = ctInstance.instance.PollStarted(
+                    ctInstance.instance.PollStarted(
                         { indexJobHash: web3.sha3(jobHash) },
                         {
                             fromBlock: 3165089, // should use recent number
@@ -566,11 +606,9 @@ class abiConfigs {
                             }
                         }
                     );
-                    pollStartedEventInstance.stopWatching();
                 }
             }
         );
-        eventInstance.stopWatching();
     }
 
     async getAllAvailablePoll(web3, callback, jobHash) {
@@ -581,8 +619,7 @@ class abiConfigs {
                 indexJobHash: web3.sha3(jobHash),
             };
         }
-
-        const pollStartedEventInstance = ctInstance.instance.PollStarted(
+        ctInstance.instance.PollStarted(
             filter,
             {
                 fromBlock: 3165089, // should use recent number
@@ -615,7 +652,7 @@ class abiConfigs {
                                     },
                                 };
 
-                                const eventInstance = ctInstance.instance.PollAgainsted(
+                                ctInstance.instance.PollAgainsted(
                                     { indexJobHash: web3.sha3(Utils.toAscii(pollStartedResult.args.jobHash)) },
                                     {
                                         fromBlock: 3165089, // should use recent number
@@ -636,14 +673,12 @@ class abiConfigs {
                                         }
                                     }
                                 );
-                                eventInstance.stopWatching();
                             }
                         }
                     );
                 }
             }
         );
-        pollStartedEventInstance.stopWatching();
     }
 
     async getMyVoting(web3, callback, jobHash) {
@@ -655,7 +690,7 @@ class abiConfigs {
                 indexJobHash: web3.sha3(jobHash),
             };
         }
-        const pollStartedEventInstance = ctInstance.instance.PollStarted(
+        ctInstance.instance.PollStarted(
             filter,
             {
                 fromBlock: 3165089, // should use recent number
@@ -688,7 +723,7 @@ class abiConfigs {
                                     },
                                 };
 
-                                const eventVotingInstance = votingInstance.instance.VoteCommitted(
+                                votingInstance.instance.VoteCommitted(
                                     { voter: web3.eth.defaultAccount },
                                     {
                                         fromBlock: 3165089, // should use recent number
@@ -699,7 +734,7 @@ class abiConfigs {
                                             console.log(err);
                                         } else {
                                             if (votingResult.args.jobHash === pollStartedResult.args.jobHash) {
-                                                const eventInstance = ctInstance.instance.PollAgainsted(
+                                                ctInstance.instance.PollAgainsted(
                                                     {},
                                                     {
                                                         fromBlock: 3165089, // should use recent number
@@ -718,24 +753,37 @@ class abiConfigs {
                                                                 results.data.client = re.args.creator;
                                                                 results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
                                                                 results.data.isFinal = false;
+                                                                results.data.rewardRight = false;
+
+                                                                const [errRewardCheck, resultRewardCheck] = await Utils.callMethod(
+                                                                    votingInstance.instance.calcReward
+                                                                )(Utils.toAscii(re.args.jobHash), {
+                                                                    from: votingInstance.defaultAccount,
+                                                                    gasPrice: +votingInstance.gasPrice.toString(10),
+                                                                });
+                                                                if (errRewardCheck) {
+                                                                    console.log(errRewardCheck);
+                                                                    return;
+                                                                }
+                                                                if (Number(resultRewardCheck.toString()) > 0) {
+                                                                    results.data.rewardRight = true;
+                                                                }
+
                                                                 callback(results);
                                                             }
                                                         }
                                                     }
                                                 );
-                                                eventInstance.stopWatching();
                                             }
                                         }
                                     }
                                 );
-                                eventVotingInstance.stopWatching();
                             }
                         }
                     );
                 }
             }
         );
-        pollStartedEventInstance.stopWatching();
     }
 }
 

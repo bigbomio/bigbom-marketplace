@@ -43,7 +43,7 @@ class JobBrowser extends Component {
     componentDidMount() {
         const { isConnected, web3 } = this.props;
         web3.eth.getBlockNumber((error, result) => {
-            console.log(result); // 2744
+            console.log('lastest block number', result); // 2744
         });
 
         const { isLoading } = this.state;
@@ -63,6 +63,13 @@ class JobBrowser extends Component {
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         jobs = [];
+        // time out 20s
+        setTimeout(() => {
+            if (jobs.length <= 0) {
+                this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
+                return;
+            }
+        }, 20000);
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
 

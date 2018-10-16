@@ -171,12 +171,14 @@ class JobDetail extends Component {
             clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
             freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
         };
-        if (voteResult.clientVotes > voteResult.freelancerVotes) {
-            this.setState({ voteResult, voteWinner: 'client' });
-        } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
-            this.setState({ voteResult, voteWinner: 'freelancer' });
-        } else {
-            this.setState({ voteResult, voteWinner: 'drawn' });
+        if (this.mounted) {
+            if (voteResult.clientVotes > voteResult.freelancerVotes) {
+                this.setState({ voteResult, voteWinner: 'client' });
+            } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
+                this.setState({ voteResult, voteWinner: 'freelancer' });
+            } else {
+                this.setState({ voteResult, voteWinner: 'drawn' });
+            }
         }
     };
 
@@ -190,16 +192,18 @@ class JobDetail extends Component {
 
     viewVotingResult = () => {
         const { voteResult } = this.state;
-        this.setState({
-            open: true,
-            dialogLoading: false,
-            dialogContent: <VoteResult voteResult={voteResult} />,
-            dialogData: {
-                actionText: null,
-                actions: null,
-            },
-            actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
-        });
+        if (this.mounted) {
+            this.setState({
+                open: true,
+                dialogLoading: false,
+                dialogContent: <VoteResult voteResult={voteResult} />,
+                dialogData: {
+                    actionText: null,
+                    actions: null,
+                },
+                actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
+            });
+        }
     };
 
     finalizeDispute = async () => {
@@ -212,28 +216,32 @@ class JobDetail extends Component {
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
         if (err) {
-            this.setState({
-                dialogLoading: false,
-                dialogContent: null,
-                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not finalize dispute! :(', link: '' },
-            });
+            if (this.mounted) {
+                this.setState({
+                    dialogLoading: false,
+                    dialogContent: null,
+                    actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not finalize dispute! :(', link: '' },
+                });
+            }
             console.log(err);
             return;
         }
-        this.setState({
-            actStt: {
-                title: '',
-                err: false,
-                text: 'Your dispute has been finalized! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
-            },
-            finalizeDisputeDone: true,
-            dialogLoading: false,
-        });
+        if (this.mounted) {
+            this.setState({
+                actStt: {
+                    title: '',
+                    err: false,
+                    text: 'Your dispute has been finalized! Please waiting for confirm from your network.',
+                    link: (
+                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                            HERE
+                        </a>
+                    ),
+                },
+                finalizeDisputeDone: true,
+                dialogLoading: false,
+            });
+        }
         this.setActionBtnDisabled(true);
     };
 
@@ -253,29 +261,33 @@ class JobDetail extends Component {
             if (giveUp) {
                 text = 'Something went wrong! Can not give up the dispute! :(';
             }
-            this.setState({
-                dialogLoading: false,
-                dialogContent: null,
-                actStt: { title: 'Error: ', err: true, text, link: '' },
-            });
+            if (this.mounted) {
+                this.setState({
+                    dialogLoading: false,
+                    dialogContent: null,
+                    actStt: { title: 'Error: ', err: true, text, link: '' },
+                });
+            }
             console.log(err);
             this.setActionBtnDisabled(false);
             return;
         }
-        this.setState({
-            actStt: {
-                title: '',
-                err: false,
-                text,
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
-            },
-            updateDisputeDone: true,
-            dialogLoading: false,
-        });
+        if (this.mounted) {
+            this.setState({
+                actStt: {
+                    title: '',
+                    err: false,
+                    text,
+                    link: (
+                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                            HERE
+                        </a>
+                    ),
+                },
+                updateDisputeDone: true,
+                dialogLoading: false,
+            });
+        }
     };
 
     disputeSttInit = async () => {
@@ -385,6 +397,7 @@ class JobDetail extends Component {
     BidCreatedInit = async job => {
         const { web3 } = this.props;
         abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.checkPayment(web3, job.jobHash, this.setPaymentStt);
     };
 
     BidAcceptedInit = async jobData => {
@@ -397,6 +410,12 @@ class JobDetail extends Component {
             jobData.data,
             this.JobsInit
         );
+    };
+
+    setPaymentStt = paymentStt => {
+        if (this.mounted) {
+            this.setState(paymentStt);
+        }
     };
 
     JobsInit = jobData => {
@@ -891,7 +910,7 @@ class JobDetail extends Component {
                     </span>
                 );
             } else {
-                return disputeDurations.revealEndDate <= Date.now() ? (
+                return disputeDurations.revealEndDate * 1000 <= Date.now() ? (
                     <span className="note">
                         <Popper
                             placement="top"
@@ -984,6 +1003,7 @@ class JobDetail extends Component {
             disputeStt,
             evidenceShow,
             freelancerDispute,
+            paymentDuration,
         } = this.state;
         const { web3, sttRespondedDispute } = this.props;
         let jobTplRender;
@@ -1064,6 +1084,8 @@ class JobDetail extends Component {
                                                 (freelancerDispute.commitDuration > 0 && (
                                                     <Countdown name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
                                                 ))}
+                                            {paymentDuration &&
+                                                (!jobData.status.reject && <Countdown name="Payment duration" expiredTime={paymentDuration} />)}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>

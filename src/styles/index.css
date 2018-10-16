@@ -1008,6 +1008,8 @@ body {
     #bigbomMarketplace #voter .commit-duration .vote-btn .btn {
       text-transform: uppercase;
       font-weight: bold; }
+      #bigbomMarketplace #voter .commit-duration .vote-btn .btn.btn-getreward {
+        background: #f99a0c !important; }
   #bigbomMarketplace #voter .commit-duration .job-detail-col {
     padding: 10px;
     text-align: center;

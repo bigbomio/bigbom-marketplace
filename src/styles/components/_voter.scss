@@ -57,6 +57,9 @@
                 .btn {
                     text-transform: uppercase;
                     font-weight: bold;
+                    &.btn-getreward {
+                        background: $orange !important;
+                    }
                 }
             }
             .job-detail-col {

@@ -86,7 +86,7 @@ class Routers extends PureComponent {
     };
 
     checkMetamask = async () => {
-        const { isConnected, logoutMetamask, setAccount, defaultAccount, history, setNetwork, setReload } = this.props;
+        const { isConnected, logoutMetamask, setAccount, defaultAccount, setNetwork, setReload } = this.props;
         const { web3 } = this.state;
         if (isConnected) {
             try {

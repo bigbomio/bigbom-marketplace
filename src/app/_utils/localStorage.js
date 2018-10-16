@@ -1,4 +1,3 @@
-const language = 'language';
 class localStorageAdapter {
     setItem(key, value) {
         localStorage.setItem(key, value);
@@ -18,14 +17,6 @@ class localStorageAdapter {
 
     removeItem(key) {
         localStorage.removeItem(key);
-    }
-
-    // Language
-    setLanguage(lang) {
-        this.setItem(language, lang);
-    }
-    getLang() {
-        return this.getItem(language);
     }
 }
 
