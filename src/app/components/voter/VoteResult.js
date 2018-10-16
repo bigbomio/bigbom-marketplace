@@ -32,11 +32,9 @@ class Reveal extends Component {
         const { voteResult } = this.state;
         let clientW = 0;
         let freelancerW = 0;
-        if (voteResult.clientVotes > 0) {
-            clientW = Utils.toWidth(voteResult.clientVotes, voteResult.freelancerVotes);
-        } else if (voteResult.freelancerVotes > 0) {
-            freelancerW = Utils.toWidth(voteResult.freelancerVotes, voteResult.clientVotes);
-        }
+        voteResult.clientVotes > 0 ? (clientW = Utils.toWidth(voteResult.clientVotes, voteResult.freelancerVotes)) : 0;
+        voteResult.freelancerVotes > 0 ? (freelancerW = Utils.toWidth(voteResult.freelancerVotes, voteResult.clientVotes)) : 0;
+
         const clientWidth = { width: clientW + '%' };
         const freelancerWidth = { width: freelancerW + '%' };
         return (

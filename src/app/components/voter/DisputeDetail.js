@@ -92,15 +92,17 @@ class DisputeDetail extends Component {
             clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
             freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
         };
-        this.setState({
-            dialogLoading: false,
-            dialogContent: <VoteResult voteResult={voteResult} />,
-            dialogData: {
-                actionText: null,
-                actions: null,
-            },
-            actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
-        });
+        setTimeout(() => {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: <VoteResult voteResult={voteResult} />,
+                dialogData: {
+                    actionText: null,
+                    actions: null,
+                },
+                actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
+            });
+        }, 500);
     };
 
     setFinalizedStt = isFinal => {

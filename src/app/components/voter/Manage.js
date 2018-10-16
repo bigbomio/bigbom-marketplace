@@ -87,7 +87,6 @@ class Manage extends Component {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                console.log(err, re);
                 if (err) {
                     console.log(err);
                 } else {
