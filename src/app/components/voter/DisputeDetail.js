@@ -44,7 +44,6 @@ class DisputeDetail extends Component {
             if (!isLoading) {
                 this.mounted = true;
                 this.getDispute();
-                this.checkGetRewardRight();
             }
             this.checkMetamaskID = setInterval(() => {
                 this.checkAccount();
@@ -62,6 +61,7 @@ class DisputeDetail extends Component {
         const jobHash = match.params.disputeId;
         this.setState({ isLoading: true });
         abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobHash);
+        this.checkGetRewardRight();
     };
 
     getReasonPaymentRejected = async paymentRejectReason => {

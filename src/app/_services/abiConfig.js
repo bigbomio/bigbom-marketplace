@@ -458,28 +458,21 @@ class abiConfigs {
 
     async getTimeDurations(web3, result, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        ctInstance.instance.getPollTiming(
-            result.jobHash,
-            {},
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, timmingResult) => {
-                //console.log('timmingResult', timmingResult);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const mResult = {
-                        commitEndDate: Number(timmingResult[1].toString()),
-                        evidenceEndDate: Number(timmingResult[0].toString()),
-                        revealEndDate: Number(timmingResult[2].toString()),
-                        ...result,
-                    };
-                    callback(mResult);
-                }
-            }
-        );
+        const [timmingErr, timmingResult] = await Utils.callMethod(ctInstance.instance.getPollTiming)(result.jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (timmingErr) {
+            console.log(timmingErr);
+        } else {
+            const mResult = {
+                commitEndDate: Number(timmingResult[1].toString()),
+                evidenceEndDate: Number(timmingResult[0].toString()),
+                revealEndDate: Number(timmingResult[2].toString()),
+                ...result,
+            };
+            callback(mResult);
+        }
     }
 
     async getEventsPollStarted(web3, jobHash, callback) {
@@ -592,57 +585,52 @@ class abiConfigs {
                 fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
-            (err, pollStartedResult) => {
+            async (err, pollStartedResult) => {
                 //console.log('getAllAvailablePoll', pollStartedResult);
                 if (err) {
                     console.log(err);
                 } else {
-                    ctInstance.instance.getPollTiming(
+                    const [timmingErr, timmingResult] = await Utils.callMethod(ctInstance.instance.getPollTiming)(
                         Utils.toAscii(pollStartedResult.args.jobHash),
-                        {},
                         {
-                            fromBlock: fromBlock, // should use recent number
-                            toBlock: 'latest',
-                        },
-                        async (err, timmingResult) => {
-                            //console.log('timmingResult', timmingResult);
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                let results = {
-                                    data: {
-                                        freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
-                                        freelancer: pollStartedResult.args.creator,
-                                        commitEndDate: timmingResult[1].toString() * 1000,
-                                        evidenceEndDate: timmingResult[0].toString() * 1000,
-                                        revealEndDate: timmingResult[2].toString() * 1000,
-                                    },
-                                };
-
-                                ctInstance.instance.PollAgainsted(
-                                    { indexJobHash: web3.sha3(Utils.toAscii(pollStartedResult.args.jobHash)) },
-                                    {
-                                        fromBlock: fromBlock, // should use recent number
-                                        toBlock: 'latest',
-                                    },
-                                    async (err, re) => {
-                                        if (err) {
-                                            console.log(err);
-                                        } else {
-                                            const blockLog = await this.getBlock(web3, re.blockNumber);
-                                            results.data.id = re.args.jobHash;
-                                            results.data.created = blockLog.timestamp;
-                                            results.data.started = true;
-                                            results.data.jobHash = Utils.toAscii(re.args.jobHash);
-                                            results.data.client = re.args.creator;
-                                            results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
-                                            callback(results);
-                                        }
-                                    }
-                                );
-                            }
+                            from: ctInstance.defaultAccount,
+                            gasPrice: +ctInstance.gasPrice.toString(10),
                         }
                     );
+                    if (timmingErr) {
+                        console.log(timmingErr);
+                    } else {
+                        let results = {
+                            data: {
+                                freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
+                                freelancer: pollStartedResult.args.creator,
+                                commitEndDate: timmingResult[1].toString() * 1000,
+                                evidenceEndDate: timmingResult[0].toString() * 1000,
+                                revealEndDate: timmingResult[2].toString() * 1000,
+                            },
+                        };
+                        ctInstance.instance.PollAgainsted(
+                            { indexJobHash: web3.sha3(Utils.toAscii(pollStartedResult.args.jobHash)) },
+                            {
+                                fromBlock: fromBlock, // should use recent number
+                                toBlock: 'latest',
+                            },
+                            async (err, re) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    const blockLog = await this.getBlock(web3, re.blockNumber);
+                                    results.data.id = re.args.jobHash;
+                                    results.data.created = blockLog.timestamp;
+                                    results.data.started = true;
+                                    results.data.jobHash = Utils.toAscii(re.args.jobHash);
+                                    results.data.client = re.args.creator;
+                                    results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
+                                    callback(results);
+                                }
+                            }
+                        );
+                    }
                 }
             }
         );
@@ -663,91 +651,86 @@ class abiConfigs {
                 fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
             },
-            (err, pollStartedResult) => {
+            async (err, pollStartedResult) => {
                 //console.log('getMyVoting', pollStartedResult);
                 if (err) {
                     console.log(err);
                 } else {
-                    ctInstance.instance.getPollTiming(
+                    const [timmingErr, timmingResult] = await Utils.callMethod(ctInstance.instance.getPollTiming)(
                         Utils.toAscii(pollStartedResult.args.jobHash),
-                        {},
                         {
-                            fromBlock: fromBlock, // should use recent number
-                            toBlock: 'latest',
-                        },
-                        async (err, timmingResult) => {
-                            //.log('timmingResult', timmingResult);
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                let results = {
-                                    data: {
-                                        freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
-                                        freelancer: pollStartedResult.args.creator,
-                                        commitEndDate: timmingResult[1].toString() * 1000,
-                                        evidenceEndDate: timmingResult[0].toString() * 1000,
-                                        revealEndDate: timmingResult[2].toString() * 1000,
-                                    },
-                                };
-
-                                votingInstance.instance.VoteCommitted(
-                                    { voter: web3.eth.defaultAccount },
-                                    {
-                                        fromBlock: fromBlock, // should use recent number
-                                        toBlock: 'latest',
-                                    },
-                                    async (err, votingResult) => {
-                                        if (err) {
-                                            console.log(err);
-                                        } else {
-                                            if (votingResult.args.jobHash === pollStartedResult.args.jobHash) {
-                                                ctInstance.instance.PollAgainsted(
-                                                    {},
-                                                    {
-                                                        fromBlock: fromBlock, // should use recent number
-                                                        toBlock: 'latest',
-                                                    },
-                                                    async (err, re) => {
-                                                        if (err) {
-                                                            console.log(err);
-                                                        } else {
-                                                            if (pollStartedResult.args.jobHash === re.args.jobHash) {
-                                                                const blockLog = await this.getBlock(web3, re.blockNumber);
-                                                                results.data.id = re.args.jobHash;
-                                                                results.data.created = blockLog.timestamp;
-                                                                results.data.started = true;
-                                                                results.data.jobHash = Utils.toAscii(re.args.jobHash);
-                                                                results.data.client = re.args.creator;
-                                                                results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
-                                                                results.data.isFinal = false;
-                                                                results.data.rewardRight = false;
-
-                                                                const [errRewardCheck, resultRewardCheck] = await Utils.callMethod(
-                                                                    votingInstance.instance.calcReward
-                                                                )(Utils.toAscii(re.args.jobHash), {
-                                                                    from: votingInstance.defaultAccount,
-                                                                    gasPrice: +votingInstance.gasPrice.toString(10),
-                                                                });
-                                                                if (errRewardCheck) {
-                                                                    console.log(errRewardCheck);
-                                                                    return;
-                                                                }
-                                                                if (Number(resultRewardCheck.toString()) > 0) {
-                                                                    results.data.rewardRight = true;
-                                                                }
-
-                                                                callback(results);
-                                                            }
-                                                        }
-                                                    }
-                                                );
-                                            }
-                                        }
-                                    }
-                                );
-                            }
+                            from: ctInstance.defaultAccount,
+                            gasPrice: +ctInstance.gasPrice.toString(10),
                         }
                     );
+                    if (timmingErr) {
+                        console.log(timmingErr);
+                    } else {
+                        let results = {
+                            data: {
+                                freelancerProofHash: Utils.toAscii(pollStartedResult.args.proofHash),
+                                freelancer: pollStartedResult.args.creator,
+                                commitEndDate: timmingResult[1].toString() * 1000,
+                                evidenceEndDate: timmingResult[0].toString() * 1000,
+                                revealEndDate: timmingResult[2].toString() * 1000,
+                            },
+                        };
+                        votingInstance.instance.VoteCommitted(
+                            { voter: web3.eth.defaultAccount },
+                            {
+                                fromBlock: fromBlock, // should use recent number
+                                toBlock: 'latest',
+                            },
+                            async (err, votingResult) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    if (votingResult.args.jobHash === pollStartedResult.args.jobHash) {
+                                        ctInstance.instance.PollAgainsted(
+                                            {},
+                                            {
+                                                fromBlock: fromBlock, // should use recent number
+                                                toBlock: 'latest',
+                                            },
+                                            async (err, re) => {
+                                                if (err) {
+                                                    console.log(err);
+                                                } else {
+                                                    if (pollStartedResult.args.jobHash === re.args.jobHash) {
+                                                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                                                        results.data.id = re.args.jobHash;
+                                                        results.data.created = blockLog.timestamp;
+                                                        results.data.started = true;
+                                                        results.data.jobHash = Utils.toAscii(re.args.jobHash);
+                                                        results.data.client = re.args.creator;
+                                                        results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
+                                                        results.data.isFinal = false;
+                                                        results.data.rewardRight = false;
+
+                                                        const [errRewardCheck, resultRewardCheck] = await Utils.callMethod(
+                                                            votingInstance.instance.calcReward
+                                                        )(Utils.toAscii(re.args.jobHash), {
+                                                            from: votingInstance.defaultAccount,
+                                                            gasPrice: +votingInstance.gasPrice.toString(10),
+                                                        });
+                                                        if (errRewardCheck) {
+                                                            console.log(errRewardCheck);
+                                                            return;
+                                                        }
+                                                        if (Number(resultRewardCheck.toString()) > 0) {
+                                                            results.data.rewardRight = true;
+                                                        }
+
+                                                        callback(results);
+                                                    }
+                                                }
+                                            }
+                                        );
+                                    }
+                                }
+                            }
+                        );
+                    }
                 }
             }
         );
