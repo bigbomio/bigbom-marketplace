@@ -10,13 +10,12 @@ import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
-import Login from '../components/login';
 import RoutersAuthen from './RoutersAuthen';
 
 import abiConfig from '../_services/abiConfig';
 import Utils from '../_utils/utils';
 import { setYourNetwork, setBalances, setReload } from '../components/common/actions';
-import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount } from '../components/home/actions';
+import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
 
@@ -86,26 +85,31 @@ class Routers extends PureComponent {
     };
 
     checkMetamask = async () => {
-        const { isConnected, logoutMetamask, setAccount, defaultAccount, setNetwork, setReload } = this.props;
+        const { isConnected, logoutMetamask, setAccount, defaultAccount, setNetwork, setReload, history, setCheckAcount, checkAccount } = this.props;
         const { web3 } = this.state;
+        if (!checkAccount) {
+            return;
+        }
         if (isConnected) {
-            this.getBalance();
             try {
                 const { account, network } = await Utils.connectMetaMask(web3);
-                if (defaultAccount !== account) {
-                    setAccount(account);
-                    setNetwork(network);
-                    this.getNetwork();
-                    if (defaultAccount) {
-                        setReload(true);
-                        //logoutMetamask();
-                        //console.log('logout');
-                        //history.push('/login');
+                if (account) {
+                    this.getBalance();
+                    if (defaultAccount !== account) {
+                        setAccount(account);
+                        setNetwork(network);
+                        this.getNetwork();
+                        if (defaultAccount) {
+                            setReload(true);
+                        }
                     }
                 }
             } catch (error) {
                 logoutMetamask();
             }
+        } else {
+            history.push('/');
+            setCheckAcount(false);
         }
     };
 
@@ -135,7 +139,6 @@ class Routers extends PureComponent {
                             <Header history={history} />
                             <Switch>
                                 <Route exact path="/" component={Home} />
-                                <Route path="/login" component={Login} />
                                 {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
                                 <Route component={NotFound} />
                             </Switch>
@@ -155,11 +158,13 @@ Routers.propTypes = {
     defaultAccount: PropTypes.string.isRequired,
     setWeb3: PropTypes.func.isRequired,
     logoutMetamask: PropTypes.func.isRequired,
+    setCheckAcount: PropTypes.func.isRequired,
     setAccount: PropTypes.func.isRequired,
     setNetwork: PropTypes.func.isRequired,
     setYourNetwork: PropTypes.func.isRequired,
     setBalances: PropTypes.func.isRequired,
     setReload: PropTypes.func.isRequired,
+    checkAccount: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -167,6 +172,7 @@ const mapStateToProps = state => {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         defaultAccount: state.homeReducer.defaultAccount,
+        checkAccount: state.homeReducer.checkAccount,
     };
 };
 
@@ -174,6 +180,7 @@ const mapDispatchToProps = {
     loginMetamask,
     setWeb3,
     logoutMetamask,
+    setCheckAcount,
     setAccount,
     setNetwork,
     setYourNetwork,

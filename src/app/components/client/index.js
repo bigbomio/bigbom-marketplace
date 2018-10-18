@@ -27,7 +27,7 @@ class ClientCatagories extends Component {
         const { isConnected, history, setView } = this.props;
         setView('client');
         if (!isConnected) {
-            history.push('/login');
+            history.push('/');
         }
     }
 

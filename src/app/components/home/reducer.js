@@ -1,10 +1,11 @@
 import * as nameActList from './consts';
 
 const data = {
-    isConnected: false,
+    isConnected: true,
     web3: null,
     defaultAccount: '',
     network: '',
+    checkAccount: true,
 };
 
 const homeReducer = (state = data, action) => {
@@ -33,6 +34,11 @@ const homeReducer = (state = data, action) => {
             return {
                 ...state,
                 web3: action.web3 || null,
+            };
+        case nameActList.SET_CHECK_ACCOUNT:
+            return {
+                ...state,
+                checkAccount: action.checkAccount,
             };
         default:
             return state;

@@ -26,7 +26,7 @@ class FreelancerContainer extends Component {
         const { isConnected, history, setView } = this.props;
         setView('freelancer');
         if (!isConnected) {
-            history.push('/login');
+            history.push('/');
         }
     }
     render() {

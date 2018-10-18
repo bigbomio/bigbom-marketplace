@@ -26,7 +26,7 @@ class VoterContainer extends Component {
         const { isConnected, history, setView } = this.props;
         setView('voter');
         if (!isConnected) {
-            history.push('/login');
+            history.push('/');
         }
     }
     render() {
