@@ -137,6 +137,21 @@ body {
   background: #f9f9f9;
   font-family: 'Open Sans', sans-serif; }
 
+#bigbomMarketplace i.orange {
+  color: #f99a0c; }
+
+#bigbomMarketplace i.green {
+  color: #40bd56; }
+
+#bigbomMarketplace i.blue {
+  color: #0ca1f9; }
+
+#bigbomMarketplace i.red {
+  color: red; }
+
+#bigbomMarketplace i.dark {
+  color: #0ca1f9; }
+
 #bigbomMarketplace .not-support-err {
   line-height: 30px;
   background: #fff;
@@ -264,15 +279,20 @@ body {
 
 #bigbomMarketplace .btn {
   border-radius: 25px; }
-  #bigbomMarketplace .btn svg {
-    margin-right: 5px;
-    width: 18px;
-    height: 18px; }
   #bigbomMarketplace .btn i {
-    margin-right: 5px; }
+    margin-right: 5px;
+    font-size: 18px; }
+    #bigbomMarketplace .btn i.left {
+      margin-right: 5px;
+      margin-left: 0; }
+    #bigbomMarketplace .btn i.right {
+      margin-left: 5px;
+      margin-right: 0; }
   #bigbomMarketplace .btn:disabled {
     background: #ccc;
     color: #666; }
+    #bigbomMarketplace .btn:disabled i {
+      color: #666; }
   #bigbomMarketplace .btn.create-btn:disabled {
     background: #5c9dbb;
     color: #fff; }
@@ -280,9 +300,8 @@ body {
 #bigbomMarketplace .btn-small {
   font-size: 12px;
   padding: 3px 15px 4px 12px; }
-  #bigbomMarketplace .btn-small svg {
-    width: 12px;
-    height: 12px; }
+  #bigbomMarketplace .btn-small i {
+    font-size: 12px; }
 
 #bigbomMarketplace .btn-normal {
   font-size: 14px;
@@ -357,6 +376,12 @@ body {
 
 #bigbomMarketplace .btn-icon.btn-medium {
   font-size: 26px; }
+
+#bigbomMarketplace .btn-right {
+  margin-left: 10px; }
+
+#bigbomMarketplace .btn-left {
+  margin-right: 10px; }
 
 #bigbomMarketplace .green {
   color: #40bd56; }
@@ -568,6 +593,12 @@ body {
 
 #bigbomMarketplace .link {
   color: #0ca1f9; }
+
+#bigbomMarketplace .icon-right {
+  margin-left: 5px; }
+
+#bigbomMarketplace .icon-left {
+  margin-right: 5px; }
 
 #bigbomMarketplace .text-stt-success {
   color: #40bd56; }
@@ -830,7 +861,8 @@ body {
   box-sizing: border-box; }
 
 #bigbomMarketplace .custom-budget {
-  display: flex; }
+  display: flex;
+  width: 100%; }
   #bigbomMarketplace .custom-budget button {
     margin-right: -90px;
     box-shadow: none;
@@ -928,6 +960,346 @@ body {
   padding: 20px;
   margin-bottom: 30px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+
+#bigbomMarketplace #voter .dispute-list .job-item {
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  margin-bottom: 25px; }
+  #bigbomMarketplace #voter .dispute-list .job-item > div {
+    padding: 0; }
+  #bigbomMarketplace #voter .dispute-list .job-item .header .title {
+    padding: 10px 20px;
+    font-size: 18px;
+    line-height: 25px; }
+    #bigbomMarketplace #voter .dispute-list .job-item .header .title span {
+      font-size: 12px;
+      color: #888;
+      font-weight: normal; }
+  #bigbomMarketplace #voter .dispute-list .job-item .header .status {
+    justify-content: center;
+    display: flex;
+    align-items: flex-start; }
+    #bigbomMarketplace #voter .dispute-list .job-item .header .status span {
+      padding: 8px 15px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      color: #378299; }
+
+#bigbomMarketplace #voter .dispute-list .dispute-list-header {
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #f9f9f9;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #777; }
+  #bigbomMarketplace #voter .dispute-list .dispute-list-header .status,
+  #bigbomMarketplace #voter .dispute-list .dispute-list-header .time {
+    text-align: center; }
+
+#bigbomMarketplace #voter .commit-duration {
+  margin: -1px 0 0 0;
+  background: #eee; }
+  #bigbomMarketplace #voter .commit-duration .vote-btn {
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px; }
+    #bigbomMarketplace #voter .commit-duration .vote-btn .btn {
+      text-transform: uppercase;
+      font-weight: bold; }
+      #bigbomMarketplace #voter .commit-duration .vote-btn .btn.btn-getreward {
+        background: #f99a0c !important; }
+  #bigbomMarketplace #voter .commit-duration .job-detail-col {
+    padding: 10px;
+    text-align: center;
+    font-size: 25px;
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    background: #5ac95a; }
+  #bigbomMarketplace #voter .commit-duration.orange .job-detail-col {
+    background: #f7b95e; }
+  #bigbomMarketplace #voter .commit-duration.orange .btn {
+    background: #f99a0c; }
+  #bigbomMarketplace #voter .commit-duration.gray .job-detail-col {
+    background: #cecece; }
+  #bigbomMarketplace #voter .commit-duration.gray .btn {
+    background: #a7a6a6; }
+  #bigbomMarketplace #voter .commit-duration.blue .job-detail-col {
+    background: #82a8cc; }
+  #bigbomMarketplace #voter .commit-duration.blue .btn {
+    background: #b6cbdd; }
+
+#bigbomMarketplace #voter .job-detail .single-body .job-detail-description {
+  padding-bottom: 0; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct {
+    max-height: 200px;
+    overflow: hidden;
+    padding: 0 20px 0 0; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct-full {
+    max-height: inherit; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct {
+    border-top: 1px solid #ccc;
+    padding: 0 0 30px 0;
+    margin-top: 30px;
+    text-align: center; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct .btn {
+      margin-top: -25px; }
+
+#bigbomMarketplace #voter .job-detail .single-body .job-info {
+  padding: 0;
+  margin-bottom: 47px;
+  background: #f9f9f9;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+  #bigbomMarketplace #voter .job-detail .single-body .job-info > div {
+    padding: 10px 20px;
+    font-size: 14px; }
+  #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration {
+    padding: 0;
+    margin-bottom: 10px; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration p {
+      padding: 5px 10px;
+      text-align: center;
+      color: #fff;
+      background: #40bd56; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.orange p {
+      background: #f99a0c; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.blue .job-detail-col {
+      background: #a2d0de; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-info .commit-duration.blue p {
+      background: #6c9cb3; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .client-proof {
+  border-right: 1px solid #c3d8c3;
+  position: relative; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .freelancer-proof {
+  position: relative; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .proof-text {
+  padding: 20px;
+  line-height: 25px;
+  margin-bottom: 30px; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .header {
+  background: #daeeda;
+  color: #285338;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold; }
+
+#bigbomMarketplace #voter .job-detail .single-body .proofs .vote-submit {
+  text-align: center;
+  bottom: 0;
+  position: absolute;
+  width: 100%; }
+
+.voting-options {
+  font-size: 15px; }
+  .voting-options .voting-options-vote {
+    background: #f9f9f9;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc; }
+    .voting-options .voting-options-vote .voting-options-vote-input {
+      width: 100%; }
+    .voting-options .voting-options-vote .currency {
+      justify-content: left;
+      display: flex;
+      align-items: center; }
+      .voting-options .voting-options-vote .currency i {
+        margin-bottom: 3px;
+        margin-left: 5px; }
+    .voting-options .voting-options-vote::before {
+      counter-increment: section;
+      content: '1';
+      display: inline-table;
+      color: white;
+      background: #ccc;
+      padding: 10px 17px;
+      font-size: 20px;
+      margin-right: 16px;
+      border-radius: 50%;
+      margin-left: -35px;
+      margin-top: 4px; }
+    .voting-options .voting-options-vote .err {
+      font-size: 12px;
+      color: red;
+      float: left; }
+  .voting-options .voting-options-secret {
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 20px 0;
+    text-align: left; }
+    .voting-options .voting-options-secret p {
+      padding-bottom: 10px; }
+    .voting-options .voting-options-secret span {
+      font-size: 18px;
+      background: #bad9e0;
+      padding: 0 10px; }
+    .voting-options .voting-options-secret::before {
+      counter-increment: section;
+      content: '3';
+      display: inline-table;
+      color: white;
+      background: #ccc;
+      padding: 10px 17px;
+      font-size: 20px;
+      margin-right: 16px;
+      border-radius: 50%;
+      margin-left: -35px;
+      margin-top: 4px; }
+  .voting-options .voting-options-download {
+    text-align: left;
+    padding: 10px;
+    margin-top: 20px;
+    background: #f9f9f9;
+    border: 1px solid #ccc; }
+    .voting-options .voting-options-download button {
+      margin-top: 15px;
+      margin-left: 10px; }
+    .voting-options .voting-options-download::before {
+      counter-increment: section;
+      content: '2';
+      display: inline-table;
+      color: white;
+      background: #ccc;
+      padding: 10px 17px;
+      font-size: 20px;
+      margin-right: 16px;
+      border-radius: 50%;
+      margin-left: -35px;
+      margin-top: 4px; }
+    .voting-options .voting-options-download.upload > div {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+      .voting-options .voting-options-download.upload > div.file-name {
+        margin-top: 20px;
+        color: #888; }
+    .voting-options .voting-options-download.upload::before {
+      display: none; }
+  .voting-options .voting-choice > div {
+    padding: 10px 20px;
+    margin-bottom: 20px; }
+    .voting-options .voting-choice > div span {
+      padding: 6px 30px;
+      font-weight: bold;
+      background: #fdfcf9;
+      color: #a7a7a7;
+      border: 3px solid #e0e0e0;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 0 10px; }
+      .voting-options .voting-choice > div span.selected {
+        background: #fceccc;
+        color: #f7882e;
+        border: 3px solid #fca55f; }
+  .voting-options .voting-choice.reveal {
+    padding: 30px 0 0 0; }
+    .voting-options .voting-choice.reveal .reveal-field {
+      text-align: left;
+      margin-bottom: 0;
+      color: #777; }
+      .voting-options .voting-choice.reveal .reveal-field div {
+        display: inline-block;
+        color: #444;
+        font-size: 18px;
+        margin-left: 10px; }
+  .voting-options .err {
+    color: red;
+    padding-top: 20px; }
+
+.none-voter {
+  font-size: 14px;
+  background: #f9f7db;
+  padding: 5px 20px;
+  color: #d46d6d; }
+
+.popper {
+  z-index: 9999; }
+
+.reveal-submit {
+  justify-content: center;
+  padding: 20px 0; }
+
+.voting-stage {
+  float: right;
+  margin-top: -30px;
+  padding: 6px 20px;
+  font-size: 14px;
+  color: #378299;
+  background: #f9f9f9;
+  text-transform: uppercase;
+  border: 1px solid #7895bb; }
+
+.stage-switch {
+  float: left; }
+
+.result-show {
+  padding: 20px 0;
+  margin: 20px 0; }
+  .result-show h3 {
+    justify-content: center;
+    width: 100%;
+    font-size: 18px;
+    color: #545454;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-bottom: 20px; }
+  .result-show .result-bar {
+    width: 100%;
+    background: #eee;
+    height: 35px;
+    border-radius: 20px; }
+    .result-show .result-bar .client {
+      background: #f7c71a;
+      height: 35px;
+      border-radius: 20px 0 0 20px;
+      float: left;
+      color: #fff;
+      justify-content: center;
+      align-items: center;
+      display: flex; }
+    .result-show .result-bar .freelancer {
+      height: 35px;
+      border-radius: 0 20px 20px 0;
+      background: #f9783b;
+      float: left;
+      color: #fff;
+      justify-content: center;
+      align-items: center;
+      display: flex; }
+    .result-show .result-bar .full {
+      border-radius: 20px; }
+    .result-show .result-bar.label {
+      background: none; }
+      .result-show .result-bar.label .client,
+      .result-show .result-bar.label .freelancer {
+        background: none;
+        color: #f7c71a;
+        text-transform: uppercase;
+        width: 50% !important;
+        justify-content: flex-start; }
+        .result-show .result-bar.label .client .rec,
+        .result-show .result-bar.label .freelancer .rec {
+          width: 16px;
+          height: 16px;
+          margin-right: 5px;
+          background: #f7c71a; }
+      .result-show .result-bar.label .freelancer {
+        justify-content: flex-end;
+        color: #f9783b; }
+        .result-show .result-bar.label .freelancer .rec {
+          background: #f9783b; }
+
+.final-stt {
+  border: 1px solid #ccc;
+  color: #777;
+  padding: 8px 20px;
+  float: right;
+  background: rgba(255, 255, 255, 0.5); }
 
 body {
   padding: 0;
@@ -1078,6 +1450,7 @@ a {
 .evidence-show {
   padding: 20px;
   margin-top: 40px;
+  line-height: 25px;
   background: #fff;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
 

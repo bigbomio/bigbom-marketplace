@@ -10,6 +10,23 @@ $transition: all 0.3s ease-in;
 $red: red;
 $orange: #f99a0c;
 #bigbomMarketplace {
+    i {
+        &.orange {
+            color: $orange;
+        }
+        &.green {
+            color: $green;
+        }
+        &.blue {
+            color: $blue;
+        }
+        &.red {
+            color: $red;
+        }
+        &.dark {
+            color: $blue;
+        }
+    }
     .not-support-err {
         line-height: 30px;
         background: #fff;
@@ -160,17 +177,24 @@ $orange: #f99a0c;
     }
     .btn {
         border-radius: 25px;
-        svg {
-            margin-right: 5px;
-            width: 18px;
-            height: 18px;
-        }
         i {
             margin-right: 5px;
+            font-size: 18px;
+            &.left {
+                margin-right: 5px;
+                margin-left: 0;
+            }
+            &.right {
+                margin-left: 5px;
+                margin-right: 0;
+            }
         }
         &:disabled {
             background: #ccc;
             color: #666;
+            i {
+                color: #666;
+            }
         }
         &.create-btn {
             &:disabled {
@@ -182,9 +206,8 @@ $orange: #f99a0c;
     .btn-small {
         font-size: 12px;
         padding: 3px 15px 4px 12px;
-        svg {
-            width: 12px;
-            height: 12px;
+        i {
+            font-size: 12px;
         }
     }
     .btn-normal {
@@ -272,6 +295,12 @@ $orange: #f99a0c;
         &.btn-medium {
             font-size: 26px;
         }
+    }
+    .btn-right {
+        margin-left: 10px;
+    }
+    .btn-left {
+        margin-right: 10px;
     }
     .green {
         color: $green;
@@ -526,6 +555,12 @@ $orange: #f99a0c;
     }
     .link {
         color: $blue;
+    }
+    .icon-right {
+        margin-left: 5px;
+    }
+    .icon-left {
+        margin-right: 5px;
     }
     .text-stt-success {
         color: $green;

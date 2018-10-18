@@ -10,29 +10,28 @@ import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
-import Login from '../components/login';
 import RoutersAuthen from './RoutersAuthen';
 
+import abiConfig from '../_services/abiConfig';
 import Utils from '../_utils/utils';
-import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount } from '../components/home/actions';
+import { setYourNetwork, setBalances, setReload } from '../components/common/actions';
+import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
 
-let _this;
 class Routers extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
             routes: RoutersAuthen,
         };
-        _this = this;
     }
 
     componentDidMount() {
         const { setWeb3 } = this.props;
         setWeb3(global.web3);
-        _this.checkMetamaskID = setInterval(() => {
-            _this.checkMetamask();
+        this.checkMetamaskID = setInterval(() => {
+            this.checkMetamask();
         }, 1000);
     }
 
@@ -50,24 +49,67 @@ class Routers extends PureComponent {
         return state;
     }
 
+    getNetwork = async () => {
+        const { web3, setYourNetwork } = this.props;
+        let [err, netId] = await Utils.callMethod(web3.version.getNetwork)();
+        if (!err) {
+            const yourNetwork = Utils.getNetwork(netId);
+            setYourNetwork({ id: netId, name: yourNetwork });
+        }
+    };
+
+    getBalance = async () => {
+        const { web3, setBalances } = this.props;
+        let balances = {
+            ETH: 0,
+            BBO: 0,
+        };
+        web3.eth.getBalance(web3.eth.defaultAccount, (err, balance) => {
+            const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+            balances.ETH = ethBalance;
+            //console.log(ethBalance, 'ETH');
+        });
+
+        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(BBOinstance.defaultAccount, {
+            from: BBOinstance.defaultAccount,
+            gasPrice: +BBOinstance.gasPrice.toString(10),
+        });
+
+        if (!errBalance) {
+            const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+            balances.BBO = BBOBalance;
+            //console.log(BBOBalance, 'BBO');
+        }
+        setBalances(balances);
+    };
+
     checkMetamask = async () => {
-        const { isConnected, logoutMetamask, setAccount, defaultAccount, history, setNetwork } = this.props;
+        const { isConnected, logoutMetamask, setAccount, defaultAccount, setNetwork, setReload, history, setCheckAcount, checkAccount } = this.props;
         const { web3 } = this.state;
+        if (!checkAccount) {
+            return;
+        }
         if (isConnected) {
             try {
                 const { account, network } = await Utils.connectMetaMask(web3);
-                if (defaultAccount !== account) {
-                    setAccount(account);
-                    setNetwork(network);
-                    if (defaultAccount) {
-                        logoutMetamask();
-                        //console.log('logout');
-                        history.push('/login');
+                if (account) {
+                    this.getBalance();
+                    if (defaultAccount !== account) {
+                        setAccount(account);
+                        setNetwork(network);
+                        this.getNetwork();
+                        if (defaultAccount) {
+                            setReload(true);
+                        }
                     }
                 }
             } catch (error) {
                 logoutMetamask();
             }
+        } else {
+            history.push('/');
+            setCheckAcount(false);
         }
     };
 
@@ -97,7 +139,6 @@ class Routers extends PureComponent {
                             <Header history={history} />
                             <Switch>
                                 <Route exact path="/" component={Home} />
-                                <Route path="/login" component={Login} />
                                 {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
                                 <Route component={NotFound} />
                             </Switch>
@@ -117,8 +158,13 @@ Routers.propTypes = {
     defaultAccount: PropTypes.string.isRequired,
     setWeb3: PropTypes.func.isRequired,
     logoutMetamask: PropTypes.func.isRequired,
+    setCheckAcount: PropTypes.func.isRequired,
     setAccount: PropTypes.func.isRequired,
     setNetwork: PropTypes.func.isRequired,
+    setYourNetwork: PropTypes.func.isRequired,
+    setBalances: PropTypes.func.isRequired,
+    setReload: PropTypes.func.isRequired,
+    checkAccount: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -126,6 +172,7 @@ const mapStateToProps = state => {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         defaultAccount: state.homeReducer.defaultAccount,
+        checkAccount: state.homeReducer.checkAccount,
     };
 };
 
@@ -133,8 +180,12 @@ const mapDispatchToProps = {
     loginMetamask,
     setWeb3,
     logoutMetamask,
+    setCheckAcount,
     setAccount,
     setNetwork,
+    setYourNetwork,
+    setBalances,
+    setReload,
 };
 
 export default connect(

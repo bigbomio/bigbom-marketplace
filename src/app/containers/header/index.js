@@ -46,7 +46,7 @@ class Header extends PureComponent {
 
     login = () => {
         const { history } = this.props;
-        history.push('/login');
+        history.push('/');
     };
 
     handleClickListView = event => {

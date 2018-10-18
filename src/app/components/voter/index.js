@@ -26,7 +26,7 @@ class VoterContainer extends Component {
         const { isConnected, history, setView } = this.props;
         setView('voter');
         if (!isConnected) {
-            history.push('/login');
+            history.push('/');
         }
     }
     render() {
@@ -40,13 +40,13 @@ class VoterContainer extends Component {
             },
             {
                 title: 'Manage',
-                path: `${match.url}/disputes`,
+                path: `${match.url}/manage`,
                 component: Manage,
             },
         ];
 
         return (
-            <div id="main" className="container-wrp">
+            <div id="voter" className="container-wrp">
                 <div className="container-wrp main-nav">
                     <div className="container">
                         <ul>

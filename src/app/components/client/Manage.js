@@ -15,6 +15,7 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
 import { saveJobs } from './actions';
+import { setReload } from '../common/actions';
 
 const categories = settingsApi.getCategories();
 
@@ -47,11 +48,15 @@ class ClientDashboard extends Component {
                 this.getJobs();
                 this.mounted = true;
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.checkMetamaskID);
     }
 
     getJobs = async () => {
@@ -71,6 +76,14 @@ class ClientDashboard extends Component {
         }
         return true;
     }
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.getJobs();
+            setReload(false);
+        }
+    };
 
     JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
@@ -453,16 +466,21 @@ ClientDashboard.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     saveJobs: PropTypes.func.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
+        defaultAccount: state.homeReducer.defaultAccount,
     };
 };
 
 const mapDispatchToProps = {
     saveJobs,
+    setReload,
 };
 
 export default connect(

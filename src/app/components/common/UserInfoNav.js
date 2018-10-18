@@ -8,8 +8,6 @@ import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 
 import Utils from '../../_utils/utils';
-import abiConfig from '../../_services/abiConfig';
-import { setBalances } from './actions';
 
 const styles = theme => ({
     lightTooltip: {
@@ -22,61 +20,12 @@ const styles = theme => ({
 });
 
 class UserInfoNav extends Component {
-    state = {
-        yourNetwork: '',
-        balances: {
-            ETH: 0,
-            BBO: 0,
-        },
-    };
+    state = {};
 
-    componentDidMount() {
-        const { isConnected } = this.props;
-        if (isConnected) {
-            this.getNetwork();
-            this.getBalance();
-        }
-    }
-
-    getNetwork = async () => {
-        const { web3 } = this.props;
-        let [err, netId] = await Utils.callMethod(web3.version.getNetwork)();
-        if (!err) {
-            const yourNetwork = Utils.getNetwork(netId);
-            this.setState({ yourNetwork });
-        }
-    };
-
-    getBalance = async () => {
-        const { web3, setBalances } = this.props;
-        let balances = {
-            ETH: 0,
-            BBO: 0,
-        };
-        web3.eth.getBalance(web3.eth.defaultAccount, (err, balance) => {
-            const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-            balances.ETH = ethBalance;
-            //console.log(ethBalance, 'ETH');
-        });
-
-        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(BBOinstance.defaultAccount, {
-            from: BBOinstance.defaultAccount,
-            gasPrice: +BBOinstance.gasPrice.toString(10),
-        });
-
-        if (!errBalance) {
-            const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-            balances.BBO = BBOBalance;
-            //console.log(BBOBalance, 'BBO');
-        }
-        this.setState({ balances });
-        setBalances(balances);
-    };
+    componentDidMount() {}
 
     render() {
-        const { defaultAccount, isConnected, classes } = this.props;
-        const { yourNetwork, balances } = this.state;
+        const { defaultAccount, isConnected, classes, balances, yourNetwork } = this.props;
         return (
             isConnected && (
                 <Grid container className="account-info">
@@ -92,7 +41,7 @@ class UserInfoNav extends Component {
                     </Tooltip>
                     <Grid item xs={3} className="account-info-item right">
                         <div>Your Network</div>
-                        <span>{yourNetwork}</span>
+                        <span>{yourNetwork.name}</span>
                     </Grid>
                 </Grid>
             )
@@ -104,8 +53,8 @@ UserInfoNav.propTypes = {
     defaultAccount: PropTypes.string.isRequired,
     isConnected: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
-    web3: PropTypes.object.isRequired,
-    setBalances: PropTypes.func.isRequired,
+    balances: PropTypes.object.isRequired,
+    yourNetwork: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -113,12 +62,12 @@ const mapStateToProps = state => {
         defaultAccount: state.homeReducer.defaultAccount,
         isConnected: state.homeReducer.isConnected,
         web3: state.homeReducer.web3,
+        balances: state.commonReducer.balances,
+        yourNetwork: state.commonReducer.yourNetwork,
     };
 };
 
-const mapDispatchToProps = {
-    setBalances,
-};
+const mapDispatchToProps = {};
 
 export default withStyles(styles)(
     withRouter(

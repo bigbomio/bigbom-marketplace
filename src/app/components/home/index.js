@@ -39,13 +39,11 @@ class Home extends Component {
         this.state = {
             isLogout: false,
             isLogin: false,
-            homeAction: '',
         };
     }
 
     componentDidMount() {
-        this.setState({ isLogout: true });
-        document.getElementById('login').style.display = 'none';
+        this.setState({ isLogout: true, isLogin: true });
     }
 
     disconnectRender = () => {
@@ -71,36 +69,32 @@ class Home extends Component {
     };
 
     HomeAction = action => {
-        const { isConnected, history } = this.props;
-        if (isConnected) {
-            if (action === 'postJobAction') {
-                history.push('/client');
-            } else {
-                history.push('/freelancer');
-            }
+        const { history } = this.props;
+        if (action === 'postJobAction') {
+            history.push('/client');
         } else {
-            this.setState({ isLogout: false, homeAction: action });
-            setTimeout(() => {
-                document.getElementById('intro').style.display = 'none';
-                document.getElementById('login').style.display = 'flex';
-                this.setState({ isLogin: true });
-            }, 300);
+            history.push('/freelancer');
         }
     };
 
     render() {
-        const { isLogin, homeAction } = this.state;
-        const { history } = this.props;
+        const { isLogin } = this.state;
+        const { history, isConnected } = this.props;
         return (
             <div id="home" className="container-wrp">
                 <div className="container-wrp home-wrp full-top-wrp">
                     <div className="container wrapper">
-                        {this.disconnectRender()}
-                        <LoginMethods history={history} isLogin={isLogin} home homeAction={homeAction} />
+                        {!isConnected ? <LoginMethods history={history} isLogin={isLogin} /> : this.disconnectRender()}
                     </div>
                 </div>
                 <div className="container wrapper">
                     <Grid container className="home-content">
+                        {!isConnected && (
+                            <Grid container>
+                                <h2>Your have disconnected your account!</h2>
+                                <p className="note">Please choose a method to Login again</p>
+                            </Grid>
+                        )}
                         {/* <Grid container>
                             <h2>Pick your job right now </h2>
                         </Grid>

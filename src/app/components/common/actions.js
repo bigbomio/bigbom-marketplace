@@ -7,6 +7,13 @@ export const setBalances = balances => {
     };
 };
 
+export const setYourNetwork = yourNetwork => {
+    return {
+        type: listTypes.SET_YOUR_NETWORK,
+        yourNetwork,
+    };
+};
+
 export const setView = view => {
     return {
         type: listTypes.SET_VIEW,
@@ -18,5 +25,12 @@ export const setActionBtnDisabled = actionBtnDisabled => {
     return {
         type: listTypes.SET_ACTION_BTN_DISABLED,
         actionBtnDisabled,
+    };
+};
+
+export const setReload = reload => {
+    return {
+        type: listTypes.SET_RELOAD,
+        reload,
     };
 };

@@ -32,3 +32,10 @@ export const setWeb3 = web3 => {
         web3,
     };
 };
+
+export const setCheckAcount = checkAccount => {
+    return {
+        type: listTypes.SET_CHECK_ACCOUNT,
+        checkAccount,
+    };
+};

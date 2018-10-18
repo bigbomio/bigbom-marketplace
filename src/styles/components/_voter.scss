@@ -1,0 +1,433 @@
+#bigbomMarketplace {
+    #voter {
+        .dispute-list {
+            .job-item {
+                background: #f9f9f9;
+                border: 1px solid #ccc;
+                box-sizing: border-box;
+                margin-bottom: 25px;
+                & > div {
+                    padding: 0;
+                }
+                .header {
+                    .title {
+                        padding: 10px 20px;
+                        font-size: 18px;
+                        line-height: 25px;
+                        span {
+                            font-size: 12px;
+                            color: #888;
+                            font-weight: normal;
+                        }
+                    }
+                    .status {
+                        span {
+                            padding: 8px 15px;
+                            margin-top: 20px;
+                            border: 1px solid #ccc;
+                            font-size: 14px;
+                            color: #378299;
+                        }
+                        justify-content: center;
+                        display: flex;
+                        align-items: flex-start;
+                    }
+                }
+            }
+            .dispute-list-header {
+                padding: 20px;
+                margin-bottom: 20px;
+                background: #f9f9f9;
+                font-size: 14px;
+                text-transform: uppercase;
+                color: #777;
+                .status,
+                .time {
+                    text-align: center;
+                }
+            }
+        }
+        .commit-duration {
+            margin: -1px 0 0 0;
+            background: #eee;
+            .vote-btn {
+                text-align: center;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                .btn {
+                    text-transform: uppercase;
+                    font-weight: bold;
+                    &.btn-getreward {
+                        background: $orange !important;
+                    }
+                }
+            }
+            .job-detail-col {
+                padding: 10px;
+                text-align: center;
+                font-size: 25px;
+                color: #fff;
+                text-shadow: $thinShadow;
+                background: #5ac95a;
+            }
+            &.orange {
+                .job-detail-col {
+                    background: #f7b95e;
+                }
+                .btn {
+                    background: $orange;
+                }
+            }
+            &.gray {
+                .job-detail-col {
+                    background: #cecece;
+                }
+                .btn {
+                    background: #a7a6a6;
+                }
+            }
+            &.blue {
+                .job-detail-col {
+                    background: #82a8cc;
+                }
+                .btn {
+                    background: #b6cbdd;
+                }
+            }
+        }
+        .job-detail {
+            .single-body {
+                .job-detail-description {
+                    padding-bottom: 0;
+                    .ct {
+                        max-height: 200px;
+                        overflow: hidden;
+                        padding: 0 20px 0 0;
+                    }
+                    .ct-full {
+                        max-height: inherit;
+                    }
+                    .bottom-ct {
+                        border-top: 1px solid #ccc;
+                        padding: 0 0 30px 0;
+                        margin-top: 30px;
+                        text-align: center;
+                        .btn {
+                            margin-top: -25px;
+                        }
+                    }
+                }
+                .job-info {
+                    padding: 0;
+                    margin-bottom: 47px;
+                    background: #f9f9f9;
+                    box-shadow: $thinShadow;
+                    & > div {
+                        padding: 10px 20px;
+                        font-size: 14px;
+                    }
+                    .commit-duration {
+                        p {
+                            padding: 5px 10px;
+                            text-align: center;
+                            color: #fff;
+                            background: $green;
+                        }
+                        padding: 0;
+                        margin-bottom: 10px;
+                        &.orange {
+                            p {
+                                background: $orange;
+                            }
+                        }
+                        &.blue {
+                            .job-detail-col {
+                                background: #a2d0de;
+                            }
+                            p {
+                                background: #6c9cb3;
+                            }
+                        }
+                    }
+                }
+                .proofs {
+                    .client-proof {
+                        border-right: 1px solid #c3d8c3;
+                        position: relative;
+                    }
+                    .freelancer-proof {
+                        position: relative;
+                    }
+                    .proof-text {
+                        padding: 20px;
+                        line-height: 25px;
+                        margin-bottom: 30px;
+                    }
+                    .header {
+                        background: #daeeda;
+                        color: #285338;
+                        padding: 10px 20px;
+                        text-align: center;
+                        font-weight: bold;
+                    }
+                    .vote-submit {
+                        text-align: center;
+                        bottom: 0;
+                        position: absolute;
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }
+}
+.voting-options {
+    font-size: 15px;
+    .voting-options-vote {
+        background: #f9f9f9;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        .voting-options-vote-input {
+            width: 100%;
+        }
+        .currency {
+            justify-content: left;
+            display: flex;
+            align-items: center;
+            i {
+                margin-bottom: 3px;
+                margin-left: 5px;
+            }
+        }
+        &::before {
+            counter-increment: section;
+            content: '1';
+            display: inline-table;
+            color: white;
+            background: #ccc;
+            padding: 10px 17px;
+            font-size: 20px;
+            margin-right: 16px;
+            border-radius: 50%;
+            margin-left: -35px;
+            margin-top: 4px;
+        }
+        .err {
+            font-size: 12px;
+            color: red;
+            float: left;
+        }
+    }
+    .voting-options-secret {
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 20px 0;
+        text-align: left;
+        p {
+            padding-bottom: 10px;
+        }
+        span {
+            font-size: 18px;
+            background: #bad9e0;
+            padding: 0 10px;
+        }
+        &::before {
+            counter-increment: section;
+            content: '3';
+            display: inline-table;
+            color: white;
+            background: #ccc;
+            padding: 10px 17px;
+            font-size: 20px;
+            margin-right: 16px;
+            border-radius: 50%;
+            margin-left: -35px;
+            margin-top: 4px;
+        }
+    }
+    .voting-options-download {
+        text-align: left;
+        padding: 10px;
+        margin-top: 20px;
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        button {
+            margin-top: 15px;
+            margin-left: 10px;
+        }
+        &::before {
+            counter-increment: section;
+            content: '2';
+            display: inline-table;
+            color: white;
+            background: #ccc;
+            padding: 10px 17px;
+            font-size: 20px;
+            margin-right: 16px;
+            border-radius: 50%;
+            margin-left: -35px;
+            margin-top: 4px;
+        }
+        &.upload {
+            & > div {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                &.file-name {
+                    margin-top: 20px;
+                    color: #888;
+                }
+            }
+            &::before {
+                display: none;
+            }
+        }
+    }
+    .voting-choice {
+        & > div {
+            padding: 10px 20px;
+            margin-bottom: 20px;
+
+            span {
+                padding: 6px 30px;
+                font-weight: bold;
+                background: #fdfcf9;
+                color: #a7a7a7;
+                border: 3px solid #e0e0e0;
+                border-radius: 30px;
+                cursor: pointer;
+                margin: 0 10px;
+                &.selected {
+                    background: #fceccc;
+                    color: #f7882e;
+                    border: 3px solid #fca55f;
+                }
+            }
+        }
+        &.reveal {
+            padding: 30px 0 0 0;
+            .reveal-field {
+                text-align: left;
+                margin-bottom: 0;
+                color: #777;
+                div {
+                    display: inline-block;
+                    color: #444;
+                    font-size: 18px;
+                    margin-left: 10px;
+                }
+            }
+        }
+    }
+    .err {
+        color: red;
+        padding-top: 20px;
+    }
+}
+
+.none-voter {
+    font-size: 14px;
+    background: #f9f7db;
+    padding: 5px 20px;
+    color: #d46d6d;
+}
+.popper {
+    z-index: 9999;
+}
+
+.reveal-submit {
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.voting-stage {
+    float: right;
+    margin-top: -30px;
+    padding: 6px 20px;
+    font-size: 14px;
+    color: #378299;
+    background: #f9f9f9;
+    text-transform: uppercase;
+    border: 1px solid rgb(120, 149, 187);
+}
+
+.stage-switch {
+    float: left;
+}
+
+.result-show {
+    padding: 20px 0;
+    margin: 20px 0;
+    h3 {
+        justify-content: center;
+        width: 100%;
+        font-size: 18px;
+        color: #545454;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding-bottom: 20px;
+    }
+    .result-bar {
+        width: 100%;
+        background: #eee;
+        height: 35px;
+        border-radius: 20px;
+        .client {
+            background: #f7c71a;
+            height: 35px;
+            border-radius: 20px 0 0 20px;
+            float: left;
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+        .freelancer {
+            height: 35px;
+            border-radius: 0 20px 20px 0;
+            background: #f9783b;
+            float: left;
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+        .full {
+            border-radius: 20px;
+        }
+        &.label {
+            background: none;
+            .client,
+            .freelancer {
+                background: none;
+                color: #f7c71a;
+                text-transform: uppercase;
+                width: 50% !important;
+                justify-content: flex-start;
+                .rec {
+                    width: 16px;
+                    height: 16px;
+                    margin-right: 5px;
+                    background: #f7c71a;
+                }
+            }
+            .freelancer {
+                justify-content: flex-end;
+                color: #f9783b;
+                .rec {
+                    background: #f9783b;
+                }
+            }
+        }
+    }
+}
+
+.final-stt {
+    border: 1px solid #ccc;
+    color: #777;
+    padding: 8px 20px;
+    float: right;
+    background: rgba(255, 255, 255, 0.5);
+}

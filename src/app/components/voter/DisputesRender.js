@@ -3,70 +3,76 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
+import { ButtonBase } from '@material-ui/core';
 
 import Utils from '../../_utils/utils';
+import Countdown from '../common/countdown';
 
 class DisputesRender extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            Jobs: [],
+            disputes: [],
         };
     }
+
     static getDerivedStateFromProps(nextProps, prevState) {
-        if (nextProps.Jobs === prevState.Jobs) {
+        if (nextProps.disputes === prevState.disputes) {
             return null;
         }
-        return { Jobs: nextProps.Jobs };
+        return { disputes: nextProps.disputes };
     }
 
     render() {
-        const { Jobs } = this.state;
-        return (
-            <Grid container className="job-item-list">
-                {Jobs.length > 0 &&
-                    Jobs.map((job, i) => {
-                        const maxLength = 400; // max length characters show on description
-                        const description = job.description.length > maxLength ? job.description.slice(0, maxLength) + '...' : job.description;
-                        return (
-                            <Link to={'voter/disputes/' + job.jobHash} key={i} className="job-item">
-                                <Grid item xs={12}>
-                                    <Grid container className="header">
-                                        <Grid item xs={9} className="title">
-                                            {job.title}
-                                        </Grid>
-                                        <Grid item xs={3} className="budget">
-                                            <span className="bold">
-                                                {Utils.currencyFormat(job.budget.max_sum)}
-                                                {' ( ' + job.currency.label + ' ) '}
-                                            </span>
-                                        </Grid>
+        const { disputes } = this.state;
+        return disputes.length > 0 ? (
+            <Grid container className="job-item-list dispute-list">
+                <Grid container className="dispute-list-header">
+                    <Grid item xs={6}>
+                        Job title
+                    </Grid>
+                    <Grid item xs={3} className="status">
+                        Stage
+                    </Grid>
+                    <Grid item xs={3} className="time">
+                        Remain time
+                    </Grid>
+                </Grid>
+                {disputes.map((dispute, i) => {
+                    return (
+                        <Link to={'voter/disputes/' + dispute.jobHash} key={i} className="job-item">
+                            <Grid item xs={12}>
+                                <Grid container className="header">
+                                    <Grid item xs={6} className="title">
+                                        <p>{dispute.jobDispute.title}</p>
+                                        <span>{'Created: ' + Utils.convertDateTime(dispute.created)}</span>
                                     </Grid>
-                                    <Grid item xs={12} className="content">
-                                        <Grid item xs={12} className="description">
-                                            {description}
-                                        </Grid>
-                                        <Grid item xs={12} className="status">
-                                            <span className="status green bold">{Utils.getStatusJob(job.status)}</span>
-                                            <span className="status stt-date-time">{' - Created: ' + Utils.convertDateTime(job.created)}</span>
-                                            <span className="bold">{' - ' + job.bid.length + ' '}</span>
-                                            bids
-                                        </Grid>
-                                        <Grid item xs={12} className="category">
-                                            <span className="bold">Skill Required: </span>
-                                            {job.skills.map((skill, key) => {
-                                                return (
-                                                    <span className="tag" key={key}>
-                                                        {skill.label}
-                                                    </span>
-                                                );
-                                            })}
+                                    <Grid item xs={3} className="status">
+                                        <span>{dispute.evidenceEndDate > Date.now() ? 'Evidence' : 'Commit vote'}</span>
+                                    </Grid>
+                                    <Grid item xs={3} className="commit-duration">
+                                        {dispute.evidenceEndDate > Date.now() ? (
+                                            <Countdown expiredTime={dispute.evidenceEndDate} />
+                                        ) : (
+                                            <Countdown expiredTime={dispute.commitEndDate} />
+                                        )}
+                                        <Grid className="vote-btn">
+                                            <ButtonBase className="btn btn-normal btn-green" disabled={dispute.evidenceEndDate > Date.now()}>
+                                                Vote
+                                            </ButtonBase>
                                         </Grid>
                                     </Grid>
                                 </Grid>
-                            </Link>
-                        );
-                    })}
+                            </Grid>
+                        </Link>
+                    );
+                })}
+            </Grid>
+        ) : (
+            <Grid container className="job-item-list dispute-list">
+                <Grid container className="no-data">
+                    Have no any dispute to show.
+                </Grid>
             </Grid>
         );
     }

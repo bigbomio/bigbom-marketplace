@@ -11,10 +11,11 @@ import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 
 import Reasons from '../client/Reasons';
-import { setActionBtnDisabled } from '../common/actions';
+import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from '../freelancer/actions';
 import Popper from '../common/Popper';
 import ResponseDispute from './ResponseDispute';
+import VoteResult from '../voter/VoteResult';
 
 const skillShow = jobSkills => {
     return (
@@ -50,10 +51,12 @@ class JobDetail extends Component {
             disputeStt: {
                 clientResponseDuration: 0,
                 started: false,
+                freelancerProof: { imgs: [], text: '' },
             },
-            clientRespondedDispute: { responded: false, commitDuration: 0 },
+            freelancerDispute: { responded: false, commitDuration: 0 },
             evidenceShow: false,
             checkedDispute: false,
+            paymentDuration: 0,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -67,37 +70,253 @@ class JobDetail extends Component {
                 this.jobDataInit(false);
                 abiConfig.getVotingParams(web3, saveVotingParams);
             }
+            this.checkMetamaskID = setInterval(() => {
+                this.checkAccount();
+            }, 1000);
         }
     }
 
     componentWillUnmount() {
         this.mounted = false;
+        clearInterval(this.checkMetamaskID);
     }
 
     setDisputeStt = async event => {
-        const { votingParams } = this.props;
-        const clientResponseDuration = Math.floor(new Date(event.created + Number(votingParams.eveidenceDuration)) * 1000);
-        if (clientResponseDuration > Date.now()) {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        let clientResponseDuration = event.evidenceEndDate * 1000;
+        const URl = abiConfig.getIpfsLink() + event.proofHash;
+        if (clientResponseDuration <= Date.now()) {
+            clientResponseDuration = 0;
+        }
+        if (event.revealEndDate <= Date.now()) {
+            abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
+            this.getDisputeResult();
+        }
+        fetch(URl)
+            .then(res => res.json())
+            .then(
+                result => {
+                    const freelancerProof = {
+                        text: result.proof,
+                        imgs: result.imgs,
+                    };
+                    if (this.mounted) {
+                        this.setState({
+                            disputeStt: { started: event.started, clientResponseDuration, freelancerProof },
+                        });
+                    }
+                },
+                error => {
+                    console.log(error);
+                    if (this.mounted) {
+                        this.setState({
+                            disputeStt: {
+                                started: event.started,
+                                clientResponseDuration,
+                                freelancerProof: { imgs: [], text: 'Freelancer’s evidence not found!' },
+                            },
+                        });
+                    }
+                }
+            );
+    };
+
+    setFinalizedStt = isFinal => {
+        this.setState({ isFinal });
+    };
+
+    setRespondedisputeStt = async event => {
+        const commitDuration = event.commitEndDate * 1000;
+        const evidenceDurtion = event.evidenceEndDate * 1000;
+        this.setState({ disputeDurations: event });
+        if (commitDuration > Date.now() && evidenceDurtion <= Date.now()) {
             if (this.mounted) {
-                this.setState({ disputeStt: { started: event.started, clientResponseDuration } });
+                this.setState({
+                    freelancerDispute: { responded: event.responded, commitDuration },
+                    disputeStt: {
+                        clientResponseDuration: 0,
+                        started: true,
+                        freelancerProof: { imgs: [], text: '' },
+                    },
+                });
             }
         } else {
             if (this.mounted) {
-                this.setState({ disputeStt: { started: event.started, clientResponseDuration: 0 } });
+                this.setState({ freelancerDispute: { responded: event.responded, commitDuration: 0 } });
+            }
+        }
+        this.setActionBtnDisabled(false);
+    };
+
+    getDisputeResult = async () => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        let voteResult = {};
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+        voteResult = {
+            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+        };
+        if (this.mounted) {
+            if (voteResult.clientVotes > voteResult.freelancerVotes) {
+                this.setState({ voteResult, voteWinner: 'client' });
+            } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
+                this.setState({ voteResult, voteWinner: 'freelancer' });
+            } else {
+                this.setState({ voteResult, voteWinner: 'drawn' });
             }
         }
     };
 
-    setRespondedisputeStt = async event => {
-        const { votingParams } = this.props;
-        const commitDuration = Math.floor(new Date(event.created + Number(votingParams.commitDuration)) * 1000);
-        if (commitDuration > Date.now()) {
+    setPaymentStt = paymentStt => {
+        if (this.mounted) {
+            this.setState({ ...paymentStt });
+        }
+    };
+
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        if (reload) {
+            this.jobDataInit(true);
+            setReload(false);
+        }
+    };
+
+    viewVotingResult = () => {
+        const { voteResult } = this.state;
+        if (this.mounted) {
+            this.setState({
+                open: true,
+                dialogLoading: false,
+                dialogContent: <VoteResult voteResult={voteResult} />,
+                dialogData: {
+                    actionText: null,
+                    actions: null,
+                },
+                actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
+            });
+        }
+    };
+
+    finalizeDispute = async () => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        this.setState({ dialogLoading: true });
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizePoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (err) {
             if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration } });
+                this.setState({
+                    dialogLoading: false,
+                    dialogContent: null,
+                    actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not finalize dispute! :(', link: '' },
+                });
             }
-        } else {
+            console.log(err);
+            return;
+        }
+        if (this.mounted) {
+            this.setState({
+                actStt: {
+                    title: '',
+                    err: false,
+                    text: 'Your dispute has been finalized! Please waiting for confirm from your network.',
+                    link: (
+                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                            HERE
+                        </a>
+                    ),
+                },
+                finalizeDisputeDone: true,
+                dialogLoading: false,
+            });
+        }
+        this.setActionBtnDisabled(true);
+    };
+
+    updateDispute = async giveUp => {
+        const { web3 } = this.props;
+        const { jobHash } = this.state;
+        this.setState({ dialogLoading: true });
+        this.setActionBtnDisabled(true);
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.updatePoll)(jobHash, giveUp, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        let text = 'Your request has been sent! Please waiting for confirm from your network.';
+        if (err) {
+            text = 'Something went wrong! Can not renewal of the dispute! :(';
+            if (giveUp) {
+                text = 'Something went wrong! Can not give up the dispute! :(';
+            }
             if (this.mounted) {
-                this.setState({ clientRespondedDispute: { responded: event.responded, commitDuration: 0 } });
+                this.setState({
+                    dialogLoading: false,
+                    dialogContent: null,
+                    actStt: { title: 'Error: ', err: true, text, link: '' },
+                });
+            }
+            console.log(err);
+            this.setActionBtnDisabled(false);
+            return;
+        }
+        if (this.mounted) {
+            this.setState({
+                actStt: {
+                    title: '',
+                    err: false,
+                    text,
+                    link: (
+                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                            HERE
+                        </a>
+                    ),
+                },
+                updateDisputeDone: true,
+                dialogLoading: false,
+            });
+        }
+    };
+
+    disputeSttInit = async () => {
+        const { match, web3 } = this.props;
+        const jobHash = match.params.jobId;
+        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
+
+        // check client dispute response status
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobHash, {
+            from: ctInstance.defaultAccount,
+            gasPrice: +ctInstance.gasPrice.toString(10),
+        });
+        if (!error) {
+            if (re) {
+                if (this.mounted) {
+                    abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+                }
+            } else {
+                if (this.mounted) {
+                    this.setState({ freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } } });
+                }
             }
         }
     };
@@ -106,11 +325,13 @@ class JobDetail extends Component {
         const { match, web3, jobs } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash });
-        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
-        abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
+                if (jobData[0].status.disputing) {
+                    this.disputeSttInit();
+                }
                 if (jobData[0].owner !== web3.eth.defaultAccount) {
                     this.setState({
                         stt: { title: 'Error: ', err: true, text: 'You are not permission to view this page' },
@@ -140,6 +361,9 @@ class JobDetail extends Component {
                 return;
             }
             const jobStatus = Utils.getStatus(jobStatusLog);
+            if (jobStatus.disputing) {
+                this.disputeSttInit();
+            }
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
@@ -180,6 +404,7 @@ class JobDetail extends Component {
     BidCreatedInit = async job => {
         const { web3 } = this.props;
         abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.checkPayment(web3, job.jobHash, this.setPaymentStt);
     };
 
     BidAcceptedInit = async jobData => {
@@ -418,6 +643,45 @@ class JobDetail extends Component {
         });
     };
 
+    confirmFinalizeDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Finalize',
+                actions: this.finalizeDispute,
+            },
+            open: true,
+            actStt: { title: 'Do you want to finalize this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
+    confirmGiveUpDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Give up',
+                actions: () => this.updateDispute(true),
+            },
+            open: true,
+            actStt: { title: 'Do you want to give up this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
+    confirmRenewalDispute = () => {
+        this.setActionBtnDisabled(false);
+        this.setState({
+            dialogData: {
+                actionText: 'Renewal',
+                actions: () => this.updateDispute(false),
+            },
+            open: true,
+            actStt: { title: 'Do you want to renewal of this dispute?', err: false, text: null, link: '' },
+            dialogContent: null,
+        });
+    };
+
     confirmPayment = () => {
         this.setActionBtnDisabled(false);
         this.setState({
@@ -523,7 +787,7 @@ class JobDetail extends Component {
                     </ButtonBase>
                 </span>
             );
-        } else if (jobData.status.reject && disputeStt.clientResponseDuration > 0) {
+        } else if (jobData.status.reject && disputeStt.clientResponseDuration <= 0) {
             return (
                 <div className="note">
                     <span className="bold">You have rejected payment for freelancer</span>, please waiting for response from your freelancer.
@@ -533,15 +797,31 @@ class JobDetail extends Component {
     };
 
     evidence = () => {
-        return <div className="evidence-show">This is freelancer’s evidence</div>;
+        const { disputeStt } = this.state;
+        return (
+            <div className="evidence-show">
+                <p className="bold">Freelancer’s evidence:</p>
+                <p>{disputeStt.freelancerProof.text}</p>
+            </div>
+        );
     };
 
     disputeActions = () => {
-        const { disputeStt, anchorEl, evidenceShow, clientRespondedDispute } = this.state;
+        const {
+            disputeStt,
+            anchorEl,
+            evidenceShow,
+            freelancerDispute,
+            disputeDurations,
+            voteWinner,
+            finalizeDisputeDone,
+            isFinal,
+            updateDisputeDone,
+        } = this.state;
         const { sttRespondedDispute } = this.props;
         const isPopperOpen = Boolean(anchorEl);
 
-        if (!clientRespondedDispute.responded) {
+        if (!freelancerDispute.responded) {
             if (disputeStt.clientResponseDuration > 0) {
                 return (
                     <span className="note">
@@ -606,7 +886,7 @@ class JobDetail extends Component {
                 );
             }
         } else {
-            if (disputeStt.commitDuration > 0) {
+            if (disputeStt.clientResponseDuration > 0) {
                 return (
                     <span className="note">
                         <Popper
@@ -616,9 +896,11 @@ class JobDetail extends Component {
                             onClose={this.handlePopoverClose}
                             disableRestoreFocus
                             open={isPopperOpen}
-                            content="You have participated a dipute of this job......"
+                            content="You have participated a dispute of this job. After Evidence Duration expired, your dispute will be display to voters."
                         />
-                        <span className="bold">You have participated a dipute of this job.</span>
+                        <span className="bold">
+                            You have participated a dispute of this job. After Evidence Duration expired, your dispute will be display to voters.
+                        </span>
                         <i
                             className="fas fa-info-circle icon-popper-note"
                             aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -629,7 +911,61 @@ class JobDetail extends Component {
                     </span>
                 );
             } else {
-                return (
+                return disputeDurations.revealEndDate * 1000 <= Date.now() ? (
+                    <span className="note">
+                        <Popper
+                            placement="top"
+                            anchorEl={anchorEl}
+                            id="mouse-over-drawn"
+                            onClose={this.handlePopoverClose}
+                            disableRestoreFocus
+                            open={isPopperOpen}
+                            content="Your dispute has had result, but there is not winner..."
+                        />
+                        <span className="bold">
+                            <i className="fas fa-check-circle orange" />
+                            {voteWinner === 'client'
+                                ? 'Your dispute has had result and you are winner.'
+                                : voteWinner === 'freelancer'
+                                    ? 'Your dispute has had result and you are losers.'
+                                    : 'Your dispute has had result, but there is not winner.'}
+                            <i
+                                className="fas fa-info-circle icon-popper-note"
+                                aria-owns={isPopperOpen ? 'mouse-over-drawn' : null}
+                                aria-haspopup="true"
+                                onMouseEnter={this.handlePopoverOpen}
+                                onMouseLeave={this.handlePopoverClose}
+                            />
+                        </span>
+                        <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
+                            View voting result
+                        </ButtonBase>
+                        {isFinal ? (
+                            <span className="final-stt">Dispute finalized</span>
+                        ) : voteWinner === 'drawn' ? (
+                            <span className="float-right">
+                                <ButtonBase onClick={this.confirmRenewalDispute} className="btn btn-normal btn-green " disabled={updateDisputeDone}>
+                                    Renewal
+                                </ButtonBase>
+                                <ButtonBase
+                                    onClick={this.confirmGiveUpDispute}
+                                    className="btn btn-normal btn-red btn-right"
+                                    disabled={updateDisputeDone}
+                                >
+                                    Give up
+                                </ButtonBase>
+                            </span>
+                        ) : (
+                            <ButtonBase
+                                onClick={this.confirmFinalizeDispute}
+                                className="btn btn-normal btn-green float-right"
+                                disabled={finalizeDisputeDone}
+                            >
+                                Finalize Dispute
+                            </ButtonBase>
+                        )}
+                    </span>
+                ) : (
                     <span className="note">
                         <Popper
                             placement="top"
@@ -638,9 +974,9 @@ class JobDetail extends Component {
                             onClose={this.handlePopoverClose}
                             disableRestoreFocus
                             open={isPopperOpen}
-                            content="......"
+                            content="You have participated a dipute of this job......"
                         />
-                        <span className="bold">Commited vote (revealDuration)</span>
+                        <span className="bold">You have participated a dipute of this job. Please waiting for result from Voters</span>
                         <i
                             className="fas fa-info-circle icon-popper-note"
                             aria-owns={isPopperOpen ? 'mouse-over-popover' : null}
@@ -667,7 +1003,8 @@ class JobDetail extends Component {
             checkedDispute,
             disputeStt,
             evidenceShow,
-            clientRespondedDispute,
+            freelancerDispute,
+            paymentDuration,
         } = this.state;
         const { web3, sttRespondedDispute } = this.props;
         let jobTplRender;
@@ -744,10 +1081,15 @@ class JobDetail extends Component {
                                                 (disputeStt.clientResponseDuration > 0 && (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ))}
-                                            {clientRespondedDispute.started &&
-                                                (clientRespondedDispute.commitDuration > 0 && (
-                                                    <Countdown name="Evidence Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                            {freelancerDispute.responded &&
+                                                (freelancerDispute.commitDuration > 0 && (
+                                                    <Countdown name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
                                                 ))}
+                                            {paymentDuration !== 0 &&
+                                                (!jobData.status.reject &&
+                                                    (!jobData.status.disputing && (
+                                                        <Countdown name="Payment duration" expiredTime={paymentDuration} />
+                                                    )))}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -912,9 +1254,10 @@ JobDetail.propTypes = {
     balances: PropTypes.any.isRequired,
     reason: PropTypes.number.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
-    votingParams: PropTypes.object.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     sttRespondedDispute: PropTypes.bool.isRequired,
+    reload: PropTypes.bool.isRequired,
+    setReload: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -922,9 +1265,9 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         jobs: state.clientReducer.jobs,
         reason: state.clientReducer.reason,
+        reload: state.commonReducer.reload,
         actionBtnDisabled: state.commonReducer.actionBtnDisabled,
         balances: state.commonReducer.balances,
-        votingParams: state.freelancerReducer.votingParams,
         sttRespondedDispute: state.clientReducer.sttRespondedDispute,
     };
 };
@@ -932,6 +1275,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = {
     setActionBtnDisabled,
     saveVotingParams,
+    setReload,
 };
 
 export default connect(

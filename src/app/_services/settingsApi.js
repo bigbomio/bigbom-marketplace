@@ -21,7 +21,7 @@ const api = {
         return reasons;
     },
     getReason: id => {
-        return reasons[id + 1];
+        return reasons[id];
     },
 };
 

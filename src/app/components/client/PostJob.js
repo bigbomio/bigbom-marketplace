@@ -48,6 +48,14 @@ class ClientPostJob extends Component {
         };
     }
 
+    componentDidMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     async newJobInit(jobHash) {
         const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
         const { web3 } = this.props;
@@ -85,7 +93,9 @@ class ClientPostJob extends Component {
                 },
             });
             setTimeout(() => {
-                this.handleClose();
+                if (this.mounted) {
+                    this.handleClose();
+                }
             }, 10000);
         }
     }
@@ -297,7 +307,7 @@ class ClientPostJob extends Component {
                 } else if (Number(val) > 999999999) {
                     if (setState) {
                         this.setState({
-                            customBudgetErr: 'Please enter your custom budget most 999.9999.999 BBO',
+                            customBudgetErr: 'Please enter your custom budget most 999.999.999 BBO',
                         });
                     }
                     return false;
@@ -500,7 +510,7 @@ class ClientPostJob extends Component {
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
-                            <h1>Tell your freenlancer what you need done</h1>
+                            <h1>Tell your freelancer what you need done</h1>
                             <span className="description">
                                 Contact skilled freelancers within minutes. View profiles, ratings, portfolios and chat with them. Pay the freelancer
                                 only when you are 100% satisfied with their work.
@@ -573,20 +583,22 @@ class ClientPostJob extends Component {
                                     {!isCustomBudget ? (
                                         <Select value={selectedBudget} onChange={this.handleChangeBudget} options={budgets} />
                                     ) : (
-                                        <span className="custom-budget">
-                                            <ButtonBase className="btn btn-medium btn-gray medium-rectangle" onClick={this.backToCustom}>
-                                                <i className="fas fa-long-arrow-alt-left" />
-                                            </ButtonBase>
-                                            <input
-                                                className={customBudgetErr ? 'input-err' : ''}
-                                                type="number"
-                                                id="customBudget"
-                                                name="customBudget"
-                                                placeholder="Enter your custom budget..."
-                                                onChange={e => this.inputOnChange(e, 'customBudget')}
-                                            />
-                                            {customBudgetErr && <span className="err">{customBudgetErr}</span>}
-                                        </span>
+                                        <Grid container>
+                                            <span className="custom-budget">
+                                                <ButtonBase className="btn btn-medium btn-gray medium-rectangle" onClick={this.backToCustom}>
+                                                    <i className="fas fa-long-arrow-alt-left" />
+                                                </ButtonBase>
+                                                <input
+                                                    className={customBudgetErr ? 'input-err' : ''}
+                                                    type="number"
+                                                    id="customBudget"
+                                                    name="customBudget"
+                                                    placeholder="Enter your custom budget..."
+                                                    onChange={e => this.inputOnChange(e, 'customBudget')}
+                                                />
+                                            </span>
+                                            <Grid container>{customBudgetErr && <span className="err">{customBudgetErr}</span>}</Grid>
+                                        </Grid>
                                     )}
                                 </Grid>
                             </Grid>

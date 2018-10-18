@@ -12,7 +12,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
 import Utils from '../../_utils/utils';
-import { loginMetamask, setWeb3 } from '../home/actions';
+import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
 
 const connects = [
     {
@@ -72,7 +72,6 @@ class LoginMethods extends Component {
     }
     componentDidMount() {
         const { setWeb3 } = this.props;
-        global.web3.setProvider(new global.web3.providers.HttpProvider('http://178.128.124.201:8545/'));
         setWeb3(global.web3);
         this.setState({ isLogin: true });
     }
@@ -86,24 +85,15 @@ class LoginMethods extends Component {
         }
         return state;
     }
-    connectMetaMask = () => {
-        const { loginMetamask, history, home, homeAction } = this.props;
+    connectMetaMask = async () => {
+        const { loginMetamask, history, setCheckAcount } = this.props;
         const { web3 } = this.state;
         Utils.connectMetaMask(web3).then(
             async () => {
                 try {
                     loginMetamask();
-                    if (!home) {
-                        history.goBack();
-                    } else {
-                        if (homeAction) {
-                            if (homeAction === 'postJobAction') {
-                                history.push('/client');
-                            } else {
-                                history.push('/freelancer');
-                            }
-                        }
-                    }
+                    history.goBack();
+                    setCheckAcount(true);
                 } catch (err) {
                     this.setState({ open: true, errMsg: 'Something went wrong!' });
                 }
@@ -184,19 +174,20 @@ LoginMethods.propTypes = {
     history: PropTypes.object.isRequired,
     setWeb3: PropTypes.func.isRequired,
     isLogin: PropTypes.bool.isRequired,
-    home: PropTypes.bool.isRequired,
-    homeAction: PropTypes.string.isRequired,
+    setCheckAcount: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        isConnected: state.homeReducer.isConnected,
     };
 };
 
 const mapDispatchToProps = {
     loginMetamask,
     setWeb3,
+    setCheckAcount,
 };
 
 export default connect(
