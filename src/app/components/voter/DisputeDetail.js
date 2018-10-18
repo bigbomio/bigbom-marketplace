@@ -372,7 +372,7 @@ class DisputeDetail extends Component {
                 actStt: {
                     title: 'Error: ',
                     err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+                    text: 'Sorry, you have insufficient funds! You can not vote if your balance less than fee.',
                     link: '',
                 },
             });
@@ -383,7 +383,7 @@ class DisputeDetail extends Component {
                 actStt: {
                     title: 'Error: ',
                     err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than stake deposit.',
+                    text: 'Sorry, you have insufficient funds! You can not vote if your BBO balance less than stake deposit.',
                     link: (
                         <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
                             Get free BBO
@@ -691,13 +691,8 @@ class DisputeDetail extends Component {
                     <div className="container-wrp full-top-wrp">
                         <div className="container wrapper">
                             <Grid container className="main-intro">
-                                <Grid item xs={8}>
+                                <Grid item xs={10}>
                                     {disputeData && <h1>{disputeData.jobDispute.title}</h1>}
-                                </Grid>
-                                <Grid item xs={4} className="main-intro-right">
-                                    <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                        <i className="fas fa-plus" /> Create A Job Like This
-                                    </ButtonBase>
                                 </Grid>
                             </Grid>
                         </div>

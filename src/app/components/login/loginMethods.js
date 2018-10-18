@@ -71,8 +71,6 @@ class LoginMethods extends Component {
         };
     }
     componentDidMount() {
-        const { setWeb3 } = this.props;
-        setWeb3(global.web3);
         this.setState({ isLogin: true });
     }
 
@@ -172,7 +170,6 @@ class LoginMethods extends Component {
 LoginMethods.propTypes = {
     loginMetamask: PropTypes.func.isRequired,
     history: PropTypes.object.isRequired,
-    setWeb3: PropTypes.func.isRequired,
     isLogin: PropTypes.bool.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
 };

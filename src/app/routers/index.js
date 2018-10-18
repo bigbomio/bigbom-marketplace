@@ -28,8 +28,7 @@ class Routers extends PureComponent {
     }
 
     componentDidMount() {
-        const { setWeb3 } = this.props;
-        setWeb3(global.web3);
+        this.setWeb3();
         this.checkMetamaskID = setInterval(() => {
             this.checkMetamask();
         }, 1000);
@@ -48,6 +47,18 @@ class Routers extends PureComponent {
         }
         return state;
     }
+
+    setWeb3 = async () => {
+        const { setWeb3 } = this.props;
+        setWeb3(global.web3);
+        if (window.ethereum) {
+            try {
+                await window.ethereum.enable();
+            } catch (error) {
+                console.log('User denied account access...');
+            }
+        }
+    };
 
     getNetwork = async () => {
         const { web3, setYourNetwork } = this.props;

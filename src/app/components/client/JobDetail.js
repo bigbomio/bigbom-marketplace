@@ -123,13 +123,17 @@ class JobDetail extends Component {
     };
 
     setFinalizedStt = isFinal => {
-        this.setState({ isFinal });
+        if (this.mounted) {
+            this.setState({ isFinal });
+        }
     };
 
     setRespondedisputeStt = async event => {
         const commitDuration = event.commitEndDate * 1000;
         const evidenceDurtion = event.evidenceEndDate * 1000;
-        this.setState({ disputeDurations: event });
+        if (this.mounted) {
+            this.setState({ disputeDurations: event });
+        }
         if (commitDuration > Date.now() && evidenceDurtion <= Date.now()) {
             if (this.mounted) {
                 this.setState({
@@ -199,18 +203,16 @@ class JobDetail extends Component {
 
     viewVotingResult = () => {
         const { voteResult } = this.state;
-        if (this.mounted) {
-            this.setState({
-                open: true,
-                dialogLoading: false,
-                dialogContent: <VoteResult voteResult={voteResult} />,
-                dialogData: {
-                    actionText: null,
-                    actions: null,
-                },
-                actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
-            });
-        }
+        this.setState({
+            open: true,
+            dialogLoading: false,
+            dialogContent: <VoteResult voteResult={voteResult} />,
+            dialogData: {
+                actionText: null,
+                actions: null,
+            },
+            actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
+        });
     };
 
     finalizeDispute = async () => {
@@ -223,32 +225,28 @@ class JobDetail extends Component {
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
         if (err) {
-            if (this.mounted) {
-                this.setState({
-                    dialogLoading: false,
-                    dialogContent: null,
-                    actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not finalize dispute! :(', link: '' },
-                });
-            }
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not finalize dispute! :(', link: '' },
+            });
             console.log(err);
             return;
         }
-        if (this.mounted) {
-            this.setState({
-                actStt: {
-                    title: '',
-                    err: false,
-                    text: 'Your dispute has been finalized! Please waiting for confirm from your network.',
-                    link: (
-                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                            HERE
-                        </a>
-                    ),
-                },
-                finalizeDisputeDone: true,
-                dialogLoading: false,
-            });
-        }
+        this.setState({
+            actStt: {
+                title: '',
+                err: false,
+                text: 'Your dispute has been finalized! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+            finalizeDisputeDone: true,
+            dialogLoading: false,
+        });
         this.setActionBtnDisabled(true);
     };
 
@@ -268,33 +266,29 @@ class JobDetail extends Component {
             if (giveUp) {
                 text = 'Something went wrong! Can not give up the dispute! :(';
             }
-            if (this.mounted) {
-                this.setState({
-                    dialogLoading: false,
-                    dialogContent: null,
-                    actStt: { title: 'Error: ', err: true, text, link: '' },
-                });
-            }
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text, link: '' },
+            });
             console.log(err);
             this.setActionBtnDisabled(false);
             return;
         }
-        if (this.mounted) {
-            this.setState({
-                actStt: {
-                    title: '',
-                    err: false,
-                    text,
-                    link: (
-                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                            HERE
-                        </a>
-                    ),
-                },
-                updateDisputeDone: true,
-                dialogLoading: false,
-            });
-        }
+        this.setState({
+            actStt: {
+                title: '',
+                err: false,
+                text,
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+            updateDisputeDone: true,
+            dialogLoading: false,
+        });
     };
 
     disputeSttInit = async () => {
@@ -310,9 +304,7 @@ class JobDetail extends Component {
         });
         if (!error) {
             if (re) {
-                if (this.mounted) {
-                    abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
-                }
+                abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
             } else {
                 if (this.mounted) {
                     this.setState({ freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } } });
@@ -322,7 +314,7 @@ class JobDetail extends Component {
     };
 
     jobDataInit = async refresh => {
-        const { match, web3, jobs } = this.props;
+        const { match, web3, jobs, history } = this.props;
         const jobHash = match.params.jobId;
         this.setState({ isLoading: true, jobHash });
 
@@ -333,14 +325,13 @@ class JobDetail extends Component {
                     this.disputeSttInit();
                 }
                 if (jobData[0].owner !== web3.eth.defaultAccount) {
-                    this.setState({
-                        stt: { title: 'Error: ', err: true, text: 'You are not permission to view this page' },
-                        isLoading: false,
-                    });
+                    history.push('/freelancer/jobs/' + jobHash);
                     return;
                 }
-                this.setState({ jobData: jobData[0], isLoading: false });
-                return;
+                if (this.mounted) {
+                    this.setState({ jobData: jobData[0], isLoading: false });
+                    return;
+                }
             }
         }
         // get job status
@@ -354,10 +345,7 @@ class JobDetail extends Component {
             return;
         } else {
             if (jobStatusLog[0] !== web3.eth.defaultAccount) {
-                this.setState({
-                    stt: { title: 'Error: ', err: true, text: 'You are not permission to view this page' },
-                    isLoading: false,
-                });
+                history.push('/freelancer/jobs/' + jobHash);
                 return;
             }
             const jobStatus = Utils.getStatus(jobStatusLog);
