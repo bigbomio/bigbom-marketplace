@@ -13,20 +13,14 @@ const data = {
         name: '',
     },
     reload: false,
+    accounts: [],
+    defaultWallet: { address: '', default: true, balances: { ETH: 0, BBO: 0 } },
 };
 
 const initData = cloneDeep(data);
 
 const commonReducer = (state = initData, action) => {
     switch (action.type) {
-        case nameActList.SET_BALANCES: {
-            let balances = cloneDeep(state.balances);
-            balances = action.balances;
-            return {
-                ...state,
-                balances,
-            };
-        }
         case nameActList.SET_VIEW: {
             let view = cloneDeep(state.view);
             switch (action.view) {
@@ -69,6 +63,17 @@ const commonReducer = (state = initData, action) => {
             return {
                 ...state,
                 reload,
+            };
+        }
+        case nameActList.SAVE_ACCOUNTS: {
+            let accounts = cloneDeep(state.accounts);
+            let defaultWallet = cloneDeep(state.accounts);
+            accounts = action.accounts;
+            defaultWallet = action.accounts.filter(wallet => wallet.default);
+            return {
+                ...state,
+                accounts,
+                defaultWallet: defaultWallet[0],
             };
         }
         default:

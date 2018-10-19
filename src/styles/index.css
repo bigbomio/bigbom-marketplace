@@ -433,7 +433,7 @@ body {
           line-height: 1.5;
           color: #353535; }
           #bigbomMarketplace .list-container .list-body .list-body-row div.title a:hover {
-            color: #1876e2; }
+            color: #3f89b9; }
         #bigbomMarketplace .list-container .list-body .list-body-row div.title .err {
           color: red; }
         #bigbomMarketplace .list-container .list-body .list-body-row div.status {
@@ -557,7 +557,7 @@ body {
   #bigbomMarketplace .no-content p {
     margin-top: 20px; }
   #bigbomMarketplace .no-content a {
-    color: #1876e2;
+    color: #3f89b9;
     font-weight: bold; }
     #bigbomMarketplace .no-content a:hover {
       text-decoration: underline; }
@@ -642,10 +642,10 @@ body {
     #header header .logo {
       float: left; }
     #header header .nav {
-      float: right;
-      padding-top: 5px; }
+      float: right; }
       #header header .nav li {
-        display: inline-block; }
+        display: inline-block;
+        position: relative; }
         #header header .nav li.active a {
           color: #40bd56; }
         #header header .nav li a {
@@ -656,6 +656,115 @@ body {
           font-size: 16px; }
           #header header .nav li a:hover {
             color: #111; }
+        #header header .nav li.profile {
+          margin-left: 20px; }
+          #header header .nav li.profile .avatar {
+            cursor: pointer; }
+          #header header .nav li.profile .blue {
+            background: #0ca1f9;
+            color: #fff; }
+          #header header .nav li.profile .red {
+            background: #eb5858;
+            color: #fff; }
+          #header header .nav li.profile .pink {
+            background: palevioletred;
+            color: #fff; }
+          #header header .nav li.profile .green {
+            background: #40bd56;
+            color: #fff; }
+          #header header .nav li.profile .orange {
+            background: #f99a0c;
+            color: #fff; }
+          #header header .nav li.profile .yellow {
+            background: yellowgreen;
+            color: #fff; }
+          #header header .nav li.profile .dark {
+            background: #777;
+            color: #fff; }
+        #header header .nav li .user-info {
+          background: #fff;
+          box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+          padding: 20px;
+          position: absolute;
+          right: 0;
+          min-width: 300px;
+          z-index: 9999;
+          margin-top: 12px;
+          border-top: 1px solid #eee; }
+          #header header .nav li .user-info .user-info-item {
+            width: 100%;
+            float: left;
+            padding-bottom: 15px; }
+            #header header .nav li .user-info .user-info-item.top {
+              margin-bottom: 10px; }
+            #header header .nav li .user-info .user-info-item.balance {
+              font-size: 20px;
+              font-weight: bold;
+              color: #555;
+              display: flex; }
+              #header header .nav li .user-info .user-info-item.balance span {
+                width: 50px;
+                font-weight: normal;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: 10px;
+                background: #f9f9f9;
+                border: 1px solid #ccc;
+                font-size: 14px;
+                color: #888; }
+            #header header .nav li .user-info .user-info-item .avatar-left {
+              float: left; }
+            #header header .nav li .user-info .user-info-item .avatar-right {
+              float: left;
+              font-size: 16px;
+              font-weight: bold;
+              padding-left: 5px;
+              padding-top: 3px; }
+              #header header .nav li .user-info .user-info-item .avatar-right .email {
+                font-weight: normal;
+                padding-top: 5px;
+                color: #777;
+                font-size: 13px; }
+            #header header .nav li .user-info .user-info-item.addresses {
+              padding-top: 10px;
+              border-top: 1px solid #ccc; }
+              #header header .nav li .user-info .user-info-item.addresses .address-item {
+                display: flex;
+                padding: 6px 0;
+                font-size: 14px; }
+                #header header .nav li .user-info .user-info-item.addresses .address-item .address {
+                  padding: 4px 0;
+                  background: #f9f9f9;
+                  border-radius: 10px;
+                  border: 1px solid #ccc;
+                  color: #777;
+                  width: 160px;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center; }
+                  #header header .nav li .user-info .user-info-item.addresses .address-item .address.selected {
+                    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+                    color: #3f89b9;
+                    border-color: #3f89b9; }
+                #header header .nav li .user-info .user-info-item.addresses .address-item .default {
+                  color: #888;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  padding-left: 10px; }
+                #header header .nav li .user-info .user-info-item.addresses .address-item .set-default {
+                  padding: 5px 10px;
+                  background: #3f89b9;
+                  color: #fff;
+                  border-radius: 4px;
+                  font-size: 12px;
+                  display: flex;
+                  align-items: center;
+                  margin-left: 10px;
+                  cursor: pointer; }
+                  #header header .nav li .user-info .user-info-item.addresses .address-item .set-default:hover {
+                    background: #0ca1f9; }
 
 #footer {
   background: #fff;

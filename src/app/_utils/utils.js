@@ -325,6 +325,36 @@ class Utils {
     toWidth(a, b) {
         return a / ((a + b) / 100);
     }
+
+    accountsInit = async (web3, callback, abiConfig, defaultWallet) => {
+        const accountsFetch = [
+            { address: '0x6D02c7ac101F4e909A2f3d149022fbb5e4939a68', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0xB4cfa9AceEfE2120A1568Aa34eC3F2F9fB6eef12', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0xBD3614fc1fCF72682b44021Db8396E518fEDcBF1', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0x6D58F2848156A8B3Bd18cB9Ce4392a876E558eC9', default: false, balances: { ETH: 0, BBO: 0 } },
+        ];
+        const defaultAddress = defaultWallet || accountsFetch[0].address;
+
+        let accounts = [];
+        for (let acc of accountsFetch) {
+            let address = { address: acc.address, default: defaultAddress.toLowerCase() === acc.address.toLowerCase(), balances: { ETH: 0, BBO: 0 } };
+            await web3.eth.getBalance(acc.address, (err, balance) => {
+                const ethBalance = this.WeiToBBO(web3, balance).toFixed(3);
+                address.balances.ETH = ethBalance;
+            });
+            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+            const [errBalance, balance] = await this.callMethod(BBOinstance.instance.balanceOf)(acc.address);
+
+            if (!errBalance) {
+                const BBOBalance = this.WeiToBBO(web3, balance).toFixed(3);
+                address.balances.BBO = BBOBalance;
+            }
+            accounts.push(address);
+        }
+
+        callback(accounts);
+    };
 }
 
 export default new Utils();

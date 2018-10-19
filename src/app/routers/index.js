@@ -14,7 +14,7 @@ import RoutersAuthen from './RoutersAuthen';
 
 import abiConfig from '../_services/abiConfig';
 import Utils from '../_utils/utils';
-import { setYourNetwork, setBalances, setReload } from '../components/common/actions';
+import { setYourNetwork, setReload, saveAccounts } from '../components/common/actions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
@@ -69,30 +69,9 @@ class Routers extends PureComponent {
         }
     };
 
-    getBalance = async () => {
-        const { web3, setBalances } = this.props;
-        let balances = {
-            ETH: 0,
-            BBO: 0,
-        };
-        web3.eth.getBalance(web3.eth.defaultAccount, (err, balance) => {
-            const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-            balances.ETH = ethBalance;
-            //console.log(ethBalance, 'ETH');
-        });
-
-        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(BBOinstance.defaultAccount, {
-            from: BBOinstance.defaultAccount,
-            gasPrice: +BBOinstance.gasPrice.toString(10),
-        });
-
-        if (!errBalance) {
-            const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-            balances.BBO = BBOBalance;
-            //console.log(BBOBalance, 'BBO');
-        }
-        setBalances(balances);
+    accountsInit = async defaultAcc => {
+        const { saveAccounts, web3 } = this.props;
+        Utils.accountsInit(web3, saveAccounts, abiConfig, defaultAcc);
     };
 
     checkMetamask = async () => {
@@ -105,8 +84,8 @@ class Routers extends PureComponent {
             try {
                 const { account, network } = await Utils.connectMetaMask(web3);
                 if (account) {
-                    this.getBalance();
                     if (defaultAccount !== account) {
+                        this.accountsInit(web3.eth.defaultAccount);
                         setAccount(account);
                         setNetwork(network);
                         this.getNetwork();
@@ -173,9 +152,9 @@ Routers.propTypes = {
     setAccount: PropTypes.func.isRequired,
     setNetwork: PropTypes.func.isRequired,
     setYourNetwork: PropTypes.func.isRequired,
-    setBalances: PropTypes.func.isRequired,
     setReload: PropTypes.func.isRequired,
     checkAccount: PropTypes.bool.isRequired,
+    saveAccounts: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -195,8 +174,8 @@ const mapDispatchToProps = {
     setAccount,
     setNetwork,
     setYourNetwork,
-    setBalances,
     setReload,
+    saveAccounts,
 };
 
 export default connect(

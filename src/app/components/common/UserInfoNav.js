@@ -25,14 +25,10 @@ class UserInfoNav extends Component {
     componentDidMount() {}
 
     render() {
-        const { defaultAccount, isConnected, classes, balances, yourNetwork } = this.props;
+        const { defaultAccount, isConnected, classes, yourNetwork } = this.props;
         return (
             isConnected && (
                 <Grid container className="account-info">
-                    <Grid item xs={4} className="account-info-item">
-                        <div>Your Balance</div>
-                        {Utils.currencyFormat(balances.BBO)} BBO
-                    </Grid>
                     <Tooltip title={defaultAccount} classes={{ tooltip: classes.lightTooltip, popper: classes.arrowPopper }}>
                         <Grid item xs={5} className="account-info-item" aria-label={defaultAccount}>
                             <div>Your Wallet Address</div>
@@ -53,7 +49,6 @@ UserInfoNav.propTypes = {
     defaultAccount: PropTypes.string.isRequired,
     isConnected: PropTypes.bool.isRequired,
     classes: PropTypes.object.isRequired,
-    balances: PropTypes.object.isRequired,
     yourNetwork: PropTypes.object.isRequired,
 };
 
@@ -62,7 +57,6 @@ const mapStateToProps = state => {
         defaultAccount: state.homeReducer.defaultAccount,
         isConnected: state.homeReducer.isConnected,
         web3: state.homeReducer.web3,
-        balances: state.commonReducer.balances,
         yourNetwork: state.commonReducer.yourNetwork,
     };
 };

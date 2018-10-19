@@ -12,7 +12,11 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
 import Utils from '../../_utils/utils';
+import abiConfig from '../../_services/abiConfig';
 import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
+import { saveAccounts } from '../../components/common/actions';
+
+const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
 const connects = [
     {
@@ -83,6 +87,16 @@ class LoginMethods extends Component {
         }
         return state;
     }
+
+    radomClass = () => {
+        Utils.setCookie('avatar', avatarColors[Math.floor(Math.random() * avatarColors.length)], 1);
+    };
+
+    accountsInit = async defaultAcc => {
+        const { saveAccounts, web3 } = this.props;
+        Utils.accountsInit(web3, saveAccounts, abiConfig, defaultAcc);
+    };
+
     connectMetaMask = async () => {
         const { loginMetamask, history, setCheckAcount } = this.props;
         const { web3 } = this.state;
@@ -90,6 +104,8 @@ class LoginMethods extends Component {
             async () => {
                 try {
                     loginMetamask();
+                    this.accountsInit();
+                    this.radomClass(); // set color for avatar
                     history.goBack();
                     setCheckAcount(true);
                 } catch (err) {
@@ -108,9 +124,11 @@ class LoginMethods extends Component {
             }
         );
     };
+
     handleClose = () => {
         this.setState({ open: false });
     };
+
     render() {
         const { isLogin } = this.props;
         const { open, errMsg } = this.state;
@@ -172,12 +190,15 @@ LoginMethods.propTypes = {
     history: PropTypes.object.isRequired,
     isLogin: PropTypes.bool.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
+    saveAccounts: PropTypes.func.isRequired,
+    accounts: PropTypes.array.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
+        accounts: state.commonReducer.accounts,
     };
 };
 
@@ -185,6 +206,7 @@ const mapDispatchToProps = {
     loginMetamask,
     setWeb3,
     setCheckAcount,
+    saveAccounts,
 };
 
 export default connect(
