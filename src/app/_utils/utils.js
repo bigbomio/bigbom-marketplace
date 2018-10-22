@@ -337,6 +337,8 @@ class Utils {
         const defaultAddress = defaultWallet || accountsFetch[0].address;
 
         let accounts = [];
+        web3.eth.defaultAccount = defaultAddress;
+        web3.eth.accounts[0] = defaultAddress;
         for (let acc of accountsFetch) {
             let address = { address: acc.address, default: defaultAddress.toLowerCase() === acc.address.toLowerCase(), balances: { ETH: 0, BBO: 0 } };
             await web3.eth.getBalance(acc.address, (err, balance) => {
@@ -355,6 +357,17 @@ class Utils {
 
         callback(accounts);
     };
+
+    copyStringToClipboard(str) {
+        var el = document.createElement('textarea');
+        el.value = str;
+        el.setAttribute('readonly', '');
+        el.style = { position: 'absolute', left: '-9999px' };
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+    }
 }
 
 export default new Utils();

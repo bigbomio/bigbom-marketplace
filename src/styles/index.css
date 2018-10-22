@@ -260,7 +260,7 @@ body {
 
 #bigbomMarketplace .account-info {
   padding: 4px 10px;
-  width: 40%;
+  width: 30%;
   float: right;
   border-right: 1px solid rgba(0, 0, 0, 0.3);
   border-left: 1px solid rgba(0, 0, 0, 0.3);
@@ -270,7 +270,8 @@ body {
   #bigbomMarketplace .account-info .account-info-item {
     color: #fff;
     font-size: 14px;
-    line-height: 19px; }
+    line-height: 19px;
+    cursor: pointer; }
     #bigbomMarketplace .account-info .account-info-item.right {
       padding-left: 15px; }
     #bigbomMarketplace .account-info .account-info-item div {
@@ -643,9 +644,13 @@ body {
       float: left; }
     #header header .nav {
       float: right; }
+      #header header .nav.not-login-yet {
+        margin-top: 7px; }
       #header header .nav li {
         display: inline-block;
         position: relative; }
+        #header header .nav li .get-bbo-btn {
+          margin-top: -2px; }
         #header header .nav li.active a {
           color: #40bd56; }
         #header header .nav li a {
@@ -690,7 +695,12 @@ body {
           min-width: 300px;
           z-index: 9999;
           margin-top: 12px;
-          border-top: 1px solid #eee; }
+          border-top: 1px solid #eee;
+          visibility: hidden; }
+          #header header .nav li .user-info.hide {
+            visibility: hidden; }
+          #header header .nav li .user-info.show {
+            visibility: visible; }
           #header header .nav li .user-info .user-info-item {
             width: 100%;
             float: left;
@@ -739,10 +749,11 @@ body {
                   border-radius: 10px;
                   border: 1px solid #ccc;
                   color: #777;
-                  width: 160px;
+                  width: 200px;
                   display: flex;
                   justify-content: center;
-                  align-items: center; }
+                  align-items: center;
+                  cursor: pointer; }
                   #header header .nav li .user-info .user-info-item.addresses .address-item .address.selected {
                     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
                     color: #3f89b9;
@@ -752,7 +763,7 @@ body {
                   display: flex;
                   justify-content: center;
                   align-items: center;
-                  padding-left: 10px; }
+                  padding-left: 5px; }
                 #header header .nav li .user-info .user-info-item.addresses .address-item .set-default {
                   padding: 5px 10px;
                   background: #3f89b9;
@@ -888,11 +899,11 @@ body {
   min-height: 100px; }
   #home .home-content h2,
   #client .home-content h2 {
-    font-size: 30px;
+    font-size: 25px;
     color: #444;
     text-align: center;
     width: 100%;
-    padding: 40px 0; }
+    padding: 40px 0 20px 0; }
   #home .home-content .note,
   #client .home-content .note {
     text-align: center;
@@ -1619,3 +1630,26 @@ a {
       margin-right: 3px; }
     .top-action .note button {
       margin-top: -10px; }
+
+.login-page {
+  min-height: 380px;
+  justify-content: center;
+  align-items: center; }
+  .login-page .connect-item {
+    padding: 30px 40px 30px 40px !important;
+    box-shadow: 0 -5px #2eae3b !important; }
+  .login-page .logo {
+    text-align: center; }
+    .login-page .logo img {
+      width: 120px; }
+  .login-page .name {
+    font-size: 25px;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+  .login-page .btn {
+    width: 200px;
+    border-radius: 4px !important;
+    border-bottom: 4px solid #ccc;
+    text-transform: uppercase; }

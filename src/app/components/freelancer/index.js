@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Dashboard from './Dashboard';
+import YourBids from './YourBids';
 import JobDetailBid from './JobDetailBid';
 import JobBrowse from './JobBrowse';
 import NotFound from '../NotFound';
@@ -39,9 +39,9 @@ class FreelancerContainer extends Component {
                 component: JobBrowse,
             },
             {
-                title: 'My Bid',
-                path: `${match.url}/bid`,
-                component: Dashboard,
+                title: 'Your Bids',
+                path: `${match.url}/your-bids`,
+                component: YourBids,
             },
         ];
 
@@ -64,7 +64,7 @@ class FreelancerContainer extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/jobs/:jobId`} render={props => <JobDetailBid {...props} />} />
+                    <Route path={`${match.url}/your-bids/:jobId`} render={props => <JobDetailBid {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>

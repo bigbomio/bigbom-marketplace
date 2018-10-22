@@ -325,7 +325,7 @@ class JobDetail extends Component {
                     this.disputeSttInit();
                 }
                 if (jobData[0].owner !== web3.eth.defaultAccount) {
-                    history.push('/freelancer/jobs/' + jobHash);
+                    history.push('/freelancer/your-bids/' + jobHash);
                     return;
                 }
                 if (this.mounted) {
@@ -345,7 +345,7 @@ class JobDetail extends Component {
             return;
         } else {
             if (jobStatusLog[0] !== web3.eth.defaultAccount) {
-                history.push('/freelancer/jobs/' + jobHash);
+                history.push('/freelancer/your-bids/' + jobHash);
                 return;
             }
             const jobStatus = Utils.getStatus(jobStatusLog);

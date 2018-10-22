@@ -250,6 +250,13 @@ class ClientPostJob extends Component {
                         });
                     }
                     return false;
+                } else if (Number(val) > 6360) {
+                    if (setState) {
+                        this.setState({
+                            estimatedTimeErr: 'Please enter your estimated time most 1 year (6360 Hours)',
+                        });
+                    }
+                    return false;
                 }
             }
             return true;

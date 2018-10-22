@@ -20,7 +20,7 @@ const categories = settingsApi.getCategories();
 
 let jobs = [];
 
-class FreelancerDashboard extends Component {
+class YourBids extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -259,7 +259,7 @@ class FreelancerDashboard extends Component {
                         return !job.err ? (
                             <Grid key={job.id} container className="list-body-row">
                                 <Grid item xs={7} className="title">
-                                    <Link to={`jobs/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+                                    <Link to={`your-bids/${Utils.toAscii(job.id)}`}>{job.title}</Link>
                                 </Grid>
                                 <Grid item xs={2}>
                                     {job.budget && (
@@ -459,7 +459,7 @@ class FreelancerDashboard extends Component {
     }
 }
 
-FreelancerDashboard.propTypes = {
+YourBids.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
@@ -480,4 +480,4 @@ const mapDispatchToProps = { saveJobs, setReload };
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(FreelancerDashboard);
+)(YourBids);

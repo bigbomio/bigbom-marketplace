@@ -21,7 +21,7 @@ const categories = settingsApi.getCategories();
 
 let jobs = [];
 
-class ClientDashboard extends Component {
+class YourJobs extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -460,7 +460,7 @@ class ClientDashboard extends Component {
     }
 }
 
-ClientDashboard.propTypes = {
+YourJobs.propTypes = {
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
@@ -486,4 +486,4 @@ const mapDispatchToProps = {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(ClientDashboard);
+)(YourJobs);

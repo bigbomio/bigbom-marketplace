@@ -283,3 +283,32 @@ a {
         }
     }
 }
+
+.login-page {
+    min-height: 380px;
+    justify-content: center;
+    align-items: center;
+    .connect-item {
+        padding: 30px 40px 30px 40px !important;
+        box-shadow: 0 -5px #2eae3b !important;
+    }
+    .logo {
+        text-align: center;
+        img {
+            width: 120px;
+        }
+    }
+    .name {
+        font-size: 25px;
+        font-weight: bold;
+        color: #fff;
+        text-align: center;
+        text-shadow: $thinShadow;
+    }
+    .btn {
+        width: 200px;
+        border-radius: 4px !important;
+        border-bottom: 4px solid #ccc;
+        text-transform: uppercase;
+    }
+}

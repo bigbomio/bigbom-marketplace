@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import posed from 'react-pose';
 import { connect } from 'react-redux';
 import Eth from 'ethjs';
 
@@ -10,73 +9,25 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import { Grid } from '@material-ui/core';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
-import { saveAccounts } from '../../components/common/actions';
+import { saveAccounts } from '../common/actions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
-const connects = [
-    {
-        logo: '/images/metamask.png',
-        name: 'Metamask',
-        action: function(e) {
-            e.connectMetaMask();
-        },
-    },
-    {
-        logo: '/images/trezor.png',
-        name: 'Trezor',
-        action: null,
-    },
-    {
-        logo: '/images/ledger.png',
-        name: 'Ledger',
-        action: null,
-    },
-];
-
-const ContainerProps = {
-    open: {
-        x: '0%',
-        delayChildren: 300,
-        staggerChildren: 50,
-    },
-    closed: {
-        delay: 500,
-        staggerChildren: 20,
-    },
-};
-
-const Container = posed.div(ContainerProps);
-const Square = posed.div({
-    idle: {
-        y: 0,
-    },
-    popped: {
-        y: -10,
-        transition: { duration: 400 },
-    },
-    open: { opacity: 1, x: 0 },
-    closed: { opacity: 0, x: 300 },
-});
-
-class LoginMethods extends Component {
+class LoginMetamask extends Component {
     constructor(props) {
         super(props);
         this.state = {
             web3: null,
-            hovering1: false,
-            hovering2: false,
-            hovering3: false,
             open: false,
         };
     }
     componentDidMount() {
         const { saveAccounts } = this.props;
-        this.setState({ isLogin: true });
         saveAccounts([]);
     }
 
@@ -132,10 +83,9 @@ class LoginMethods extends Component {
     };
 
     render() {
-        const { isLogin } = this.props;
         const { open, errMsg } = this.state;
         return (
-            <Container id="login" className="home-intro sidebar" pose={isLogin ? 'open' : 'closed'}>
+            <Grid container id="login" className="home-intro sidebar login-page">
                 <Dialog
                     open={open}
                     onClose={this.handleClose}
@@ -154,43 +104,25 @@ class LoginMethods extends Component {
                         </ButtonBase>
                     </DialogActions>
                 </Dialog>
-                {connects.map((cn, i) => {
-                    const hoverName = 'hovering' + i;
-                    return (
-                        <Square
-                            pose={this.state[hoverName] ? 'popped' : 'idle'}
-                            onMouseEnter={() => this.setState({ [hoverName]: true })}
-                            onMouseLeave={() => this.setState({ [hoverName]: false })}
-                            key={i}
-                            className="connect-item-wrp"
-                        >
-                            <div className="connect-item">
-                                <div className="logo">
-                                    <img src={cn.logo} alt="" />
-                                </div>
-                                <div className="name">{cn.name}</div>
-                                {cn.action ? (
-                                    <ButtonBase className="btn btn-normal btn-white" onClick={() => cn.action(this)}>
-                                        Connect
-                                    </ButtonBase>
-                                ) : (
-                                    <ButtonBase className="btn btn-normal btn-white" disabled>
-                                        Connect
-                                    </ButtonBase>
-                                )}
-                            </div>
-                        </Square>
-                    );
-                })}
-            </Container>
+                <div className="connect-item-wrp">
+                    <div className="connect-item">
+                        <div className="logo">
+                            <img src="/images/mtm-lg.png" alt="" />
+                        </div>
+                        <div className="name">Metamask</div>
+                        <ButtonBase className="btn btn-normal btn-white" onClick={this.connectMetaMask}>
+                            Login
+                        </ButtonBase>
+                    </div>
+                </div>
+            </Grid>
         );
     }
 }
 
-LoginMethods.propTypes = {
+LoginMetamask.propTypes = {
     loginMetamask: PropTypes.func.isRequired,
     history: PropTypes.object.isRequired,
-    isLogin: PropTypes.bool.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
     saveAccounts: PropTypes.func.isRequired,
 };
@@ -212,4 +144,4 @@ const mapDispatchToProps = {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(LoginMethods);
+)(LoginMetamask);

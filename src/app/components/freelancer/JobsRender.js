@@ -29,7 +29,7 @@ class JobsRender extends Component {
                         const maxLength = 400; // max length characters show on description
                         const description = job.description.length > maxLength ? job.description.slice(0, maxLength) + '...' : job.description;
                         return (
-                            <Link to={'freelancer/jobs/' + job.jobHash} key={i} className="job-item">
+                            <Link to={'freelancer/your-bids/' + job.jobHash} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={9} className="title">

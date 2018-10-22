@@ -264,7 +264,6 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            let bidAddr = '';
             for (let event of events) {
                 const bidTpl = {
                     address: event.args.owner,
@@ -276,18 +275,16 @@ class abiConfigs {
                     canceled: false,
                     bidBlockNumber: event.blockNumber,
                 };
+
                 if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
-                    // get latest bid for each address
-                    if (bidTpl.address !== bidAddr) {
-                        bidAddr = bidTpl.address;
-                        mergeData.bid.push(bidTpl);
-                    } else {
-                        mergeData.bid.map((b, i) => {
-                            if (b.address === bidTpl.address) {
+                    mergeData.bid.push(bidTpl);
+                    if (mergeData.bid.length > 0) {
+                        for (let i = 0; i < mergeData.bid.length; i++) {
+                            if (mergeData.bid[i].address === event.args.owner) {
                                 mergeData.bid[i] = bidTpl;
                             }
-                            return mergeData;
-                        });
+                        }
+                        mergeData.bid = Utils.removeDuplicates(mergeData.bid, 'address');
                     }
                 }
             }

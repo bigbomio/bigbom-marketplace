@@ -100,12 +100,18 @@ class Header extends PureComponent {
     };
 
     handleClickAway = () => {
+        const userMenu = document.getElementById('user-info');
+        userMenu.classList.add('hide');
+        userMenu.classList.remove('show');
         this.setState({
             checked: false,
         });
     };
 
     profileOpen = () => {
+        const userMenu = document.getElementById('user-info');
+        userMenu.classList.add('show');
+        userMenu.classList.remove('hide');
         this.setState(state => ({ checked: !state.checked }));
     };
 
@@ -123,14 +129,7 @@ class Header extends PureComponent {
                             </Link>
                         </div>
                         {routes.length && (
-                            <ul className="nav">
-                                {/* {!isConnected && (
-                                    <li>
-                                        <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.login()}>
-                                            Login
-                                        </ButtonBase>
-                                    </li>
-                                )} */}
+                            <ul className={accounts.length > 0 ? 'nav' : 'nav not-login-yet'}>
                                 <li>
                                     <List component="nav" className="top-selection">
                                         <ListItem
@@ -160,63 +159,59 @@ class Header extends PureComponent {
                                     </Menu>
                                 </li>
                                 <li>
-                                    <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.getBBO()}>
+                                    <ButtonBase variant="contained" className="btn btn-normal btn-green get-bbo-btn" onClick={() => this.getBBO()}>
                                         Get Free BBO
                                     </ButtonBase>
                                 </li>
-                                <ClickAwayListener onClickAway={this.handleClickAway}>
-                                    <li className="profile">
-                                        <Avatar className={'avatar ' + avatarColor} onClick={this.profileOpen}>
-                                            {this.getNameAvatar()}
-                                        </Avatar>
-                                        <Fade in={checked}>
-                                            <div className="user-info">
-                                                <ul>
-                                                    <li className="user-info-item top">
-                                                        <Avatar className={'avatar avatar-left ' + avatarColor}>{this.getNameAvatar()}</Avatar>
-                                                        <div className="avatar-right">
-                                                            <div>Hieu Huynh</div>
-                                                            <div className="email">Hieu102@gmail.com</div>
-                                                        </div>
-                                                    </li>
-                                                    {defaultWallet && (
-                                                        <li className="user-info-item balance">
-                                                            {Utils.currencyFormat(defaultWallet.balances.ETH)} <span>ETH</span>
+                                {accounts.length > 0 && (
+                                    <ClickAwayListener onClickAway={this.handleClickAway}>
+                                        <li className="profile">
+                                            <Avatar className={'avatar ' + avatarColor} onClick={this.profileOpen}>
+                                                {this.getNameAvatar()}
+                                            </Avatar>
+                                            <Fade in={checked}>
+                                                <div className="user-info" id="user-info">
+                                                    <ul>
+                                                        <li className="user-info-item top">
+                                                            <Avatar className={'avatar avatar-left ' + avatarColor}>{this.getNameAvatar()}</Avatar>
+                                                            <div className="avatar-right">
+                                                                <div>Hieu Huynh</div>
+                                                                <div className="email">Hieu102@gmail.com</div>
+                                                            </div>
                                                         </li>
-                                                    )}
+                                                        {defaultWallet && (
+                                                            <li className="user-info-item balance">
+                                                                {Utils.currencyFormat(defaultWallet.balances.ETH)} <span>ETH</span>
+                                                            </li>
+                                                        )}
 
-                                                    {defaultWallet && (
-                                                        <li className="user-info-item balance">
-                                                            {Utils.currencyFormat(defaultWallet.balances.BBO)} <span>BBO</span>
-                                                        </li>
-                                                    )}
-                                                    <li className="user-info-item addresses">
-                                                        {accounts &&
-                                                            accounts.map(wallet => {
+                                                        {defaultWallet && (
+                                                            <li className="user-info-item balance">
+                                                                {Utils.currencyFormat(defaultWallet.balances.BBO)} <span>BBO</span>
+                                                            </li>
+                                                        )}
+                                                        <li className="user-info-item addresses">
+                                                            {accounts.map(wallet => {
                                                                 return (
                                                                     <div className="address-item" key={wallet.address}>
-                                                                        <div className={wallet.default ? 'address selected' : 'address'}>
-                                                                            {Utils.truncate(wallet.address, 18)}
+                                                                        <div
+                                                                            title="Click to copy"
+                                                                            className={wallet.default ? 'address selected' : 'address'}
+                                                                            onClick={() => Utils.copyStringToClipboard(wallet.address)}
+                                                                        >
+                                                                            {Utils.truncate(wallet.address, 23)}
                                                                         </div>
-                                                                        {wallet.default ? (
-                                                                            <span className="default">Default</span>
-                                                                        ) : (
-                                                                            <span
-                                                                                className="set-default"
-                                                                                onClick={() => this.accountsInit(wallet.address)}
-                                                                            >
-                                                                                Set default
-                                                                            </span>
-                                                                        )}
+                                                                        {wallet.default && <span className="default">Default</span>}
                                                                     </div>
                                                                 );
                                                             })}
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </Fade>
-                                    </li>
-                                </ClickAwayListener>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </Fade>
+                                        </li>
+                                    </ClickAwayListener>
+                                )}
                             </ul>
                         )}
                     </header>

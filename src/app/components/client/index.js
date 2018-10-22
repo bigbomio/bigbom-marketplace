@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Manage from '../../components/client/Manage';
+import YourJobs from './YourJobs';
 import JobDetail from '../../components/client/JobDetail';
 import PostJob from '../../components/client//PostJob';
 import NotFound from '../../components/NotFound';
@@ -41,9 +41,9 @@ class ClientCatagories extends Component {
                 component: PostJob,
             },
             {
-                title: 'Manage',
-                path: `${match.url}/manage`,
-                component: Manage,
+                title: 'Your Jobs',
+                path: `${match.url}/your-jobs`,
+                component: YourJobs,
             },
         ];
 
@@ -66,7 +66,7 @@ class ClientCatagories extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/manage/:jobId`} render={props => <JobDetail {...props} />} />
+                    <Route path={`${match.url}/your-jobs/:jobId`} render={props => <JobDetail {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>

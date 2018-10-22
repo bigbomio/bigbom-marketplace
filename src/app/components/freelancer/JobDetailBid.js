@@ -351,10 +351,18 @@ class JobDetailBid extends Component {
                         }
                         return (
                             <span className="note">
-                                <i className="fas fa-check-circle green" /> <span className="bold">You have bid this job</span>, please waiting
-                                acceptance from job owner.
+                                <i className="fas fa-check-circle green" /> <span className="bold">You have bid this job</span>
                                 <ButtonBase className="btn btn-normal btn-red btn-bid" onClick={this.confirmCancelBid} disabled={cancelBidDone}>
                                     Cancel Bid
+                                </ButtonBase>
+                                <ButtonBase
+                                    className="btn btn-normal btn-green btn-bid btn-right"
+                                    onClick={() => this.bidSwitched(true)}
+                                    aria-label="Collapse"
+                                    checked={checkedBid}
+                                    disabled={bidDone}
+                                >
+                                    Place New Bid
                                 </ButtonBase>
                             </span>
                         );
@@ -656,7 +664,7 @@ class JobDetailBid extends Component {
                 }
                 abiConfig.checkPayment(web3, jobHash, this.setPaymentStt);
                 if (web3.eth.defaultAccount === jobData[0].owner) {
-                    history.push('/client/manage/' + jobHash);
+                    history.push('/client/your-jobs/' + jobHash);
                 }
                 if (this.mounted) {
                     this.setState({ jobData: jobData[0], isLoading: false, isOwner: web3.eth.defaultAccount === jobData[0].owner });
@@ -726,6 +734,7 @@ class JobDetailBid extends Component {
     };
 
     BidAcceptedInit = async jobData => {
+        console.log(jobData.data);
         const { web3 } = this.props;
         const { jobHash } = this.state;
         abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
@@ -736,7 +745,7 @@ class JobDetailBid extends Component {
         const { web3, history } = this.props;
         if (this.mounted) {
             if (web3.eth.defaultAccount === jobData.data.owner) {
-                history.push('/client/manage/' + jobData.data.jobHash);
+                history.push('/client/your-jobs/' + jobData.data.jobHash);
             }
             this.setState({
                 jobData: jobData.data,
@@ -1109,7 +1118,7 @@ class JobDetailBid extends Component {
 
     viewMyJobs = () => {
         const { history } = this.props;
-        history.push('/client/manage');
+        history.push('/client/your-jobs');
     };
 
     handlePopoverOpen = event => {
