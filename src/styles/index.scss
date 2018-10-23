@@ -311,4 +311,53 @@ a {
         border-bottom: 4px solid #ccc;
         text-transform: uppercase;
     }
+    .register-wrp {
+        width: 400px;
+        input {
+            padding: 10px 20px;
+            width: 100%;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.15);
+            -webkit-transition: all 0.3s ease-in-out;
+            -moz-transition: all 0.3s ease-in-out;
+            -ms-transition: all 0.3s ease-in-out;
+            -o-transition: all 0.3s ease-in-out;
+            outline: none;
+            color: #fff;
+            border: 1px solid rgb(187, 252, 160);
+            border-radius: 4px;
+            &::placeholder {
+                color: rgb(187, 223, 174);
+                opacity: 1;
+            }
+            &:focus {
+                border: 1px solid rgb(255, 255, 255);
+            }
+        }
+        .form-row {
+            margin-top: 20px;
+            .form-row-input {
+                flex-wrap: nowrap;
+            }
+            .first-name {
+                margin-right: 10px;
+            }
+            .form-row-label {
+                font-size: 14px;
+                color: #fff;
+                padding-bottom: 5px;
+                text-shadow: $thinShadow;
+            }
+            &.confirm {
+                margin-top: 10px;
+            }
+            .wallet {
+                background: #f9f9f9;
+                padding: 5px 0px;
+                text-align: center;
+                color: #4f82a7;
+                font-size: 15px;
+            }
+        }
+    }
 }

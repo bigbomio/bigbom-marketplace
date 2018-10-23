@@ -1653,3 +1653,42 @@ a {
     border-radius: 4px !important;
     border-bottom: 4px solid #ccc;
     text-transform: uppercase; }
+  .login-page .register-wrp {
+    width: 400px; }
+    .login-page .register-wrp input {
+      padding: 10px 20px;
+      width: 100%;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.15);
+      -webkit-transition: all 0.3s ease-in-out;
+      -moz-transition: all 0.3s ease-in-out;
+      -ms-transition: all 0.3s ease-in-out;
+      -o-transition: all 0.3s ease-in-out;
+      outline: none;
+      color: #fff;
+      border: 1px solid #bbfca0;
+      border-radius: 4px; }
+      .login-page .register-wrp input::placeholder {
+        color: #bbdfae;
+        opacity: 1; }
+      .login-page .register-wrp input:focus {
+        border: 1px solid white; }
+    .login-page .register-wrp .form-row {
+      margin-top: 20px; }
+      .login-page .register-wrp .form-row .form-row-input {
+        flex-wrap: nowrap; }
+      .login-page .register-wrp .form-row .first-name {
+        margin-right: 10px; }
+      .login-page .register-wrp .form-row .form-row-label {
+        font-size: 14px;
+        color: #fff;
+        padding-bottom: 5px;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+      .login-page .register-wrp .form-row.confirm {
+        margin-top: 10px; }
+      .login-page .register-wrp .form-row .wallet {
+        background: #f9f9f9;
+        padding: 5px 0px;
+        text-align: center;
+        color: #4f82a7;
+        font-size: 15px; }

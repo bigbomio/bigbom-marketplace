@@ -24,6 +24,7 @@ class LoginMetamask extends Component {
         this.state = {
             web3: null,
             open: false,
+            register: true,
         };
     }
     componentDidMount() {
@@ -78,12 +79,58 @@ class LoginMetamask extends Component {
         );
     };
 
+    formRender = () => {
+        return (
+            <Grid container>
+                <Grid container className="form-row">
+                    <Grid item xs={12} className="form-row-label">
+                        Your name
+                    </Grid>
+                    <Grid container className="form-row-input">
+                        <Grid item xs={6} className="first-name">
+                            <input type="text" placeholder="First name" />
+                        </Grid>
+                        <Grid item xs={6} className="last-name">
+                            <input type="text" placeholder="Last name" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid container className="form-row">
+                    <Grid item xs={12} className="form-row-label">
+                        Your email
+                    </Grid>
+                    <Grid container className="form-row-input">
+                        <input type="text" placeholder="Email" />
+                    </Grid>
+                </Grid>
+                <Grid container className="form-row confirm">
+                    <Grid container className="form-row-input">
+                        <input type="text" placeholder="Confirm your email" />
+                    </Grid>
+                </Grid>
+                <Grid container className="form-row">
+                    <Grid item xs={12} className="form-row-label">
+                        Your wallet address
+                    </Grid>
+                    <Grid item xs={12} className="wallet">
+                        0x6D02c7ac101F4e909A2f3d149022fbb5e4939a68
+                    </Grid>
+                </Grid>
+                <Grid container className="form-row">
+                    <Grid item xs={12}>
+                        <ButtonBase className="btn btn-normal btn-white">Create</ButtonBase>
+                    </Grid>
+                </Grid>
+            </Grid>
+        );
+    };
+
     handleClose = () => {
         this.setState({ open: false });
     };
 
     render() {
-        const { open, errMsg } = this.state;
+        const { open, errMsg, register } = this.state;
         return (
             <Grid container id="login" className="home-intro sidebar login-page">
                 <Dialog
@@ -104,17 +151,24 @@ class LoginMetamask extends Component {
                         </ButtonBase>
                     </DialogActions>
                 </Dialog>
-                <div className="connect-item-wrp">
-                    <div className="connect-item">
-                        <div className="logo">
-                            <img src="/images/mtm-lg.png" alt="" />
-                        </div>
-                        <div className="name">Metamask</div>
-                        <ButtonBase className="btn btn-normal btn-white" onClick={this.connectMetaMask}>
-                            Login
-                        </ButtonBase>
+                {register ? (
+                    <div className="register-wrp">
+                        <div className="name">Create New Account</div>
+                        {this.formRender()}
                     </div>
-                </div>
+                ) : (
+                    <div className="connect-item-wrp">
+                        <div className="connect-item">
+                            <div className="logo">
+                                <img src="/images/mtm-lg.png" alt="" />
+                            </div>
+                            <div className="name">Metamask</div>
+                            <ButtonBase className="btn btn-normal btn-white" onClick={this.connectMetaMask}>
+                                Login
+                            </ButtonBase>
+                        </div>
+                    </div>
+                )}
             </Grid>
         );
     }
