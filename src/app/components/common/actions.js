@@ -34,3 +34,10 @@ export const saveAccounts = accounts => {
         accounts,
     };
 };
+
+export const setToken = token => {
+    return {
+        type: listTypes.SET_TOKEN,
+        token,
+    };
+};

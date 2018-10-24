@@ -69,9 +69,25 @@ class Routers extends PureComponent {
         }
     };
 
-    accountsInit = async defaultAcc => {
-        const { saveAccounts, web3 } = this.props;
-        Utils.accountsInit(web3, saveAccounts, abiConfig, defaultAcc);
+    accountsInit = async () => {
+        const { saveAccounts, web3, logoutMetamask, loginMetamask } = this.props;
+        // wallets from current account
+        const accountsFetch = [
+            { address: '0x6D02c7ac101F4e909A2f3d149022fbb5e4939a68', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0xB4cfa9AceEfE2120A1568Aa34eC3F2F9fB6eef12', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0xBD3614fc1fCF72682b44021Db8396E518fEDcBF1', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551', default: false, balances: { ETH: 0, BBO: 0 } },
+            { address: '0x6D58F2848156A8B3Bd18cB9Ce4392a876E558eC9', default: false, balances: { ETH: 0, BBO: 0 } },
+        ];
+        const isHaveAddress = accountsFetch.filter(addr => addr.address === web3.eth.defaultAccount);
+        if (isHaveAddress.length > 0) {
+            // if wallet has existed in current account's wallet list, login and get account info
+            Utils.accountsInit(web3, saveAccounts, abiConfig, accountsFetch);
+            loginMetamask();
+        } else {
+            // if wallet has not existed in current account's wallet list, logout current account
+            logoutMetamask();
+        }
     };
 
     checkMetamask = async () => {
@@ -85,7 +101,7 @@ class Routers extends PureComponent {
                 const { account, network } = await Utils.connectMetaMask(web3);
                 if (account) {
                     if (defaultAccount !== account) {
-                        this.accountsInit(web3.eth.defaultAccount);
+                        this.accountsInit();
                         setAccount(account);
                         setNetwork(network);
                         this.getNetwork();

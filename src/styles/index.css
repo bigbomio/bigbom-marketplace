@@ -1674,7 +1674,8 @@ a {
       .login-page .register-wrp input:focus {
         border: 1px solid white; }
     .login-page .register-wrp .form-row {
-      margin-top: 20px; }
+      margin-top: 20px;
+      position: relative; }
       .login-page .register-wrp .form-row .form-row-input {
         flex-wrap: nowrap; }
       .login-page .register-wrp .form-row .first-name {
@@ -1686,9 +1687,28 @@ a {
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
       .login-page .register-wrp .form-row.confirm {
         margin-top: 10px; }
+        .login-page .register-wrp .form-row.confirm .err {
+          margin-top: 2px; }
       .login-page .register-wrp .form-row .wallet {
         background: #f9f9f9;
         padding: 5px 0px;
         text-align: center;
         color: #4f82a7;
         font-size: 15px; }
+  .login-page .err {
+    position: absolute;
+    right: -225px;
+    width: 220px;
+    font-size: 12px;
+    padding: 5px 10px;
+    background: #f18313;
+    line-height: 14px;
+    color: #fff;
+    margin-top: 20px; }
+  .login-page .register-loading {
+    color: #fff;
+    font-size: 20px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    min-height: inherit; }
+    .login-page .register-loading svg {
+      color: #fff; }

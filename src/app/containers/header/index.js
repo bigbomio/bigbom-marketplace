@@ -18,8 +18,6 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Utils from '../../_utils/utils';
 
 import RoutersAuthen from '../../routers/RoutersAuthen';
-import abiConfig from '../../_services/abiConfig';
-import { saveAccounts } from '../../components/common/actions';
 
 const options = [
     { text: 'View as Client', icon: 'fas fa-user-tie' },
@@ -66,11 +64,6 @@ class Header extends PureComponent {
     login = () => {
         const { history } = this.props;
         history.push('/');
-    };
-
-    accountsInit = async defaultWallet => {
-        const { saveAccounts, web3 } = this.props;
-        Utils.accountsInit(web3, saveAccounts, abiConfig, defaultWallet);
     };
 
     handleClickListView = event => {
@@ -225,7 +218,6 @@ Header.propTypes = {
     history: PropTypes.object.isRequired,
     accounts: PropTypes.array.isRequired,
     defaultWallet: PropTypes.object,
-    saveAccounts: PropTypes.func.isRequired,
 };
 
 Header.defaultProps = {
@@ -242,7 +234,7 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = { saveAccounts };
+const mapDispatchToProps = {};
 
 export default connect(
     mapStateToProps,
