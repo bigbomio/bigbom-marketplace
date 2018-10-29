@@ -384,4 +384,19 @@ a {
         text-shadow: $thinShadow;
         min-height: inherit;
     }
+    .note {
+        text-align: center;
+        color: #fff;
+        line-height: 24px;
+        font-size: 18px;
+        text-shadow: $thinShadow;
+        width: 600px;
+        i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            border: 5px solid $green;
+            border-radius: 50%;
+            box-shadow: $thinShadow;
+        }
+    }
 }

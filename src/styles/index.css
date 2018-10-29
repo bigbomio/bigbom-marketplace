@@ -1712,3 +1712,16 @@ a {
     min-height: inherit; }
     .login-page .register-loading svg {
       color: #fff; }
+  .login-page .note {
+    text-align: center;
+    color: #fff;
+    line-height: 24px;
+    font-size: 18px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    width: 600px; }
+    .login-page .note i {
+      font-size: 40px;
+      margin-bottom: 10px;
+      border: 5px solid #40bd56;
+      border-radius: 50%;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }

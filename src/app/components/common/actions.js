@@ -41,3 +41,10 @@ export const setToken = token => {
         token,
     };
 };
+
+export const setRegister = register => {
+    return {
+        type: listTypes.SET_REGISTER,
+        register,
+    };
+};

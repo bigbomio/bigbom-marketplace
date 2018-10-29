@@ -90,7 +90,7 @@ class Home extends Component {
     };
 
     render() {
-        const { history, isConnected } = this.props;
+        const { history, isConnected, register } = this.props;
         const { isReady } = this.state;
         return isReady ? (
             <div id="home" className="container-wrp">
@@ -104,12 +104,13 @@ class Home extends Component {
                 </div>
                 <div className="container wrapper">
                     <Grid container className="home-content">
-                        {!isConnected && (
-                            <Grid container>
-                                <h2>You have disconnected your account!</h2>
-                                <p className="note">Please try again.</p>
-                            </Grid>
-                        )}
+                        {!isConnected &&
+                            (!register && (
+                                <Grid container>
+                                    <h2>You have disconnected your account!</h2>
+                                    <p className="note">Please try again.</p>
+                                </Grid>
+                            ))}
                         {/* <Grid container>
                             <h2>Pick your job right now </h2>
                         </Grid>
@@ -162,12 +163,14 @@ Home.propTypes = {
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     accounts: PropTypes.array.isRequired,
+    register: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         isConnected: state.homeReducer.isConnected,
         accounts: state.commonReducer.accounts,
+        register: state.commonReducer.register,
     };
 };
 

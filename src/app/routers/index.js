@@ -11,9 +11,11 @@ import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
+import Confirm from '../components/Confirm';
 
 import abiConfig from '../_services/abiConfig';
 import Utils from '../_utils/utils';
+import LocalStorage from '../_utils/localStorage';
 import { setYourNetwork, setReload, saveAccounts } from '../components/common/actions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
@@ -71,6 +73,8 @@ class Routers extends PureComponent {
 
     accountsInit = async () => {
         const { saveAccounts, web3, logoutMetamask, loginMetamask } = this.props;
+        const _accountsFetch = LocalStorage.getItemJson('userData');
+        //console.log('_accountsFetch', _accountsFetch);
         // wallets from current account
         const accountsFetch = [
             { address: '0x6D02c7ac101F4e909A2f3d149022fbb5e4939a68', default: false, balances: { ETH: 0, BBO: 0 } },
@@ -146,6 +150,7 @@ class Routers extends PureComponent {
                             <Switch>
                                 <Route exact path="/" component={Home} />
                                 {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
+                                <Route path="/confirm" component={Confirm} />
                                 <Route component={NotFound} />
                             </Switch>
                             <Footer />

@@ -1,70 +1,78 @@
 const apiUrl = 'https://staging-api.bigbom.net';
 
-async function checkStatus(response) {
-    if (response.status >= 200 && response.status < 300) {
+function fetchData(url, options) {
+    return fetch(url, options).then(response => {
+        if (typeof response === 'object') {
+            return response.json();
+        }
         return response;
-    }
-    throw await parseJSON(response);
-}
-
-function parseJSON(response) {
-    return response.json();
-}
-
-function request(url, options) {
-    return fetch(url, options)
-        .then(checkStatus)
-        .then(parseJSON);
-}
-
-function getHasFromAddress(address) {
-    const endpoint = `${apiUrl}/authentication/meta-auth/${address}`;
-    return request(endpoint, {
-        method: 'GET',
-        // headers: {
-        //     'Content-Type': 'application/json'
-        // }
     });
+}
+
+function getHashFromAddress(address) {
+    const endpoint = `${apiUrl}/authentication/meta-auth/${address}`;
+    return fetchData(endpoint, {
+        method: 'GET',
+    })
+        .then(data => data)
+        .catch(error => console.error(error));
 }
 
 function getToken(data) {
     const endpoint = `${apiUrl}/authentication/meta-auth`;
-    return request(endpoint, {
+    return fetchData(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-    });
+    })
+        .then(result => result)
+        .catch(error => console.error(error));
 }
 
-function refreshToken() {
-    const endpoint = `${apiUrl}/authentication/meta-auth`;
-    const token = global.store.getState().loginReducer.token;
-    return request(endpoint, {
+function createUser(data) {
+    const endpoint = `${apiUrl}/users`;
+    return fetchData(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+        .then(result => result)
+        .catch(error => console.error(error));
+}
+
+function addWallet(data) {
+    const endpoint = `${apiUrl}/users/public/addWallet`;
+    return fetchData(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+        .then(result => result)
+        .catch(error => console.error(error));
+}
+
+function getUser(token) {
+    const endpoint = `${apiUrl}/users`;
+    return fetchData(endpoint, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
         },
-    });
-}
-
-function sendEmail(data) {
-    const endpoint = `${apiUrl}/emails/sendMailSignature`;
-    const token = global.store.getState().loginReducer.token;
-    return request(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-    });
+    })
+        .then(result => result)
+        .catch(error => console.error(error));
 }
 
 export default {
-    sendEmail,
-    getHasFromAddress,
+    getHashFromAddress,
     getToken,
-    refreshToken,
+    createUser,
+    addWallet,
+    getUser,
 };

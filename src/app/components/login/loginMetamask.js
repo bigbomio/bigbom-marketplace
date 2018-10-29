@@ -14,10 +14,12 @@ import { Grid } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
+import LocalStorage from '../../_utils/localStorage';
 import abiConfig from '../../_services/abiConfig';
 import services from '../../_services/services';
-import { loginMetamask, setWeb3, setCheckAcount, logoutMetamask } from '../home/actions';
-import { saveAccounts, setToken } from '../common/actions';
+
+import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
+import { saveAccounts, setToken, setRegister } from '../common/actions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
@@ -71,7 +73,7 @@ class LoginMetamask extends Component {
     };
 
     connectMetaMask = async () => {
-        const { history, setCheckAcount, setToken } = this.props;
+        const { history, setCheckAcount, setToken, setRegister } = this.props;
         const { web3 } = this.state;
         this.setState({ isLoading: true });
         Utils.connectMetaMask(web3).then(
@@ -79,29 +81,37 @@ class LoginMetamask extends Component {
                 try {
                     // call api to check wallet address existed on server
                     const eth = new Eth(web3.currentProvider);
-                    const { hash } = await services.getHasFromAddress(account);
+                    const { hash } = await services.getHashFromAddress(account);
                     const msg = ethUtil.bufferToHex(new Buffer(hash));
+                    LocalStorage.removeItem('token');
+                    LocalStorage.removeItem('userData');
                     const [err, signature] = await Utils.callMethod(eth.personal_sign)(msg, web3.eth.defaultAccount);
                     if (err) {
                         return this.setState({ open: true, errMsg: 'Something went wrong!', isLoading: false });
                     }
                     const userData = await services.getToken({ signature, hash });
 
-                    // if result has not existed on server, show register form for user and return to exit login function
+                    // if not existed on server, show register form for user and return to exit login function
                     if (!userData.info) {
-                        this.setState({ register: true });
+                        this.setState({ register: true, token: userData.token });
+                        LocalStorage.setItem('token', userData.token);
+                        setRegister(true);
                         setToken(userData.token);
                         return;
                     }
 
-                    // if result has existed on server, continue login with user data result
+                    // if existed, continue login with user data result
+                    const user = await services.getUser(userData.token);
+                    console.log(user);
                     setToken(userData.token);
+                    this.setState({ register: false, token: userData.token });
+                    LocalStorage.setItemJson('userData', userData);
                     this.accountsInit(userData);
                     this.radomClass(); // set color for avatar
                     history.goBack();
                     setCheckAcount(true);
                 } catch (err) {
-                    this.setState({ open: true, errMsg: 'Something went wrong!', isLoading: false });
+                    this.setState({ open: true, errMsg: 'Something went wrong! Can not login!', isLoading: false });
                 }
             },
             error => {
@@ -233,12 +243,48 @@ class LoginMetamask extends Component {
         }, 300);
     };
 
-    createNewAccount = () => {
+    createNewAccount = async () => {
         const valid = this.validateAll();
         if (!valid) {
             return;
         }
         // create
+        const { email, firstName, lastName, token } = this.state;
+        const data = {
+            email,
+            firstName,
+            lastName,
+            hash: token,
+        };
+
+        this.setState({ isLoading: true });
+        const userCreated = await services.createUser(data);
+
+        // if email existed, add wallet
+        if (userCreated.message === 'EmailExist') {
+            const dataWallet = {
+                email,
+                hash: token,
+            };
+            const addWallet = await services.addWallet(dataWallet);
+            if (addWallet.message === 'OK') {
+                this.setState({
+                    isLoading: false,
+                    userCreated: true,
+                    note: `Your wallet address has been added into your account! We have sent to ${email} a verify link, please checking your email.`,
+                });
+            }
+            return;
+        }
+
+        // if email is not existed
+        if (userCreated) {
+            this.setState({
+                isLoading: false,
+                userCreated: true,
+                note: `Your account has been created! We have sent to ${email} a verify link, please checking your email.`,
+            });
+        }
     };
 
     formRender = () => {
@@ -299,7 +345,7 @@ class LoginMetamask extends Component {
     };
 
     render() {
-        const { open, errMsg, register, isLoading } = this.state;
+        const { open, errMsg, register, isLoading, userCreated, note } = this.state;
         return (
             <Grid container id="login" className="home-intro sidebar login-page">
                 <Dialog
@@ -321,10 +367,19 @@ class LoginMetamask extends Component {
                     </DialogActions>
                 </Dialog>
                 {register ? (
-                    <div className="register-wrp">
-                        <div className="name">Create New Account</div>
-                        {this.formRender()}
-                    </div>
+                    userCreated ? (
+                        <div className="register-wrp note">
+                            <p>
+                                <i className="fas fa-check-circle" />
+                            </p>
+                            <p>{note}</p>
+                        </div>
+                    ) : (
+                        <div className="register-wrp">
+                            <div className="name">Create New Account</div>
+                            {this.formRender()}
+                        </div>
+                    )
                 ) : (
                     <div className="connect-item-wrp">
                         {!isLoading ? (
@@ -352,12 +407,12 @@ class LoginMetamask extends Component {
 
 LoginMetamask.propTypes = {
     loginMetamask: PropTypes.func.isRequired,
-    logoutMetamask: PropTypes.func.isRequired,
     history: PropTypes.object.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
     saveAccounts: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
     setToken: PropTypes.func.isRequired,
+    setRegister: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -372,8 +427,8 @@ const mapDispatchToProps = {
     setWeb3,
     setCheckAcount,
     saveAccounts,
-    logoutMetamask,
     setToken,
+    setRegister,
 };
 
 export default connect(

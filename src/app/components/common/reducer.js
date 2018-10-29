@@ -16,6 +16,7 @@ const data = {
     accounts: [],
     defaultWallet: { address: '', default: true, balances: { ETH: 0, BBO: 0 } },
     token: null,
+    register: false,
 };
 
 const initData = cloneDeep(data);
@@ -81,6 +82,11 @@ const commonReducer = (state = initData, action) => {
             return {
                 ...state,
                 token: action.token,
+            };
+        case nameActList.SET_REGISTER:
+            return {
+                ...state,
+                register: action.register,
             };
         default:
             return state;
