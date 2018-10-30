@@ -14,12 +14,12 @@ import { Grid } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
-import LocalStorage from '../../_utils/localStorage';
 import abiConfig from '../../_services/abiConfig';
 import services from '../../_services/services';
+import LocalStorage from '../../_utils/localStorage';
 
 import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
-import { saveAccounts, setToken, setRegister } from '../common/actions';
+import { saveAccountInfo, setToken, setRegister } from '../common/actions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
@@ -29,17 +29,16 @@ class LoginMetamask extends Component {
         this.state = {
             web3: null,
             open: false,
-            register: false,
             firstName: '',
             lastName: '',
             email: '',
             emailConfirm: '',
             submitDisabled: false,
         };
+        this.mounted = false;
     }
     componentDidMount() {
-        const { saveAccounts } = this.props;
-        saveAccounts([]);
+        this.mounted = true;
     }
 
     static getDerivedStateFromProps(props, previousState) {
@@ -52,24 +51,41 @@ class LoginMetamask extends Component {
         return state;
     }
 
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
     radomClass = () => {
         Utils.setCookie('avatar', avatarColors[Math.floor(Math.random() * avatarColors.length)], 1);
     };
 
-    accountsInit = async userData => {
-        console.log(userData);
-        const { saveAccounts, web3, loginMetamask } = this.props;
+    accountsInit = async userInfo => {
+        const { saveAccountInfo, web3, loginMetamask } = this.props;
         // wallets from current account
-        const accountsFetch = [
-            { address: '0x6D02c7ac101F4e909A2f3d149022fbb5e4939a68', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0xB4cfa9AceEfE2120A1568Aa34eC3F2F9fB6eef12', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0xBD3614fc1fCF72682b44021Db8396E518fEDcBF1', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0x6D58F2848156A8B3Bd18cB9Ce4392a876E558eC9', default: false, balances: { ETH: 0, BBO: 0 } },
-        ];
-        Utils.accountsInit(web3, saveAccounts, abiConfig, accountsFetch);
+        const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
+        let accounts = [];
+        for (let acc of userInfo.wallets) {
+            let address = { address: acc.address, default: defaultAddress.toLowerCase() === acc.address.toLowerCase(), balances: { ETH: 0, BBO: 0 } };
+            await web3.eth.getBalance(acc.address, (err, balance) => {
+                const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                address.balances.ETH = ethBalance;
+            });
+            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+            const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
+
+            if (!errBalance) {
+                const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                address.balances.BBO = BBOBalance;
+            }
+            accounts.push(address);
+        }
+        userInfo.wallets = accounts;
+        saveAccountInfo(userInfo);
+        LocalStorage.setItemJson('userInfo', userInfo);
         loginMetamask();
-        this.setState({ isLoading: false });
+        if (this.mounted) {
+            this.setState({ isLoading: false });
+        }
     };
 
     connectMetaMask = async () => {
@@ -83,44 +99,72 @@ class LoginMetamask extends Component {
                     const eth = new Eth(web3.currentProvider);
                     const { hash } = await services.getHashFromAddress(account);
                     const msg = ethUtil.bufferToHex(new Buffer(hash));
-                    LocalStorage.removeItem('token');
-                    LocalStorage.removeItem('userData');
+                    let userInfo = {};
                     const [err, signature] = await Utils.callMethod(eth.personal_sign)(msg, web3.eth.defaultAccount);
                     if (err) {
-                        return this.setState({ open: true, errMsg: 'Something went wrong!', isLoading: false });
+                        if (this.mounted) {
+                            return this.setState({ open: true, errMsg: 'Something went wrong!', isLoading: false });
+                        }
                     }
                     const userData = await services.getToken({ signature, hash });
 
+                    console.log(userData);
+                    // count wallet of this email, if < 5, accept to add more
+                    // if (wallets.length >= 3) {
+                    //     if (this.mounted) {
+                    //         this.setState({
+                    //             isLoading: false,
+                    //             userCreated: true,
+                    //             note: 'Sorry, your account have had 5 wallet addresses, you can not add more wallet.',
+                    //         });
+                    //     }
+                    //     return;
+                    // }
+
                     // if not existed on server, show register form for user and return to exit login function
                     if (!userData.info) {
-                        this.setState({ register: true, token: userData.token });
-                        LocalStorage.setItem('token', userData.token);
+                        if (this.mounted) {
+                            this.setState({ token: userData.token, isLoading: false });
+                        }
                         setRegister(true);
                         setToken(userData.token);
                         return;
                     }
 
                     // if existed, continue login with user data result
-                    const user = await services.getUser(userData.token);
-                    console.log(user);
+                    const wallets = await services.getWallets(userData.token);
+                    userInfo = {
+                        email: userData.info.email,
+                        firstName: userData.info.firstName,
+                        lastName: userData.info.lastName,
+                        wallets,
+                    };
                     setToken(userData.token);
-                    this.setState({ register: false, token: userData.token });
-                    LocalStorage.setItemJson('userData', userData);
-                    this.accountsInit(userData);
+                    if (this.mounted) {
+                        this.setState({ token: userData.token });
+                    }
+                    setRegister(false);
+                    this.accountsInit(userInfo);
                     this.radomClass(); // set color for avatar
                     history.goBack();
                     setCheckAcount(true);
                 } catch (err) {
-                    this.setState({ open: true, errMsg: 'Something went wrong! Can not login!', isLoading: false });
+                    if (this.mounted) {
+                        this.setState({ open: true, errMsg: 'Something went wrong! Can not login!', isLoading: false });
+                    }
                 }
             },
             error => {
                 if (error) {
                     const message = JSON.parse(error.message);
                     if (message.code === 'NETWORK') {
-                        this.setState({ open: true, errMsg: 'Network error', isLoading: false });
+                        if (this.mounted) {
+                            this.setState({ open: true, errMsg: 'Network error', isLoading: false });
+                        }
                     } else {
-                        this.setState({ open: true, errMsg: message.message, isLoading: false });
+                        if (this.mounted) {
+                            this.setState({ open: true, errMsg: message.message, isLoading: false });
+                        }
                     }
                 }
             }
@@ -266,24 +310,29 @@ class LoginMetamask extends Component {
                 email,
                 hash: token,
             };
+
             const addWallet = await services.addWallet(dataWallet);
             if (addWallet.message === 'OK') {
-                this.setState({
-                    isLoading: false,
-                    userCreated: true,
-                    note: `Your wallet address has been added into your account! We have sent to ${email} a verify link, please checking your email.`,
-                });
+                if (this.mounted) {
+                    this.setState({
+                        isLoading: false,
+                        userCreated: true,
+                        note: `Your wallet address has been added into your account! We have sent to ${email} a verify link, please checking your email.`,
+                    });
+                }
             }
             return;
         }
 
         // if email is not existed
         if (userCreated) {
-            this.setState({
-                isLoading: false,
-                userCreated: true,
-                note: `Your account has been created! We have sent to ${email} a verify link, please checking your email.`,
-            });
+            if (this.mounted) {
+                this.setState({
+                    isLoading: false,
+                    userCreated: true,
+                    note: `Your account has been created! We have sent to ${email} a verify link, please checking your email.`,
+                });
+            }
         }
     };
 
@@ -345,7 +394,8 @@ class LoginMetamask extends Component {
     };
 
     render() {
-        const { open, errMsg, register, isLoading, userCreated, note } = this.state;
+        const { open, errMsg, isLoading, userCreated, note } = this.state;
+        const { register } = this.props;
         return (
             <Grid container id="login" className="home-intro sidebar login-page">
                 <Dialog
@@ -409,16 +459,18 @@ LoginMetamask.propTypes = {
     loginMetamask: PropTypes.func.isRequired,
     history: PropTypes.object.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
-    saveAccounts: PropTypes.func.isRequired,
+    saveAccountInfo: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
     setToken: PropTypes.func.isRequired,
     setRegister: PropTypes.func.isRequired,
+    register: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
+        register: state.commonReducer.register,
     };
 };
 
@@ -426,7 +478,7 @@ const mapDispatchToProps = {
     loginMetamask,
     setWeb3,
     setCheckAcount,
-    saveAccounts,
+    saveAccountInfo,
     setToken,
     setRegister,
 };

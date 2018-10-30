@@ -28,10 +28,10 @@ export const setReload = reload => {
     };
 };
 
-export const saveAccounts = accounts => {
+export const saveAccountInfo = accountInfo => {
     return {
-        type: listTypes.SAVE_ACCOUNTS,
-        accounts,
+        type: listTypes.SAVE_ACCOUNT_INFO,
+        accountInfo,
     };
 };
 

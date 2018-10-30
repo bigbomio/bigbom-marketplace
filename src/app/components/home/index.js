@@ -9,6 +9,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import LoginMetamask from '../login/loginMetamask';
 import UserInfoNav from '../../components/common/UserInfoNav';
+import Utils from '../../_utils/utils';
 
 const ContainerProps = {
     open: {
@@ -41,22 +42,49 @@ class Home extends Component {
         this.state = {
             isLogout: false,
             isReady: false,
+            sttText: null,
         };
     }
 
     componentDidMount() {
-        const { accounts } = this.props;
+        const { accountInfo } = this.props;
         this.setState({ isLogout: true });
 
+        const confirmStatus = Utils.getURLParam('status');
+        this.setConfirmStt(confirmStatus);
+
         // time for login metamask checking
-        if (accounts.length <= 0) {
-            setTimeout(() => {
+        if (accountInfo.wallets) {
+            if (accountInfo.wallets.length <= 0) {
+                setTimeout(() => {
+                    this.setState({ isReady: true });
+                }, 1200);
+            } else {
                 this.setState({ isReady: true });
-            }, 1200);
+            }
         } else {
             this.setState({ isReady: true });
         }
     }
+
+    setConfirmStt = stt => {
+        switch (stt) {
+            case '0':
+                this.setState({ sttText: 'Sorry, data is invalid!' });
+                break;
+            case '1':
+                this.setState({ sttText: 'Thank you! Your account has been confirmed!' });
+                break;
+            case '2':
+                this.setState({ sttText: 'Sorry, your link has been expired!' });
+                break;
+            case '3':
+                this.setState({ sttText: 'Your wallet has been added to your account!' });
+                break;
+            default:
+                this.setState({ sttText: null });
+        }
+    };
 
     connectedRender = () => {
         const { isLogout } = this.state;
@@ -91,7 +119,7 @@ class Home extends Component {
 
     render() {
         const { history, isConnected, register } = this.props;
-        const { isReady } = this.state;
+        const { isReady, sttText } = this.state;
         return isReady ? (
             <div id="home" className="container-wrp">
                 <div className="container-wrp main-nav">
@@ -105,11 +133,17 @@ class Home extends Component {
                 <div className="container wrapper">
                     <Grid container className="home-content">
                         {!isConnected &&
-                            (!register && (
+                            (sttText ? (
                                 <Grid container>
-                                    <h2>You have disconnected your account!</h2>
-                                    <p className="note">Please try again.</p>
+                                    <h2>{sttText}</h2>
                                 </Grid>
+                            ) : (
+                                !register && (
+                                    <Grid container>
+                                        <h2>You have disconnected your account!</h2>
+                                        <p className="note">Please try again.</p>
+                                    </Grid>
+                                )
                             ))}
                         {/* <Grid container>
                             <h2>Pick your job right now </h2>
@@ -162,14 +196,14 @@ class Home extends Component {
 Home.propTypes = {
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
-    accounts: PropTypes.array.isRequired,
+    accountInfo: PropTypes.object.isRequired,
     register: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         isConnected: state.homeReducer.isConnected,
-        accounts: state.commonReducer.accounts,
+        accountInfo: state.commonReducer.accountInfo,
         register: state.commonReducer.register,
     };
 };

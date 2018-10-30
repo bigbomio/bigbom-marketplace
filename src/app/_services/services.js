@@ -1,72 +1,111 @@
-const apiUrl = 'https://staging-api.bigbom.net';
+import axios from 'axios';
 
-function fetchData(url, options) {
-    return fetch(url, options).then(response => {
-        if (typeof response === 'object') {
-            return response.json();
-        }
-        return response;
-    });
+const apiUrl = 'https://uat-api.bigbom.net';
+
+function dataFetch(options) {
+    return axios(options)
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            console.log(error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                if ((error.response.status === 409 && error.response.data.message === 'EmailExist') || error.response.status === 400) {
+                    console.log(error.response.data);
+                    return error.response.data;
+                }
+            } else if (error.request) {
+                // The request was made but no response was received
+                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                // http.ClientRequest in node.js
+                console.log(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.log('Error', error.message);
+            }
+            console.log(error.config);
+        });
 }
 
 function getHashFromAddress(address) {
     const endpoint = `${apiUrl}/authentication/meta-auth/${address}`;
-    return fetchData(endpoint, {
+    const options = {
+        url: endpoint,
         method: 'GET',
-    })
-        .then(data => data)
-        .catch(error => console.error(error));
+    };
+    return dataFetch(options);
 }
 
 function getToken(data) {
     const endpoint = `${apiUrl}/authentication/meta-auth`;
-    return fetchData(endpoint, {
+    const options = {
         method: 'POST',
+        url: endpoint,
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
-    })
-        .then(result => result)
-        .catch(error => console.error(error));
+        data: data,
+    };
+    return dataFetch(options);
 }
 
 function createUser(data) {
     const endpoint = `${apiUrl}/users`;
-    return fetchData(endpoint, {
+    const options = {
         method: 'POST',
+        url: endpoint,
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
-    })
-        .then(result => result)
-        .catch(error => console.error(error));
+        data: data,
+    };
+    return dataFetch(options);
 }
 
 function addWallet(data) {
     const endpoint = `${apiUrl}/users/public/addWallet`;
-    return fetchData(endpoint, {
+    const options = {
         method: 'POST',
+        url: endpoint,
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
-    })
-        .then(result => result)
-        .catch(error => console.error(error));
+        data: data,
+    };
+    return dataFetch(options);
 }
 
 function getUser(token) {
     const endpoint = `${apiUrl}/users`;
-    return fetchData(endpoint, {
+    const options = {
         method: 'GET',
+        url: endpoint,
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+    return dataFetch(options);
+}
+
+function getWallets(token) {
+    const endpoint = `${apiUrl}/wallets`;
+    return axios({
+        method: 'GET',
+        url: endpoint,
         headers: {
             Authorization: `Bearer ${token}`,
         },
     })
-        .then(result => result)
-        .catch(error => console.error(error));
+        .then(response => {
+            return response.data.docs.map(wallet => {
+                return { address: wallet.address, default: false, balances: { ETH: 0, BBO: 0 } };
+            });
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
 }
 
 export default {
@@ -75,4 +114,5 @@ export default {
     createUser,
     addWallet,
     getUser,
+    getWallets,
 };

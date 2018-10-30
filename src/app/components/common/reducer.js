@@ -13,8 +13,12 @@ const data = {
         name: '',
     },
     reload: false,
-    accounts: [],
-    defaultWallet: { address: '', default: true, balances: { ETH: 0, BBO: 0 } },
+    accountInfo: {
+        email: '',
+        firstName: '',
+        lastName: '',
+        wallets: [],
+    },
     token: null,
     register: false,
 };
@@ -67,15 +71,12 @@ const commonReducer = (state = initData, action) => {
                 reload,
             };
         }
-        case nameActList.SAVE_ACCOUNTS: {
-            let accounts = cloneDeep(state.accounts);
-            let defaultWallet = cloneDeep(state.accounts);
-            accounts = action.accounts;
-            defaultWallet = action.accounts.filter(wallet => wallet.default);
+        case nameActList.SAVE_ACCOUNT_INFO: {
+            let accountInfo = cloneDeep(state.accountInfo);
+            accountInfo = action.accountInfo;
             return {
                 ...state,
-                accounts,
-                defaultWallet: defaultWallet[0],
+                accountInfo,
             };
         }
         case nameActList.SET_TOKEN:

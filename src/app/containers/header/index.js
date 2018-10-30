@@ -16,8 +16,8 @@ import Fade from '@material-ui/core/Fade';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
 import Utils from '../../_utils/utils';
-
 import RoutersAuthen from '../../routers/RoutersAuthen';
+import { setRegister } from '../../components/common/actions';
 
 const options = [
     { text: 'View as Client', icon: 'fas fa-user-tie' },
@@ -53,8 +53,11 @@ class Header extends PureComponent {
     };
 
     getNameAvatar = () => {
-        const name = 'Hieu';
-        return name.charAt(0);
+        const { accountInfo } = this.props;
+        if (accountInfo) {
+            return accountInfo.firstName.charAt(0).toUpperCase();
+        }
+        return null;
     };
 
     getAvatarClass = () => {
@@ -110,8 +113,11 @@ class Header extends PureComponent {
 
     render() {
         const { routes, anchorEl, avatarColor, checked } = this.state;
-        const { accounts, defaultWallet } = this.props;
-
+        const { setRegister, accountInfo } = this.props;
+        let defaultWallet;
+        if (accountInfo.wallets.length > 0) {
+            defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
+        }
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
@@ -122,7 +128,7 @@ class Header extends PureComponent {
                             </Link>
                         </div>
                         {routes.length && (
-                            <ul className={accounts.length > 0 ? 'nav' : 'nav not-login-yet'}>
+                            <ul className={accountInfo.wallets.length > 0 ? 'nav' : 'nav not-login-yet'}>
                                 <li>
                                     <List component="nav" className="top-selection">
                                         <ListItem
@@ -156,7 +162,7 @@ class Header extends PureComponent {
                                         Get Free BBO
                                     </ButtonBase>
                                 </li>
-                                {accounts.length > 0 && (
+                                {accountInfo.wallets.length > 0 ? (
                                     <ClickAwayListener onClickAway={this.handleClickAway}>
                                         <li className="profile">
                                             <Avatar className={'avatar ' + avatarColor} onClick={this.profileOpen}>
@@ -167,24 +173,28 @@ class Header extends PureComponent {
                                                     <ul>
                                                         <li className="user-info-item top">
                                                             <Avatar className={'avatar avatar-left ' + avatarColor}>{this.getNameAvatar()}</Avatar>
-                                                            <div className="avatar-right">
-                                                                <div>Hieu Huynh</div>
-                                                                <div className="email">Hieu102@gmail.com</div>
-                                                            </div>
+                                                            {accountInfo && (
+                                                                <div className="avatar-right">
+                                                                    <div>
+                                                                        {accountInfo.firstName} {accountInfo.lastName}
+                                                                    </div>
+                                                                    <div className="email">{accountInfo.email}</div>
+                                                                </div>
+                                                            )}
                                                         </li>
                                                         {defaultWallet && (
                                                             <li className="user-info-item balance">
-                                                                {Utils.currencyFormat(defaultWallet.balances.ETH)} <span>ETH</span>
+                                                                {Utils.currencyFormat(defaultWallet[0].balances.ETH)} <span>ETH</span>
                                                             </li>
                                                         )}
 
                                                         {defaultWallet && (
                                                             <li className="user-info-item balance">
-                                                                {Utils.currencyFormat(defaultWallet.balances.BBO)} <span>BBO</span>
+                                                                {Utils.currencyFormat(defaultWallet[0].balances.BBO)} <span>BBO</span>
                                                             </li>
                                                         )}
                                                         <li className="user-info-item addresses">
-                                                            {accounts.map(wallet => {
+                                                            {accountInfo.wallets.map(wallet => {
                                                                 return (
                                                                     <div className="address-item" key={wallet.address}>
                                                                         <div
@@ -204,6 +214,16 @@ class Header extends PureComponent {
                                             </Fade>
                                         </li>
                                     </ClickAwayListener>
+                                ) : (
+                                    <li>
+                                        <ButtonBase
+                                            variant="contained"
+                                            className="btn btn-normal btn-white get-bbo-btn top-login"
+                                            onClick={() => setRegister(false)}
+                                        >
+                                            Login
+                                        </ButtonBase>
+                                    </li>
                                 )}
                             </ul>
                         )}
@@ -216,12 +236,8 @@ class Header extends PureComponent {
 
 Header.propTypes = {
     history: PropTypes.object.isRequired,
-    accounts: PropTypes.array.isRequired,
-    defaultWallet: PropTypes.object,
-};
-
-Header.defaultProps = {
-    defaultWallet: { address: '', default: true, balances: { ETH: 0, BBO: 0 } },
+    accountInfo: PropTypes.object.isRequired,
+    setRegister: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -229,12 +245,13 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         web3: state.homeReducer.web3,
         view: state.commonReducer.view,
-        accounts: state.commonReducer.accounts,
-        defaultWallet: state.commonReducer.defaultWallet,
+        accountInfo: state.commonReducer.accountInfo,
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    setRegister,
+};
 
 export default connect(
     mapStateToProps,

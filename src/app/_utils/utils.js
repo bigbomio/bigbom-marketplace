@@ -326,27 +326,6 @@ class Utils {
         return a / ((a + b) / 100);
     }
 
-    accountsInit = async (web3, callback, abiConfig, accountsFetch) => {
-        const defaultAddress = web3.eth.defaultAccount || accountsFetch[0].address;
-        let accounts = [];
-        for (let acc of accountsFetch) {
-            let address = { address: acc.address, default: defaultAddress.toLowerCase() === acc.address.toLowerCase(), balances: { ETH: 0, BBO: 0 } };
-            await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = this.WeiToBBO(web3, balance).toFixed(3);
-                address.balances.ETH = ethBalance;
-            });
-            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-            const [errBalance, balance] = await this.callMethod(BBOinstance.instance.balanceOf)(acc.address);
-
-            if (!errBalance) {
-                const BBOBalance = this.WeiToBBO(web3, balance).toFixed(3);
-                address.balances.BBO = BBOBalance;
-            }
-            accounts.push(address);
-        }
-        callback(accounts);
-    };
-
     copyStringToClipboard(str) {
         var el = document.createElement('textarea');
         el.value = str;
@@ -361,6 +340,11 @@ class Utils {
     isEmail(email) {
         const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return email ? re.test(String(email).toLowerCase()) : false;
+    }
+
+    getURLParam(param) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(param);
     }
 }
 

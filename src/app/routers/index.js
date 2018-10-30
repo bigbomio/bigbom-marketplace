@@ -11,13 +11,12 @@ import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
-import Confirm from '../components/Confirm';
 
 import abiConfig from '../_services/abiConfig';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccounts } from '../components/common/actions';
-import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
+import { setYourNetwork, setReload, saveAccountInfo } from '../components/common/actions';
+import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
 
@@ -57,7 +56,7 @@ class Routers extends PureComponent {
             try {
                 await window.ethereum.enable();
             } catch (error) {
-                console.log('User denied account access...');
+                console.log('Access denied!');
             }
         }
     };
@@ -72,30 +71,57 @@ class Routers extends PureComponent {
     };
 
     accountsInit = async () => {
-        const { saveAccounts, web3, logoutMetamask, loginMetamask } = this.props;
-        const _accountsFetch = LocalStorage.getItemJson('userData');
-        //console.log('_accountsFetch', _accountsFetch);
-        // wallets from current account
-        const accountsFetch = [
-            { address: '0x6D02c7ac101F4e909A2f3d149022fbb5e4939a68', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0xB4cfa9AceEfE2120A1568Aa34eC3F2F9fB6eef12', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0xBD3614fc1fCF72682b44021Db8396E518fEDcBF1', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0xb10ca39DFa4903AE057E8C26E39377cfb4989551', default: false, balances: { ETH: 0, BBO: 0 } },
-            { address: '0x6D58F2848156A8B3Bd18cB9Ce4392a876E558eC9', default: false, balances: { ETH: 0, BBO: 0 } },
-        ];
-        const isHaveAddress = accountsFetch.filter(addr => addr.address === web3.eth.defaultAccount);
-        if (isHaveAddress.length > 0) {
-            // if wallet has existed in current account's wallet list, login and get account info
-            Utils.accountsInit(web3, saveAccounts, abiConfig, accountsFetch);
-            loginMetamask();
+        const { web3, logoutMetamask, loginMetamask, saveAccountInfo } = this.props;
+        const userInfo = LocalStorage.getItemJson('userInfo');
+        const accountInfo = {
+            email: '',
+            firstName: '',
+            lastName: '',
+            wallets: [],
+        };
+        if (userInfo) {
+            const isHaveAddress = userInfo.wallets.filter(addr => addr.address === web3.eth.defaultAccount);
+            if (isHaveAddress.length > 0) {
+                // if wallet has existed in current account's wallet list, login and get account info
+                const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
+                let accounts = [];
+                for (let acc of userInfo.wallets) {
+                    let address = {
+                        address: acc.address,
+                        default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
+                        balances: { ETH: 0, BBO: 0 },
+                    };
+                    await web3.eth.getBalance(acc.address, (err, balance) => {
+                        const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                        address.balances.ETH = ethBalance;
+                    });
+                    const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+                    const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
+
+                    if (!errBalance) {
+                        const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                        address.balances.BBO = BBOBalance;
+                    }
+                    accounts.push(address);
+                }
+                userInfo.wallets = accounts;
+                saveAccountInfo(userInfo);
+                loginMetamask();
+            } else {
+                // if wallet has not existed in current account's wallet list, logout current account
+                logoutMetamask();
+                LocalStorage.removeItem('userInfo');
+                saveAccountInfo(accountInfo);
+            }
         } else {
-            // if wallet has not existed in current account's wallet list, logout current account
             logoutMetamask();
+            LocalStorage.removeItem('userInfo');
+            saveAccountInfo(accountInfo);
         }
     };
 
     checkMetamask = async () => {
-        const { isConnected, logoutMetamask, setAccount, defaultAccount, setNetwork, setReload, history, setCheckAcount, checkAccount } = this.props;
+        const { isConnected, logoutMetamask, defaultAccount, setNetwork, setReload, history, setCheckAcount, checkAccount } = this.props;
         const { web3 } = this.state;
         if (!checkAccount) {
             return;
@@ -106,7 +132,6 @@ class Routers extends PureComponent {
                 if (account) {
                     if (defaultAccount !== account) {
                         this.accountsInit();
-                        setAccount(account);
                         setNetwork(network);
                         this.getNetwork();
                         if (defaultAccount) {
@@ -116,6 +141,7 @@ class Routers extends PureComponent {
                 }
             } catch (error) {
                 logoutMetamask();
+                LocalStorage.removeItem('userInfo');
             }
         } else {
             history.push('/');
@@ -150,7 +176,6 @@ class Routers extends PureComponent {
                             <Switch>
                                 <Route exact path="/" component={Home} />
                                 {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
-                                <Route path="/confirm" component={Confirm} />
                                 <Route component={NotFound} />
                             </Switch>
                             <Footer />
@@ -170,12 +195,12 @@ Routers.propTypes = {
     setWeb3: PropTypes.func.isRequired,
     logoutMetamask: PropTypes.func.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
-    setAccount: PropTypes.func.isRequired,
     setNetwork: PropTypes.func.isRequired,
     setYourNetwork: PropTypes.func.isRequired,
     setReload: PropTypes.func.isRequired,
     checkAccount: PropTypes.bool.isRequired,
-    saveAccounts: PropTypes.func.isRequired,
+    saveAccountInfo: PropTypes.func.isRequired,
+    accountInfo: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -184,6 +209,7 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         defaultAccount: state.homeReducer.defaultAccount,
         checkAccount: state.homeReducer.checkAccount,
+        accountInfo: state.commonReducer.accountInfo,
     };
 };
 
@@ -192,11 +218,10 @@ const mapDispatchToProps = {
     setWeb3,
     logoutMetamask,
     setCheckAcount,
-    setAccount,
     setNetwork,
     setYourNetwork,
     setReload,
-    saveAccounts,
+    saveAccountInfo,
 };
 
 export default connect(

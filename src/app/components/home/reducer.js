@@ -20,11 +20,6 @@ const homeReducer = (state = data, action) => {
                 ...state,
                 isConnected: false,
             };
-        case nameActList.SET_ACCOUNT:
-            return {
-                ...state,
-                defaultAccount: action.defaultAccount,
-            };
         case nameActList.SET_NETWORK:
             return {
                 ...state,

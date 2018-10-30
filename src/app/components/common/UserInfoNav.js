@@ -13,13 +13,19 @@ class UserInfoNav extends Component {
     componentDidMount() {}
 
     render() {
-        const { defaultAccount, isConnected, yourNetwork } = this.props;
+        const { web3, isConnected, yourNetwork } = this.props;
         return (
             isConnected && (
                 <Grid container className="account-info">
-                    <Grid title="Click to copy" item xs={7} className="account-info-item" onClick={() => Utils.copyStringToClipboard(defaultAccount)}>
+                    <Grid
+                        title="Click to copy"
+                        item
+                        xs={7}
+                        className="account-info-item"
+                        onClick={() => Utils.copyStringToClipboard(web3.eth.defaultAccount)}
+                    >
                         <div>Default Address</div>
-                        {Utils.truncate(defaultAccount, 22)}
+                        {Utils.truncate(web3.eth.defaultAccount, 22)}
                     </Grid>
                     <Grid item xs={5} className="account-info-item right">
                         <div>Your Network</div>
@@ -32,14 +38,13 @@ class UserInfoNav extends Component {
 }
 
 UserInfoNav.propTypes = {
-    defaultAccount: PropTypes.string.isRequired,
     isConnected: PropTypes.bool.isRequired,
     yourNetwork: PropTypes.object.isRequired,
+    web3: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
-        defaultAccount: state.homeReducer.defaultAccount,
         isConnected: state.homeReducer.isConnected,
         web3: state.homeReducer.web3,
         yourNetwork: state.commonReducer.yourNetwork,

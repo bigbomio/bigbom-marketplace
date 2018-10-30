@@ -42,41 +42,43 @@ const ropstenAbi = {
     },
 };
 
-const rinkebyAbi = {
-    BBFreelancerJob: {
-        address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
-        abi: BBFreelancerJob.abi,
-    },
-    BBFreelancerBid: {
-        address: '0xf01cc898b9245930a345bec82423b87f602cb8e4',
-        abi: BBFreelancerBid.abi,
-    },
-    BBFreelancerPayment: {
-        address: '0x22ce61d3c44e5a005a9b9f4485cfbc660c1c2ef3',
-        abi: BBFreelancerPayment.abi,
-    },
-    BigbomTokenExtended: {
-        address: '0x2ddc511802a37039c42c6bdb36028b2f8992b0fe',
-        abi: BigbomTokenExtended.abi,
-    },
-    BBDispute: {
-        address: '0x278636913d5203a057adb7e0521b8df9431bdaa5',
-        abi: BBDispute.abi,
-    },
-    BBVoting: {
-        address: '0x54a7cb877948518444e4c97c426cf47718ac94c3',
-        abi: BBVoting.abi,
-    },
-    BBParams: {
-        address: '0xb1b1e7f9223bca9d66aa97b773935d4aec13165d',
-        abi: BBParams.abi,
-    },
-};
+// const rinkebyAbi = {
+//     BBFreelancerJob: {
+//         address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
+//         abi: BBFreelancerJob.abi,
+//     },
+//     BBFreelancerBid: {
+//         address: '0xf01cc898b9245930a345bec82423b87f602cb8e4',
+//         abi: BBFreelancerBid.abi,
+//     },
+//     BBFreelancerPayment: {
+//         address: '0x22ce61d3c44e5a005a9b9f4485cfbc660c1c2ef3',
+//         abi: BBFreelancerPayment.abi,
+//     },
+//     BigbomTokenExtended: {
+//         address: '0x2ddc511802a37039c42c6bdb36028b2f8992b0fe',
+//         abi: BigbomTokenExtended.abi,
+//     },
+//     BBDispute: {
+//         address: '0x278636913d5203a057adb7e0521b8df9431bdaa5',
+//         abi: BBDispute.abi,
+//     },
+//     BBVoting: {
+//         address: '0x54a7cb877948518444e4c97c426cf47718ac94c3',
+//         abi: BBVoting.abi,
+//     },
+//     BBParams: {
+//         address: '0xb1b1e7f9223bca9d66aa97b773935d4aec13165d',
+//         abi: BBParams.abi,
+//     },
+// };
 
-let fromBlock = 3165089; // rinkeby
+//let fromBlock = 3165089; // rinkeby
+let fromBlock = 4330308; // ropsten
+
 class abiConfigs {
     getContract(type) {
-        return rinkebyAbi[type];
+        return ropstenAbi[type];
     }
 
     getIpfs() {
@@ -89,8 +91,8 @@ class abiConfigs {
     }
 
     getTXlink() {
-        //return 'https://ropsten.etherscan.io/tx/';
-        return 'https://rinkeby.etherscan.io/tx/'; //'RINKEBY';
+        return 'https://ropsten.etherscan.io/tx/';
+        //return 'https://rinkeby.etherscan.io/tx/'; //'RINKEBY';
     }
 
     async contractInstanceGenerator(web3, type) {

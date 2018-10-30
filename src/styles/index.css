@@ -776,6 +776,8 @@ body {
                   cursor: pointer; }
                   #header header .nav li .user-info .user-info-item.addresses .address-item .set-default:hover {
                     background: #0ca1f9; }
+    #header header .top-login {
+      margin-left: 20px; }
 
 #footer {
   background: #fff;
