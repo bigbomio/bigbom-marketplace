@@ -8,14 +8,16 @@ function dataFetch(options) {
             return response.data;
         })
         .catch(error => {
-            console.log(error);
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                if ((error.response.status === 409 && error.response.data.message === 'EmailExist') || error.response.status === 400) {
-                    console.log(error.response.data);
+                if (
+                    (error.response.status === 409 && error.response.data.message === 'EmailExist') ||
+                    (error.response.status === 429 && error.response.data.message === 'TooManyWallets')
+                ) {
                     return error.response.data;
                 }
+                console.log(error);
             } else if (error.request) {
                 // The request was made but no response was received
                 // `error.request` is an instance of XMLHttpRequest in the browser and an instance of

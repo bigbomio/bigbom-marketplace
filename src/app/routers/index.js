@@ -71,7 +71,7 @@ class Routers extends PureComponent {
     };
 
     accountsInit = async () => {
-        const { web3, logoutMetamask, loginMetamask, saveAccountInfo } = this.props;
+        const { web3, logoutMetamask, saveAccountInfo } = this.props;
         const userInfo = LocalStorage.getItemJson('userInfo');
         const accountInfo = {
             email: '',
@@ -106,7 +106,6 @@ class Routers extends PureComponent {
                 }
                 userInfo.wallets = accounts;
                 saveAccountInfo(userInfo);
-                loginMetamask();
             } else {
                 // if wallet has not existed in current account's wallet list, logout current account
                 logoutMetamask();
@@ -142,6 +141,7 @@ class Routers extends PureComponent {
             } catch (error) {
                 logoutMetamask();
                 LocalStorage.removeItem('userInfo');
+                setCheckAcount(false);
             }
         } else {
             history.push('/');

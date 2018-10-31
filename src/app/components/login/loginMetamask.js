@@ -60,7 +60,7 @@ class LoginMetamask extends Component {
     };
 
     accountsInit = async userInfo => {
-        const { saveAccountInfo, web3, loginMetamask } = this.props;
+        const { saveAccountInfo, web3, loginMetamask, history, setCheckAcount } = this.props;
         // wallets from current account
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
@@ -83,13 +83,18 @@ class LoginMetamask extends Component {
         saveAccountInfo(userInfo);
         LocalStorage.setItemJson('userInfo', userInfo);
         loginMetamask();
+        this.radomClass(); // set color for avatar
+        history.goBack();
+        setTimeout(() => {
+            setCheckAcount(true);
+        }, 500);
         if (this.mounted) {
             this.setState({ isLoading: false });
         }
     };
 
     connectMetaMask = async () => {
-        const { history, setCheckAcount, setToken, setRegister } = this.props;
+        const { setToken, setRegister } = this.props;
         const { web3 } = this.state;
         this.setState({ isLoading: true });
         Utils.connectMetaMask(web3).then(
@@ -107,19 +112,6 @@ class LoginMetamask extends Component {
                         }
                     }
                     const userData = await services.getToken({ signature, hash });
-
-                    console.log(userData);
-                    // count wallet of this email, if < 5, accept to add more
-                    // if (wallets.length >= 3) {
-                    //     if (this.mounted) {
-                    //         this.setState({
-                    //             isLoading: false,
-                    //             userCreated: true,
-                    //             note: 'Sorry, your account have had 5 wallet addresses, you can not add more wallet.',
-                    //         });
-                    //     }
-                    //     return;
-                    // }
 
                     // if not existed on server, show register form for user and return to exit login function
                     if (!userData.info) {
@@ -145,9 +137,6 @@ class LoginMetamask extends Component {
                     }
                     setRegister(false);
                     this.accountsInit(userInfo);
-                    this.radomClass(); // set color for avatar
-                    history.goBack();
-                    setCheckAcount(true);
                 } catch (err) {
                     if (this.mounted) {
                         this.setState({ open: true, errMsg: 'Something went wrong! Can not login!', isLoading: false });
@@ -312,6 +301,18 @@ class LoginMetamask extends Component {
             };
 
             const addWallet = await services.addWallet(dataWallet);
+            // count wallet of this email, if < 5, accept to add more
+            if (addWallet.message === 'TooManyWallets') {
+                if (this.mounted) {
+                    this.setState({
+                        isLoading: false,
+                        err: true,
+                        userCreated: true,
+                        note: 'Sorry, your account have had 5 wallet addresses, you can not add more wallet.',
+                    });
+                }
+                return;
+            }
             if (addWallet.message === 'OK') {
                 if (this.mounted) {
                     this.setState({
@@ -394,7 +395,7 @@ class LoginMetamask extends Component {
     };
 
     render() {
-        const { open, errMsg, isLoading, userCreated, note } = this.state;
+        const { open, errMsg, isLoading, userCreated, note, err } = this.state;
         const { register } = this.props;
         return (
             <Grid container id="login" className="home-intro sidebar login-page">
@@ -419,9 +420,7 @@ class LoginMetamask extends Component {
                 {register ? (
                     userCreated ? (
                         <div className="register-wrp note">
-                            <p>
-                                <i className="fas fa-check-circle" />
-                            </p>
+                            <p>{err ? <i className="fas fa-exclamation-circle" /> : <i className="fas fa-check-circle" />}</p>
                             <p>{note}</p>
                         </div>
                     ) : (

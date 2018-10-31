@@ -83,7 +83,7 @@ class Manage extends Component {
         const eventInstance = ctInstance.instance.DisputeFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 4330308, // should use recent number
+                fromBlock: 3165089, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
