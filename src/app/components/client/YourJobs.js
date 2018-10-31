@@ -474,7 +474,6 @@ const mapStateToProps = state => {
         web3: state.homeReducer.web3,
         reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
-        defaultAccount: state.homeReducer.defaultAccount,
     };
 };
 

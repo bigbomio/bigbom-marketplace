@@ -1,4 +1,5 @@
 import axios from 'axios';
+import LocalStorage from '../_utils/localStorage';
 
 const apiUrl = 'https://uat-api.bigbom.net';
 
@@ -110,6 +111,19 @@ function getWallets(token) {
         });
 }
 
+function getUserByWallet(wallet) {
+    const token = LocalStorage.getItemJson('userToken');
+    const endpoint = `${apiUrl}/wallets/info/${wallet}`;
+    const options = {
+        method: 'GET',
+        url: endpoint,
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+    return dataFetch(options);
+}
+
 export default {
     getHashFromAddress,
     getToken,
@@ -117,4 +131,5 @@ export default {
     addWallet,
     getUser,
     getWallets,
+    getUserByWallet,
 };

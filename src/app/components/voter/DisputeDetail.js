@@ -360,13 +360,14 @@ class DisputeDetail extends Component {
 
     // check allowance
     checkAllowance = async () => {
-        const { web3, vote, balances, setActionBtnDisabled } = this.props;
+        const { web3, vote, accountInfo, setActionBtnDisabled } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
         setActionBtnDisabled(true);
         const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
 
         /// check balance
-        if (balances.ETH <= 0) {
+        if (defaultWallet[0].balances.ETH <= 0) {
             this.setState({
                 dialogLoading: false,
                 actStt: {
@@ -377,7 +378,7 @@ class DisputeDetail extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, balances.BBO) < vote.token) {
+        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < vote.token) {
             this.setState({
                 dialogLoading: false,
                 actStt: {
@@ -724,7 +725,7 @@ DisputeDetail.propTypes = {
     history: PropTypes.object.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
     vote: PropTypes.object.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
     setVoteInputDisable: PropTypes.func.isRequired,
     revealVote: PropTypes.object.isRequired,
     reload: PropTypes.bool.isRequired,
@@ -736,7 +737,7 @@ const mapStateToProps = state => {
         reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
         vote: state.voterReducer.vote,
         revealVote: state.voterReducer.revealVote,
     };

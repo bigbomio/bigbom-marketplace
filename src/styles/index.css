@@ -1528,6 +1528,8 @@ a {
       transition: all 0.3s ease-in; }
       .main-nav li a:hover {
         color: #40bd56; }
+  .main-nav .account-info {
+    min-height: 46px; }
 
 .nav .top-selection {
   margin-right: 20px;

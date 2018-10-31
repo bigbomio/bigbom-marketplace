@@ -132,6 +132,7 @@ class LoginMetamask extends Component {
                         wallets,
                     };
                     setToken(userData.token);
+                    LocalStorage.setItemJson('userToken', userData.token);
                     if (this.mounted) {
                         this.setState({ token: userData.token });
                     }

@@ -68,11 +68,12 @@ class CreateDispute extends Component {
 
     createProofHash = async () => {
         const { proof, imgs } = this.state;
-        const { jobHash, votingParams, balances, web3 } = this.props;
+        const { jobHash, votingParams, accountInfo, web3 } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await abiConfig.getAllowance(web3, 'BBDispute');
 
         /// check balance
-        if (balances.ETH <= 0) {
+        if (defaultWallet[0].balances.ETH <= 0) {
             this.setState({
                 isDone: true,
                 isLoading: false,
@@ -84,7 +85,7 @@ class CreateDispute extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, balances.BBO) < Number(votingParams.stakeDeposit)) {
+        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < Number(votingParams.stakeDeposit)) {
             this.setState({
                 isDone: true,
                 isLoading: false,
@@ -249,7 +250,7 @@ CreateDispute.propTypes = {
     checkedDispute: PropTypes.bool.isRequired,
     jobHash: PropTypes.string.isRequired,
     web3: PropTypes.any.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
     votingParams: PropTypes.object.isRequired,
     setSttDisputeCreated: PropTypes.func.isRequired,
 };
@@ -257,7 +258,7 @@ CreateDispute.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
         votingParams: state.freelancerReducer.votingParams,
     };
 };

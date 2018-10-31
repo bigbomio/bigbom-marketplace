@@ -79,16 +79,22 @@ const commonReducer = (state = initData, action) => {
                 accountInfo,
             };
         }
-        case nameActList.SET_TOKEN:
+        case nameActList.SET_TOKEN: {
+            let token = cloneDeep(state.token);
+            token = action.token;
             return {
                 ...state,
-                token: action.token,
+                token,
             };
-        case nameActList.SET_REGISTER:
+        }
+        case nameActList.SET_REGISTER: {
+            let register = cloneDeep(state.register);
+            register = action.register;
             return {
                 ...state,
-                register: action.register,
+                register,
             };
+        }
         default:
             return state;
     }

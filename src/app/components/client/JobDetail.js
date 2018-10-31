@@ -448,9 +448,10 @@ class JobDetail extends Component {
 
     acceptBidInit = async () => {
         const { bidValue } = this.state;
-        const { web3, balances } = this.props;
+        const { web3, accountInfo } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await abiConfig.getAllowance(web3, 'BBFreelancerBid');
-        if (Number(balances.ETH) <= 0) {
+        if (Number(defaultWallet[0].balances.ETH) <= 0) {
             this.setActionBtnDisabled(true);
             this.setState({
                 actStt: {
@@ -461,7 +462,7 @@ class JobDetail extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, balances.BBO) < Number(bidValue)) {
+        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < Number(bidValue)) {
             this.setActionBtnDisabled(true);
             this.setState({
                 actStt: {
@@ -1239,7 +1240,7 @@ JobDetail.propTypes = {
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
     jobs: PropTypes.any.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
     reason: PropTypes.number.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
@@ -1255,7 +1256,7 @@ const mapStateToProps = state => {
         reason: state.clientReducer.reason,
         reload: state.commonReducer.reload,
         actionBtnDisabled: state.commonReducer.actionBtnDisabled,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
         sttRespondedDispute: state.clientReducer.sttRespondedDispute,
     };
 };

@@ -19,6 +19,13 @@ export const setNetwork = network => {
     };
 };
 
+export const setAccount = defaultAccount => {
+    return {
+        type: listTypes.SET_ACCOUNT,
+        defaultAccount,
+    };
+};
+
 export const setWeb3 = web3 => {
     return {
         type: listTypes.SET_WEB3,

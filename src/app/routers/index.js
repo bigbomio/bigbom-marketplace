@@ -15,8 +15,8 @@ import RoutersAuthen from './RoutersAuthen';
 import abiConfig from '../_services/abiConfig';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccountInfo } from '../components/common/actions';
-import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setCheckAcount } from '../components/home/actions';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../components/common/actions';
+import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
 
@@ -70,15 +70,22 @@ class Routers extends PureComponent {
         }
     };
 
-    accountsInit = async () => {
-        const { web3, logoutMetamask, saveAccountInfo } = this.props;
-        const userInfo = LocalStorage.getItemJson('userInfo');
+    logout = () => {
+        const { logoutMetamask, saveAccountInfo } = this.props;
         const accountInfo = {
             email: '',
             firstName: '',
             lastName: '',
             wallets: [],
         };
+        logoutMetamask();
+        LocalStorage.removeItem('userInfo');
+        saveAccountInfo(accountInfo);
+    };
+
+    accountsInit = async (account, network, defaultAccount) => {
+        const { web3, saveAccountInfo, setAccount, setNetwork, setReload } = this.props;
+        const userInfo = LocalStorage.getItemJson('userInfo');
         if (userInfo) {
             const isHaveAddress = userInfo.wallets.filter(addr => addr.address === web3.eth.defaultAccount);
             if (isHaveAddress.length > 0) {
@@ -106,44 +113,43 @@ class Routers extends PureComponent {
                 }
                 userInfo.wallets = accounts;
                 saveAccountInfo(userInfo);
+                setAccount(account);
+                setNetwork(network);
+                this.getNetwork();
+                if (defaultAccount) {
+                    setReload(true);
+                }
             } else {
                 // if wallet has not existed in current account's wallet list, logout current account
-                logoutMetamask();
-                LocalStorage.removeItem('userInfo');
-                saveAccountInfo(accountInfo);
+                this.logout();
             }
         } else {
-            logoutMetamask();
-            LocalStorage.removeItem('userInfo');
-            saveAccountInfo(accountInfo);
+            this.logout();
         }
     };
 
     checkMetamask = async () => {
-        const { isConnected, logoutMetamask, defaultAccount, setNetwork, setReload, history, setCheckAcount, checkAccount } = this.props;
+        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister } = this.props;
         const { web3 } = this.state;
-        if (!checkAccount) {
-            return;
-        }
         if (isConnected) {
+            if (!checkAccount) {
+                return;
+            }
             try {
                 const { account, network } = await Utils.connectMetaMask(web3);
                 if (account) {
                     if (defaultAccount !== account) {
-                        this.accountsInit();
-                        setNetwork(network);
-                        this.getNetwork();
-                        if (defaultAccount) {
-                            setReload(true);
-                        }
+                        this.accountsInit(account, network, defaultAccount);
                     }
                 }
             } catch (error) {
-                logoutMetamask();
-                LocalStorage.removeItem('userInfo');
+                this.logout();
                 setCheckAcount(false);
             }
         } else {
+            if (web3.eth.defaultAccount === undefined) {
+                setRegister(false);
+            }
             history.push('/');
             setCheckAcount(false);
         }
@@ -193,6 +199,7 @@ Routers.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     defaultAccount: PropTypes.string.isRequired,
     setWeb3: PropTypes.func.isRequired,
+    setAccount: PropTypes.func.isRequired,
     logoutMetamask: PropTypes.func.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
     setNetwork: PropTypes.func.isRequired,
@@ -201,6 +208,7 @@ Routers.propTypes = {
     checkAccount: PropTypes.bool.isRequired,
     saveAccountInfo: PropTypes.func.isRequired,
     accountInfo: PropTypes.object.isRequired,
+    setRegister: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -219,9 +227,11 @@ const mapDispatchToProps = {
     logoutMetamask,
     setCheckAcount,
     setNetwork,
+    setAccount,
     setYourNetwork,
     setReload,
     saveAccountInfo,
+    setRegister,
 };
 
 export default connect(

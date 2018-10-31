@@ -18,6 +18,7 @@ import VoteResult from '../voter/VoteResult';
 import CreateDispute from '../freelancer/CreateDispute';
 import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from './actions';
+import services from '../../_services/services';
 
 let myAddress;
 
@@ -234,6 +235,15 @@ class JobDetailBid extends Component {
                 this.setState({ voteResult, voteWinner: 'drawn' });
             }
         }
+    };
+
+    getEmployerInfo = async job => {
+        const employerInfo = await services.getUserByWallet(job.owner);
+        const employer = {
+            fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+            email: employerInfo.userInfo.email,
+        };
+        this.setState({ employer });
     };
 
     checkAccount = () => {
@@ -734,7 +744,6 @@ class JobDetailBid extends Component {
     };
 
     BidAcceptedInit = async jobData => {
-        console.log(jobData.data);
         const { web3 } = this.props;
         const { jobHash } = this.state;
         abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
@@ -753,6 +762,7 @@ class JobDetailBid extends Component {
                 isLoading: false,
             });
         }
+        this.getEmployerInfo(jobData.data);
     };
 
     bidSwitched = open => {
@@ -1151,6 +1161,7 @@ class JobDetailBid extends Component {
             clientRespondedDispute,
             dialogContent,
             paymentDuration,
+            employer,
         } = this.state;
         //console.log(jobData);
 
@@ -1292,13 +1303,15 @@ class JobDetailBid extends Component {
                                         {jobData.description}
                                         {skillShow(jobData)}
                                     </Grid>
-                                    <Grid item xs={12} className="ct job-owner">
-                                        <span className="bold">Employer:</span>
-                                        <span className="avatar">
-                                            <i className="fas fa-user-circle" />
-                                        </span>
-                                        {jobData.owner}
-                                    </Grid>
+                                    {employer && (
+                                        <Grid item xs={12} className="ct job-owner">
+                                            <span>Employer:</span>
+                                            <span className="avatar">
+                                                <i className="fas fa-user-circle" />
+                                            </span>
+                                            <span className="bold">{employer.fullName}</span>
+                                        </Grid>
+                                    )}
                                 </Grid>
                                 {jobData.status.bidding && (
                                     <Grid container className="freelancer-bidding">

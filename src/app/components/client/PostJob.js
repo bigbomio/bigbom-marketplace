@@ -101,9 +101,9 @@ class ClientPostJob extends Component {
     }
 
     creatJob = () => {
-        const { balances } = this.props;
-        //console.log(balances);
-        if (balances.ETH <= 0) {
+        const { accountInfo } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
+        if (defaultWallet[0].balances.ETH <= 0) {
             this.setState({
                 open: true,
                 status: {
@@ -664,12 +664,12 @@ class ClientPostJob extends Component {
 
 ClientPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
     };
 };
 
