@@ -16,9 +16,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
+import services from '../../_services/services';
 
 import JobsRender from './JobsRender';
-
 import { saveJobs } from '../client/actions';
 
 let jobs = [];
@@ -43,7 +43,7 @@ class JobBrowser extends Component {
     componentDidMount() {
         const { isConnected, web3 } = this.props;
         web3.eth.getBlockNumber((error, result) => {
-            console.log('lastest block number', result); // 2744
+            console.log('lastest block number', result);
         });
 
         const { isLoading } = this.state;
@@ -92,12 +92,27 @@ class JobBrowser extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
+
             if (jobStatus.bidding) {
                 // get detail from ipfs
                 const URl = abiConfig.getIpfsLink() + jobHash;
+                const employerInfo = await services.getUserByWallet(event.args.owner);
+                let employer = {
+                    fullName: event.args.owner,
+                    walletAddress: event.args.owner,
+                    email: '',
+                };
+                if (employerInfo !== undefined) {
+                    employer = {
+                        fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                        walletAddress: event.args.owner,
+                        email: employerInfo.userInfo.email,
+                    };
+                }
                 const jobTpl = {
                     id: event.args.jobHash,
                     owner: event.args.owner,
+                    ownerInfo: employer,
                     jobHash: jobHash,
                     category: Utils.toAscii(event.args.category),
                     expired: event.args.expired.toString(),

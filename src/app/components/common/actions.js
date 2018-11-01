@@ -35,13 +35,6 @@ export const saveAccountInfo = accountInfo => {
     };
 };
 
-export const setToken = token => {
-    return {
-        type: listTypes.SET_TOKEN,
-        token,
-    };
-};
-
 export const setRegister = register => {
     return {
         type: listTypes.SET_REGISTER,

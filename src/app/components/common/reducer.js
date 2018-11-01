@@ -19,7 +19,6 @@ const data = {
         lastName: '',
         wallets: [],
     },
-    token: null,
     register: false,
 };
 
@@ -77,14 +76,6 @@ const commonReducer = (state = initData, action) => {
             return {
                 ...state,
                 accountInfo,
-            };
-        }
-        case nameActList.SET_TOKEN: {
-            let token = cloneDeep(state.token);
-            token = action.token;
-            return {
-                ...state,
-                token,
             };
         }
         case nameActList.SET_REGISTER: {

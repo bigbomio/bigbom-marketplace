@@ -1,5 +1,6 @@
 import IPFS from 'ipfs-mini';
 import Utils from '../_utils/utils';
+import services from '../_services/services';
 
 //import web3v1 from './web3'; // web3 v1
 
@@ -242,6 +243,20 @@ class abiConfigs {
                 callback(results);
             }
             for (let event of events) {
+                const userInfoFetch = await services.getUserByWallet(event.args.owner);
+
+                let user = {
+                    fullName: event.args.owner,
+                    walletAddress: event.args.owner,
+                    email: '',
+                };
+                if (userInfoFetch) {
+                    user = {
+                        fullName: userInfoFetch.userInfo.firstName + ' ' + userInfoFetch.userInfo.lastName,
+                        walletAddress: event.args.owner,
+                        email: userInfoFetch.userInfo.email,
+                    };
+                }
                 const bidTpl = {
                     address: event.args.owner,
                     award: Utils.WeiToBBO(web3, event.args.bid.toString()),
@@ -251,6 +266,7 @@ class abiConfigs {
                     accepted: false,
                     canceled: false,
                     bidBlockNumber: event.blockNumber,
+                    freelancerInfo: user,
                 };
 
                 if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {

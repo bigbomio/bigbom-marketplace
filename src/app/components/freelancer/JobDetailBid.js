@@ -19,6 +19,7 @@ import CreateDispute from '../freelancer/CreateDispute';
 import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from './actions';
 import services from '../../_services/services';
+import LocalStorage from '../../_utils/localStorage';
 
 let myAddress;
 
@@ -237,13 +238,22 @@ class JobDetailBid extends Component {
         }
     };
 
-    getEmployerInfo = async job => {
-        const employerInfo = await services.getUserByWallet(job.owner);
-        const employer = {
-            fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
-            email: employerInfo.userInfo.email,
-        };
-        this.setState({ employer });
+    setActionBtnStt = (action, done) => {
+        const { match, web3 } = this.props;
+        const jobHash = match.params.jobId;
+        this.setState({ [action]: done });
+        LocalStorage.setItemJson('client-' + action + '-' + web3.eth.defaultAccount + '-' + jobHash, { done });
+    };
+
+    getActionBtnStt = action => {
+        const { match, web3 } = this.props;
+        const jobHash = match.params.jobId;
+        const actionStt = LocalStorage.getItemJson('client-' + action + '-' + web3.eth.defaultAccount + '-' + jobHash);
+        if (actionStt) {
+            this.setState({ [action]: actionStt.done });
+        } else {
+            this.setState({ [action]: false });
+        }
     };
 
     checkAccount = () => {
@@ -370,7 +380,6 @@ class JobDetailBid extends Component {
                                     onClick={() => this.bidSwitched(true)}
                                     aria-label="Collapse"
                                     checked={checkedBid}
-                                    disabled={bidDone}
                                 >
                                     Place New Bid
                                 </ButtonBase>
@@ -659,9 +668,14 @@ class JobDetailBid extends Component {
         }
     };
 
+    sttAtionInit = () => {
+        this.getActionBtnStt('bidDone');
+    };
+
     jobDataInit = async refresh => {
         const { match, web3, jobs, setActionBtnDisabled, history } = this.props;
         const jobHash = match.params.jobId;
+        this.sttAtionInit();
         this.setState({ isLoading: true, jobHash: jobHash });
         if (!refresh) {
             if (jobs.length > 0) {
@@ -701,9 +715,23 @@ class JobDetailBid extends Component {
             }
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
+            const employerInfo = await services.getUserByWallet(jobStatusLog[0]);
+            let employer = {
+                fullName: jobStatusLog[0],
+                walletAddress: jobStatusLog[0],
+                email: '',
+            };
+            if (employerInfo !== undefined) {
+                employer = {
+                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                    walletAddress: jobStatusLog[0],
+                    email: employerInfo.userInfo.email,
+                };
+            }
             const jobTpl = {
                 id: jobHash,
                 owner: jobStatusLog[0],
+                ownerInfo: employer,
                 jobHash: jobHash,
                 status: jobStatus,
                 bid: [],
@@ -762,11 +790,10 @@ class JobDetailBid extends Component {
                 isLoading: false,
             });
         }
-        this.getEmployerInfo(jobData.data);
     };
 
     bidSwitched = open => {
-        this.setState({ checkedBid: open });
+        this.setState({ checkedBid: open, awardErr: '' });
     };
 
     back = () => {
@@ -791,16 +818,16 @@ class JobDetailBid extends Component {
             gasPrice: +instanceBid.gasPrice.toString(10),
         });
         if (err) {
+            this.setActionBtnStt('bidDone', false);
             this.setState({
-                bidDone: false,
                 dialogLoading: false,
                 actStt: { title: 'Error: ', err: true, text: 'Can not create bid! :(', link: '' },
             });
             console.log(err);
             return;
         }
+        this.setActionBtnStt('bidDone', true);
         this.setState({
-            bidDone: true,
             dialogLoading: false,
             actStt: {
                 title: '',
@@ -1161,7 +1188,6 @@ class JobDetailBid extends Component {
             clientRespondedDispute,
             dialogContent,
             paymentDuration,
-            employer,
         } = this.state;
         //console.log(jobData);
 
@@ -1303,15 +1329,13 @@ class JobDetailBid extends Component {
                                         {jobData.description}
                                         {skillShow(jobData)}
                                     </Grid>
-                                    {employer && (
-                                        <Grid item xs={12} className="ct job-owner">
-                                            <span>Employer:</span>
-                                            <span className="avatar">
-                                                <i className="fas fa-user-circle" />
-                                            </span>
-                                            <span className="bold">{employer.fullName}</span>
-                                        </Grid>
-                                    )}
+                                    <Grid item xs={12} className="ct job-owner">
+                                        <span>Employer:</span>
+                                        <span className="avatar">
+                                            <i className="fas fa-user-circle" />
+                                        </span>
+                                        <span className="bold">{jobData.ownerInfo.fullName}</span>
+                                    </Grid>
                                 </Grid>
                                 {jobData.status.bidding && (
                                     <Grid container className="freelancer-bidding">
@@ -1337,7 +1361,7 @@ class JobDetailBid extends Component {
                                                                     <span className="avatar">
                                                                         <i className="fas fa-user-circle" />
                                                                     </span>
-                                                                    {freelancer.address}
+                                                                    {freelancer.freelancerInfo.fullName}
                                                                     {freelancer.canceled && (
                                                                         <span className="bold">
                                                                             <span className="text-stt-unsuccess">

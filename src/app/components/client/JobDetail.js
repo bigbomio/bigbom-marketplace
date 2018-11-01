@@ -325,7 +325,7 @@ class JobDetail extends Component {
                     this.disputeSttInit();
                 }
                 if (jobData[0].owner !== web3.eth.defaultAccount) {
-                    history.push('/freelancer/your-bids/' + jobHash);
+                    history.push('/freelancer/jobs/' + jobHash);
                     return;
                 }
                 if (this.mounted) {
@@ -345,7 +345,7 @@ class JobDetail extends Component {
             return;
         } else {
             if (jobStatusLog[0] !== web3.eth.defaultAccount) {
-                history.push('/freelancer/your-bids/' + jobHash);
+                history.push('/freelancer/jobs/' + jobHash);
                 return;
             }
             const jobStatus = Utils.getStatus(jobStatusLog);
@@ -1124,7 +1124,7 @@ class JobDetail extends Component {
                                                                 <span className="avatar">
                                                                     <i className="fas fa-user-circle" />
                                                                 </span>
-                                                                {freelancer.address}
+                                                                {freelancer.freelancerInfo.fullName}
                                                                 {freelancer.canceled && (
                                                                     <span className="bold">
                                                                         &nbsp;

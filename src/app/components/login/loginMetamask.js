@@ -19,7 +19,7 @@ import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 
 import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
-import { saveAccountInfo, setToken, setRegister } from '../common/actions';
+import { saveAccountInfo, setRegister } from '../common/actions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
@@ -94,7 +94,7 @@ class LoginMetamask extends Component {
     };
 
     connectMetaMask = async () => {
-        const { setToken, setRegister } = this.props;
+        const { setRegister } = this.props;
         const { web3 } = this.state;
         this.setState({ isLoading: true });
         Utils.connectMetaMask(web3).then(
@@ -105,6 +105,7 @@ class LoginMetamask extends Component {
                     const { hash } = await services.getHashFromAddress(account);
                     const msg = ethUtil.bufferToHex(new Buffer(hash));
                     let userInfo = {};
+                    const tokenExpired = Date.now() + 15 * 60 * 1000; // 15p to refresh token
                     const [err, signature] = await Utils.callMethod(eth.personal_sign)(msg, web3.eth.defaultAccount);
                     if (err) {
                         if (this.mounted) {
@@ -112,27 +113,24 @@ class LoginMetamask extends Component {
                         }
                     }
                     const userData = await services.getToken({ signature, hash });
-
                     // if not existed on server, show register form for user and return to exit login function
                     if (!userData.info) {
                         if (this.mounted) {
                             this.setState({ token: userData.token, isLoading: false });
                         }
                         setRegister(true);
-                        setToken(userData.token);
                         return;
                     }
 
                     // if existed, continue login with user data result
-                    const wallets = await services.getWallets(userData.token);
+                    LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: userData.token });
+                    const wallets = await services.getWallets();
                     userInfo = {
                         email: userData.info.email,
                         firstName: userData.info.firstName,
                         lastName: userData.info.lastName,
                         wallets,
                     };
-                    setToken(userData.token);
-                    LocalStorage.setItemJson('userToken', userData.token);
                     if (this.mounted) {
                         this.setState({ token: userData.token });
                     }
@@ -461,7 +459,6 @@ LoginMetamask.propTypes = {
     setCheckAcount: PropTypes.func.isRequired,
     saveAccountInfo: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
-    setToken: PropTypes.func.isRequired,
     setRegister: PropTypes.func.isRequired,
     register: PropTypes.bool.isRequired,
 };
@@ -479,7 +476,6 @@ const mapDispatchToProps = {
     setWeb3,
     setCheckAcount,
     saveAccountInfo,
-    setToken,
     setRegister,
 };
 

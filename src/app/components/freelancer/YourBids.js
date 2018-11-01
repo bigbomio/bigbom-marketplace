@@ -13,6 +13,8 @@ import Select from 'react-select';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
+import services from '../../_services/services';
+
 import { setReload } from '../common/actions';
 import { saveJobs } from '../client/actions';
 
@@ -96,9 +98,23 @@ class YourBids extends Component {
             const jobStatus = Utils.getStatus(jobStatusLog);
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
+            const employerInfo = await services.getUserByWallet(event.args.owner);
+            let employer = {
+                fullName: event.args.owner,
+                walletAddress: event.args.owner,
+                email: '',
+            };
+            if (employerInfo !== undefined) {
+                employer = {
+                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                    walletAddress: event.args.owner,
+                    email: employerInfo.userInfo.email,
+                };
+            }
             const jobTpl = {
                 id: event.args.jobHash,
                 owner: event.args.owner,
+                ownerInfo: employer,
                 jobHash: jobHash,
                 category: Utils.toAscii(event.args.category),
                 expired: event.args.expired.toString(),
@@ -259,7 +275,7 @@ class YourBids extends Component {
                         return !job.err ? (
                             <Grid key={job.id} container className="list-body-row">
                                 <Grid item xs={7} className="title">
-                                    <Link to={`your-bids/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+                                    <Link to={`jobs/${Utils.toAscii(job.id)}`}>{job.title}</Link>
                                 </Grid>
                                 <Grid item xs={2}>
                                     {job.budget && (

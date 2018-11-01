@@ -187,7 +187,7 @@ class DisputeDetail extends Component {
     };
 
     disputeDataInit = async disputeData => {
-        //console.log('disputeDataInit', disputeData);
+        console.log('disputeDataInit', disputeData);
         const { match, web3 } = this.props;
         const jobHash = match.params.disputeId;
         abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);

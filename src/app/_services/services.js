@@ -1,7 +1,7 @@
 import axios from 'axios';
 import LocalStorage from '../_utils/localStorage';
 
-const apiUrl = 'https://uat-api.bigbom.net';
+const apiUrl = 'https://dev-api.bigbom.net';
 
 function dataFetch(options) {
     return axios(options)
@@ -10,8 +10,6 @@ function dataFetch(options) {
         })
         .catch(error => {
             if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
                 if (
                     (error.response.status === 409 && error.response.data.message === 'EmailExist') ||
                     (error.response.status === 429 && error.response.data.message === 'TooManyWallets')
@@ -20,16 +18,33 @@ function dataFetch(options) {
                 }
                 console.log(error);
             } else if (error.request) {
-                // The request was made but no response was received
-                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-                // http.ClientRequest in node.js
                 console.log(error.request);
             } else {
-                // Something happened in setting up the request that triggered an Error
                 console.log('Error', error.message);
             }
-            console.log(error.config);
+            //console.log(error.config);
         });
+}
+
+async function refreshToken() {
+    const endpoint = `${apiUrl}/authentication`;
+    const userToken = LocalStorage.getItemJson('userToken');
+    const options = {
+        method: 'GET',
+        url: endpoint,
+        headers: {
+            Authorization: `Bearer ${userToken.token}`,
+        },
+    };
+    const tokenFetch = await dataFetch(options);
+    const tokenExpired = Date.now() + 15 * 60 * 1000; // 15p to refresh token
+    LocalStorage.removeItem('userToken');
+    LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: tokenFetch.token });
+}
+
+function getTokenSaved() {
+    const userToken = LocalStorage.getItemJson('userToken');
+    return userToken.token;
 }
 
 function getHashFromAddress(address) {
@@ -80,8 +95,9 @@ function addWallet(data) {
     return dataFetch(options);
 }
 
-function getUser(token) {
+async function getUser() {
     const endpoint = `${apiUrl}/users`;
+    const token = await getTokenSaved();
     const options = {
         method: 'GET',
         url: endpoint,
@@ -92,8 +108,9 @@ function getUser(token) {
     return dataFetch(options);
 }
 
-function getWallets(token) {
+async function getWallets() {
     const endpoint = `${apiUrl}/wallets`;
+    const token = await getTokenSaved();
     return axios({
         method: 'GET',
         url: endpoint,
@@ -111,8 +128,8 @@ function getWallets(token) {
         });
 }
 
-function getUserByWallet(wallet) {
-    const token = LocalStorage.getItemJson('userToken');
+async function getUserByWallet(wallet) {
+    const token = await getTokenSaved();
     const endpoint = `${apiUrl}/wallets/info/${wallet}`;
     const options = {
         method: 'GET',
@@ -132,4 +149,5 @@ export default {
     getUser,
     getWallets,
     getUserByWallet,
+    refreshToken,
 };

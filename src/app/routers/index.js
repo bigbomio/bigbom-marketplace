@@ -13,6 +13,7 @@ import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
 
 import abiConfig from '../_services/abiConfig';
+import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
 import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../components/common/actions';
@@ -80,6 +81,7 @@ class Routers extends PureComponent {
         };
         logoutMetamask();
         LocalStorage.removeItem('userInfo');
+        LocalStorage.removeItem('userToken');
         saveAccountInfo(accountInfo);
     };
 
@@ -132,6 +134,10 @@ class Routers extends PureComponent {
         const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister } = this.props;
         const { web3 } = this.state;
         if (isConnected) {
+            const userToken = LocalStorage.getItemJson('userToken');
+            if (userToken && userToken.expired <= Date.now()) {
+                services.refreshToken();
+            }
             if (!checkAccount) {
                 return;
             }

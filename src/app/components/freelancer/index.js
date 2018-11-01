@@ -40,7 +40,7 @@ class FreelancerContainer extends Component {
             },
             {
                 title: 'Your Bids',
-                path: `${match.url}/your-bids`,
+                path: `${match.url}/jobs`,
                 component: YourBids,
             },
         ];
@@ -64,7 +64,7 @@ class FreelancerContainer extends Component {
                     </div>
                 </div>
                 <Switch>
-                    <Route path={`${match.url}/your-bids/:jobId`} render={props => <JobDetailBid {...props} />} />
+                    <Route path={`${match.url}/jobs/:jobId`} render={props => <JobDetailBid {...props} />} />
                     {listSubLink.length && listSubLink.map((route, key) => <Route key={key} {...route} />)}
                     <Route component={NotFound} />
                 </Switch>
