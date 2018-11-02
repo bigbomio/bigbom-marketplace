@@ -725,6 +725,20 @@ class abiConfigs {
             }
         );
     }
+
+    async transactionWatch(web3, hashString, callback) {
+        async function getReceipt() {
+            const [, receipt] = await Utils.callMethod(web3.eth.getTransactionReceipt)(hashString);
+            if (receipt) {
+                clearInterval(watch);
+                callback();
+                return;
+            }
+        }
+        const watch = setInterval(async () => {
+            getReceipt();
+        }, 1000);
+    }
 }
 
 export default new abiConfigs();

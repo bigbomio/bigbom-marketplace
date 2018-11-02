@@ -10,6 +10,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 import { setSttDisputeCreated } from './actions';
+import LocalStorage from '../../_utils/localStorage';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -34,6 +35,7 @@ class CreateDispute extends Component {
 
     createDispute = async proofHash => {
         const { web3, jobHash, setSttDisputeCreated } = this.props;
+        const defaultAccount = await web3.eth.defaultAccount;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [err, tx] = await Utils.callMethod(ctInstance.instance.startPoll)(jobHash, proofHash, {
             from: ctInstance.defaultAccount,
@@ -64,6 +66,7 @@ class CreateDispute extends Component {
             },
         });
         setSttDisputeCreated(true);
+        LocalStorage.setItemJson('disputeCreated-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done: true });
     };
 
     createProofHash = async () => {

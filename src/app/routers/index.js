@@ -85,8 +85,8 @@ class Routers extends PureComponent {
         saveAccountInfo(accountInfo);
     };
 
-    accountsInit = async (account, network, defaultAccount) => {
-        const { web3, saveAccountInfo, setAccount, setNetwork, setReload } = this.props;
+    accountsInit = async (account, network) => {
+        const { web3, saveAccountInfo, setAccount, setNetwork } = this.props;
         const userInfo = LocalStorage.getItemJson('userInfo');
         if (userInfo) {
             const isHaveAddress = userInfo.wallets.filter(addr => addr.address === web3.eth.defaultAccount);
@@ -118,9 +118,6 @@ class Routers extends PureComponent {
                 setAccount(account);
                 setNetwork(network);
                 this.getNetwork();
-                if (defaultAccount) {
-                    setReload(true);
-                }
             } else {
                 // if wallet has not existed in current account's wallet list, logout current account
                 this.logout();
@@ -131,7 +128,7 @@ class Routers extends PureComponent {
     };
 
     checkMetamask = async () => {
-        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister } = this.props;
+        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload } = this.props;
         const { web3 } = this.state;
         if (isConnected) {
             const userToken = LocalStorage.getItemJson('userToken');
@@ -145,7 +142,12 @@ class Routers extends PureComponent {
                 const { account, network } = await Utils.connectMetaMask(web3);
                 if (account) {
                     if (defaultAccount !== account) {
-                        this.accountsInit(account, network, defaultAccount);
+                        this.accountsInit(account, network);
+                        if (defaultAccount) {
+                            setReload(true);
+                        }
+                    } else {
+                        setReload(false);
                     }
                 }
             } catch (error) {

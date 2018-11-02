@@ -79,9 +79,12 @@ class YourJobs extends Component {
 
     checkAccount = () => {
         const { reload, setReload } = this.props;
-        if (reload) {
-            this.getJobs();
-            setReload(false);
+        const { isLoading } = this.state;
+        if (!isLoading) {
+            if (reload) {
+                this.getJobs();
+                setReload(false);
+            }
         }
     };
 

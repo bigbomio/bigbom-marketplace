@@ -8,7 +8,7 @@ class Countdown extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            countDown: { expired: false, days: 0, hours: 0, minutes: 0, seconds: 0 },
+            countDown: { exprired: false, days: 0, hours: 0, minutes: 0, seconds: 0 },
             expiredTime: 0,
         };
         this.mounted = false;
@@ -49,11 +49,13 @@ class Countdown extends Component {
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             if (this.mounted) {
-                if (distance < 0) {
-                    clearInterval(countdown);
-                    this.setState({ countDown: { expired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
+                if (distance <= 0) {
+                    this.setState({ countDown: { exprired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
+                    setTimeout(() => {
+                        clearInterval(countdown);
+                    }, 200);
                 } else {
-                    this.setState({ countDown: { expired: false, days, hours, minutes, seconds } });
+                    this.setState({ countDown: { exprired: false, days, hours, minutes, seconds } });
                 }
             }
         }, 1000);
@@ -62,19 +64,22 @@ class Countdown extends Component {
     render() {
         const { countDown } = this.state;
         const { name } = this.props;
-
-        return (
-            <Grid item className="job-detail-col">
-                {name && <div className="name">{name}</div>}
-                <div className="ct">
-                    {countDown.expired ? (
-                        'Expired'
-                    ) : (
-                        <span>{countDown.days + 'd ' + countDown.hours + 'h ' + countDown.minutes + 'm ' + countDown.seconds + 's '}</span>
-                    )}
-                </div>
-            </Grid>
-        );
+        if (countDown) {
+            return (
+                <Grid item className="job-detail-col">
+                    {name && <div className="name">{name}</div>}
+                    <div className="ct">
+                        {countDown.exprired ? (
+                            'Expired'
+                        ) : (
+                            <span>{countDown.days + 'd ' + countDown.hours + 'h ' + countDown.minutes + 'm ' + countDown.seconds + 's '}</span>
+                        )}
+                    </div>
+                </Grid>
+            );
+        } else {
+            return null;
+        }
     }
 }
 

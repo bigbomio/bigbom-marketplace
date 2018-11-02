@@ -83,22 +83,28 @@ class ClientPostJob extends Component {
         }
         // check event logs
         if (jobLog) {
-            this.setState({
-                isLoading: false,
-                status: {
-                    title: 'Create New Job: ',
-                    err: false,
-                    text: 'Your job has been created! Please waiting for confirm from your network.',
-                    link: abiConfig.getTXlink() + jobLog,
-                },
-            });
-            setTimeout(() => {
-                if (this.mounted) {
-                    this.handleClose();
-                }
-            }, 10000);
+            abiConfig.transactionWatch(web3, jobLog, () => this.createJobDone(jobHash));
+            // this.setState({
+            //     isLoading: false,
+            //     status: {
+            //         title: 'Create New Job: ',
+            //         err: false,
+            //         text: 'Your job has been created! Please waiting for confirm from your network.',
+            //         link: abiConfig.getTXlink() + jobLog,
+            //     },
+            // });
+            // setTimeout(() => {
+            //     if (this.mounted) {
+            //         this.handleClose();
+            //     }
+            // }, 10000);
         }
     }
+
+    createJobDone = jobHash => {
+        const { history } = this.props;
+        history.push('/client/your-jobs/' + jobHash);
+    };
 
     creatJob = () => {
         const { accountInfo } = this.props;
@@ -665,6 +671,7 @@ class ClientPostJob extends Component {
 ClientPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
     accountInfo: PropTypes.any.isRequired,
+    history: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {

@@ -11,6 +11,7 @@ import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../common/actions';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
+import LocalStorage from '../../_utils/localStorage';
 
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
@@ -70,6 +71,26 @@ class DisputeDetail extends Component {
         }
     };
 
+    setActionBtnStt = async (action, done) => {
+        const { match, web3 } = this.props;
+        const defaultAccount = await web3.eth.defaultAccount;
+        const jobHash = match.params.disputeId;
+        this.setState({ [action]: done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done });
+    };
+
+    getActionBtnStt = async action => {
+        const { match, web3 } = this.props;
+        const defaultAccount = await web3.eth.defaultAccount;
+        const jobHash = match.params.disputeId;
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
+        if (actionStt) {
+            this.setState({ [action]: actionStt.done });
+        } else {
+            this.setState({ [action]: false });
+        }
+    };
+
     getDisputeResult = async jobHash => {
         const { web3 } = this.props;
         let voteResult = {};
@@ -88,6 +109,7 @@ class DisputeDetail extends Component {
             return;
         }
         // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+
         voteResult = {
             clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
             freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
@@ -186,10 +208,14 @@ class DisputeDetail extends Component {
         });
     };
 
+    sttAtionInit = () => {
+        this.getActionBtnStt('revealDone');
+    };
+
     disputeDataInit = async disputeData => {
-        console.log('disputeDataInit', disputeData);
         const { match, web3 } = this.props;
         const jobHash = match.params.disputeId;
+        this.sttAtionInit();
         abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
         const URl = abiConfig.getIpfsLink() + jobHash;
         const dispute = {
@@ -228,9 +254,12 @@ class DisputeDetail extends Component {
 
     checkAccount = () => {
         const { reload, setReload } = this.props;
-        if (reload) {
-            this.getDispute();
-            setReload(false);
+        const { isLoading } = this.state;
+        if (!isLoading) {
+            if (reload) {
+                this.getDispute();
+                setReload(false);
+            }
         }
     };
 
@@ -354,8 +383,8 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
-        console.log(tx);
-        this.getDisputeResult(disputeData.jobHash);
+        this.setActionBtnStt('revealDone', true);
+        abiConfig.transactionWatch(web3, tx, () => this.getDisputeResult(disputeData.jobHash));
     };
 
     // check allowance
@@ -502,6 +531,7 @@ class DisputeDetail extends Component {
             reveal,
             getRewardRight,
             isFinal,
+            revealDone,
         } = this.state;
         let disputeTplRender;
         const { web3 } = this.props;
@@ -653,7 +683,7 @@ class DisputeDetail extends Component {
                                 ) : (
                                     <Grid container className="reveal-submit">
                                         {disputeData.revealEndDate > Date.now() ? (
-                                            <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
+                                            <ButtonBase className="btn btn-normal btn-orange" disabled={revealDone} onClick={this.revealConfirm}>
                                                 Reveal Vote
                                             </ButtonBase>
                                         ) : (
