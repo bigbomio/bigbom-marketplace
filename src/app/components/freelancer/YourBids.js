@@ -67,6 +67,11 @@ class YourBids extends Component {
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
 
+    getJobFiltered = jobData => {
+        const { web3 } = this.props;
+        abiConfig.filterJobByBider(web3, jobData, this.JobCreatedInit);
+    };
+
     getBiddingStt(stts) {
         if (stts[3]) {
             return false;
@@ -88,61 +93,74 @@ class YourBids extends Component {
         const jobHash = Utils.toAscii(event.args.jobHash);
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
-            from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            return console.log(err);
-        } else {
-            const jobStatus = Utils.getStatus(jobStatusLog);
-            // get detail from ipfs
-            const URl = abiConfig.getIpfsLink() + jobHash;
-            const employerInfo = await services.getUserByWallet(event.args.owner);
-            let employer = {
-                fullName: event.args.owner,
-                walletAddress: event.args.owner,
-                email: '',
-            };
-            if (employerInfo !== undefined) {
-                employer = {
-                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
-                    walletAddress: event.args.owner,
-                    email: employerInfo.userInfo.email,
-                };
-            }
-            const jobTpl = {
-                id: event.args.jobHash,
-                owner: event.args.owner,
-                ownerInfo: employer,
-                jobHash: jobHash,
-                category: Utils.toAscii(event.args.category),
-                expired: event.args.expired.toString(),
-                status: jobStatus,
-                jobBlockNumber: event.blockNumber,
-                bid: [],
-            };
-            fetch(URl)
-                .then(res => res.json())
-                .then(
-                    result => {
-                        jobTpl.title = result.title;
-                        jobTpl.skills = result.skills;
-                        jobTpl.description = result.description;
-                        jobTpl.currency = result.currency;
-                        jobTpl.budget = result.budget;
-                        jobTpl.estimatedTime = result.estimatedTime;
-                        jobTpl.expiredTime = result.expiredTime;
-                        jobTpl.created = result.created;
-                        this.BidCreatedInit(jobTpl);
-                    },
-                    error => {
-                        console.log(error);
-                        jobTpl.err = 'Can not fetch data from server';
-                        this.BidCreatedInit(jobTpl);
+        const contractInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        const filter = { owner: web3.eth.defaultAccount };
+        contractInstance.instance.BidCreated(
+            filter,
+            {
+                fromBlock: 4369092, // should use recent number
+                toBlock: 'latest',
+            },
+            async (error, eventResult) => {
+                if (Utils.toAscii(eventResult.args.jobHash) === jobHash) {
+                    const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+                        from: jobInstance.defaultAccount,
+                        gasPrice: +jobInstance.gasPrice.toString(10),
+                    });
+                    if (err) {
+                        return console.log(err);
+                    } else {
+                        const jobStatus = Utils.getStatus(jobStatusLog);
+                        // get detail from ipfs
+                        const URl = abiConfig.getIpfsLink() + jobHash;
+                        const employerInfo = await services.getUserByWallet(event.args.owner);
+                        let employer = {
+                            fullName: event.args.owner,
+                            walletAddress: event.args.owner,
+                            email: '',
+                        };
+                        if (employerInfo !== undefined) {
+                            employer = {
+                                fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                                walletAddress: event.args.owner,
+                                email: employerInfo.userInfo.email,
+                            };
+                        }
+                        const jobTpl = {
+                            id: event.args.jobHash,
+                            owner: event.args.owner,
+                            ownerInfo: employer,
+                            jobHash: jobHash,
+                            category: Utils.toAscii(event.args.category),
+                            expired: event.args.expired.toString(),
+                            status: jobStatus,
+                            jobBlockNumber: event.blockNumber,
+                            bid: [],
+                        };
+                        fetch(URl)
+                            .then(res => res.json())
+                            .then(
+                                result => {
+                                    jobTpl.title = result.title;
+                                    jobTpl.skills = result.skills;
+                                    jobTpl.description = result.description;
+                                    jobTpl.currency = result.currency;
+                                    jobTpl.budget = result.budget;
+                                    jobTpl.estimatedTime = result.estimatedTime;
+                                    jobTpl.expiredTime = result.expiredTime;
+                                    jobTpl.created = result.created;
+                                    this.BidCreatedInit(jobTpl);
+                                },
+                                error => {
+                                    console.log(error);
+                                    jobTpl.err = 'Can not fetch data from server';
+                                    this.BidCreatedInit(jobTpl);
+                                }
+                            );
                     }
-                );
-        }
+                }
+            }
+        );
     };
 
     checkAccount = () => {
@@ -158,7 +176,14 @@ class YourBids extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { indexJobHash: web3.sha3(job.jobHash), owner: web3.eth.defaultAccount },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = async jobData => {
@@ -167,7 +192,7 @@ class YourBids extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { jobHash: web3.sha3(jobData.data.jobHash) },
+            { indexJobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );

@@ -82,7 +82,7 @@ class DisputeDetail extends Component {
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
-        const jobHash = match.params.disputeId;
+        const jobHash = await match.params.disputeId;
         const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
@@ -150,6 +150,7 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
+        this.setActionBtnStt('getRewardDone', true);
         this.setState({
             dialogLoading: false,
             dialogContent: null,
@@ -195,6 +196,10 @@ class DisputeDetail extends Component {
             if (this.mounted) {
                 this.setState({ getRewardRight: true });
             }
+        } else {
+            if (this.mounted) {
+                this.setState({ getRewardRight: false });
+            }
         }
     };
 
@@ -210,6 +215,7 @@ class DisputeDetail extends Component {
 
     sttAtionInit = () => {
         this.getActionBtnStt('revealDone');
+        this.getActionBtnStt('getRewardDone');
     };
 
     disputeDataInit = async disputeData => {
@@ -365,6 +371,10 @@ class DisputeDetail extends Component {
         const { disputeData } = this.state;
         const { web3, revealVote } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        this.setActionBtnDisabled(true);
+        this.setState({
+            dialogLoading: true,
+        });
         const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
             disputeData.jobHash,
             revealVote.addressChoice,
@@ -389,10 +399,10 @@ class DisputeDetail extends Component {
 
     // check allowance
     checkAllowance = async () => {
-        const { web3, vote, accountInfo, setActionBtnDisabled } = this.props;
+        const { web3, vote, accountInfo } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
-        setActionBtnDisabled(true);
+        this.setActionBtnDisabled(true);
         const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
 
         /// check balance
@@ -532,6 +542,7 @@ class DisputeDetail extends Component {
             getRewardRight,
             isFinal,
             revealDone,
+            getRewardDone,
         } = this.state;
         let disputeTplRender;
         const { web3 } = this.props;
@@ -692,7 +703,11 @@ class DisputeDetail extends Component {
                                             </ButtonBase>
                                         )}
                                         {getRewardRight && (
-                                            <ButtonBase className="btn btn-normal btn-orange btn-right" onClick={this.getRewardConfirm}>
+                                            <ButtonBase
+                                                className="btn btn-normal btn-orange btn-right"
+                                                disabled={getRewardDone}
+                                                onClick={this.getRewardConfirm}
+                                            >
                                                 Claim Reward
                                             </ButtonBase>
                                         )}

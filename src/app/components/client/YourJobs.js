@@ -143,7 +143,14 @@ class YourJobs extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { indexJobHash: web3.sha3(job.jobHash) },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = async jobData => {
@@ -152,7 +159,7 @@ class YourJobs extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { jobHash: web3.sha3(jobData.data.jobHash) },
+            { indexJobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );

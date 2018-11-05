@@ -60,7 +60,8 @@
         "prebuild": "npm-run-all build:clean",
         "build:clean": "rimraf ./build",
         "build:production": "cross-env REACT_APP_ENV=production npm-run-all build-css build-js",
-        "build:staging": "cross-env REACT_APP_ENV=production npm-run-all build-css build-js",
+        "build:uat": "cross-env REACT_APP_ENV=uat npm-run-all build-css build-js",
+        "build:dev": "cross-env REACT_APP_ENV=dev npm-run-all build-css build-js",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
         "generate": "plop --plopfile internals/generators/index.js"

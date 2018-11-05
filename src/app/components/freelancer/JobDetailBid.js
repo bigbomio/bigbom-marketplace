@@ -256,7 +256,7 @@ class JobDetailBid extends Component {
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
-        const jobHash = match.params.jobId;
+        const jobHash = await match.params.jobId;
         const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
@@ -725,6 +725,7 @@ class JobDetailBid extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
+            console.log(jobStatus);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
                 setActionBtnDisabled(true);
@@ -786,18 +787,27 @@ class JobDetailBid extends Component {
         if (job.status.reject) {
             abiConfig.getReasonPaymentRejected(web3, job.jobHash, this.getReasonPaymentRejected);
         }
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { indexJobHash: web3.sha3(job.jobHash) },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
         const { jobHash } = this.state;
-        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobHash: jobData.jobHash }, jobData.data, this.JobsInit);
+        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { indexJobHash: jobData.jobHash }, jobData.data, this.JobsInit);
         abiConfig.checkPayment(web3, jobHash, this.setPaymentStt);
     };
 
-    JobsInit = jobData => {
+    jobStarted = async (jobData, jobStarted) => {
         const { web3, history } = this.props;
+        const bidAccepted = jobData.data.bid.filter(bid => bid.accepted);
+        const jobCompleteDuration = (jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
         if (this.mounted) {
             if (web3.eth.defaultAccount === jobData.data.owner) {
                 history.push('/client/your-jobs/' + jobData.data.jobHash);
@@ -806,7 +816,26 @@ class JobDetailBid extends Component {
                 jobData: jobData.data,
                 isOwner: web3.eth.defaultAccount === jobData.data.owner,
                 isLoading: false,
+                jobCompleteDuration,
             });
+        }
+    };
+
+    JobsInit = jobData => {
+        const { web3, history } = this.props;
+        if (jobData.data.status.started) {
+            abiConfig.jobStarted(web3, jobData, this.jobStarted);
+        } else {
+            if (this.mounted) {
+                if (web3.eth.defaultAccount === jobData.data.owner) {
+                    history.push('/client/your-jobs/' + jobData.data.jobHash);
+                }
+                this.setState({
+                    jobData: jobData.data,
+                    isOwner: web3.eth.defaultAccount === jobData.data.owner,
+                    isLoading: false,
+                });
+            }
         }
     };
 
@@ -1207,8 +1236,9 @@ class JobDetailBid extends Component {
             dialogContent,
             paymentDuration,
             disputeCreated,
+            jobCompleteDuration,
         } = this.state;
-        //console.log(jobData);
+        console.log(jobData);
 
         const { web3 } = this.props;
         let jobTplRender;
@@ -1317,6 +1347,7 @@ class JobDetailBid extends Component {
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.started && <Countdown name="Complete duration" expiredTime={jobCompleteDuration} />}
                                             {disputeStt.started &&
                                                 (disputeStt.clientResponseDuration > 0 ? (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />

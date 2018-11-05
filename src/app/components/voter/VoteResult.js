@@ -41,6 +41,7 @@ class Reveal extends Component {
 
         const clientWidth = { width: clientW + '%' };
         const freelancerWidth = { width: freelancerW + '%' };
+        console.log(voteResult);
         return (
             <Grid item xs={12} className="voting-options">
                 <Grid container className="result-show">

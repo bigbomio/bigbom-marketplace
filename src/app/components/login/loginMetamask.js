@@ -72,7 +72,6 @@ class LoginMetamask extends Component {
             });
             const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
             const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
-
             if (!errBalance) {
                 const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
                 address.balances.BBO = BBOBalance;
@@ -88,6 +87,7 @@ class LoginMetamask extends Component {
         setTimeout(() => {
             setCheckAcount(true);
         }, 500);
+
         if (this.mounted) {
             this.setState({ isLoading: false });
         }
@@ -121,10 +121,10 @@ class LoginMetamask extends Component {
                         setRegister(true);
                         return;
                     }
-
                     // if existed, continue login with user data result
                     LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: userData.token });
                     const wallets = await services.getWallets();
+                    console.log('wallets', wallets);
                     userInfo = {
                         email: userData.info.email,
                         firstName: userData.info.firstName,

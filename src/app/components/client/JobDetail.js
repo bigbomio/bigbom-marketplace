@@ -174,7 +174,7 @@ class JobDetail extends Component {
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
-        const jobHash = match.params.jobId;
+        const jobHash = await match.params.jobId;
         const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
@@ -432,7 +432,14 @@ class JobDetail extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { indexJobHash: web3.sha3(job.jobHash) },
+            job,
+            this.BidAcceptedInit
+        );
         abiConfig.checkPayment(web3, job.jobHash, this.setPaymentStt);
     };
 
@@ -442,15 +449,28 @@ class JobDetail extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { jobHash: web3.sha3(jobData.data.jobHash) },
+            { indexJobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );
     };
 
-    JobsInit = jobData => {
+    jobStarted = async (jobData, jobStarted) => {
+        const bidAccepted = jobData.data.bid.filter(bid => bid.accepted);
+        const jobCompleteDuration = (jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
         if (this.mounted) {
-            this.setState({ jobData: jobData.data, isLoading: false });
+            this.setState({ jobData: jobData.data, isLoading: false, jobCompleteDuration });
+        }
+    };
+
+    JobsInit = jobData => {
+        const { web3 } = this.props;
+        if (jobData.data.status.started) {
+            abiConfig.jobStarted(web3, jobData, this.jobStarted);
+        } else {
+            if (this.mounted) {
+                this.setState({ jobData: jobData.data, isLoading: false });
+            }
         }
     };
 
@@ -794,7 +814,7 @@ class JobDetail extends Component {
     jobActions = () => {
         const { jobData, cancelDone, paymentDone, rejectPaymentDone, disputeStt } = this.state;
         //console.log(jobData);
-        if (jobData.status.bidding) {
+        if (jobData.status.bidding || jobData.status.bidAccepted) {
             return (
                 <span>
                     <ButtonBase className="btn btn-normal btn-red btn-back btn-bid" disabled={cancelDone} onClick={this.confirmCancelJob}>
@@ -1036,6 +1056,7 @@ class JobDetail extends Component {
             freelancerDispute,
             paymentDuration,
             sttRespondedDispute,
+            jobCompleteDuration,
         } = this.state;
         const { web3 } = this.props;
         let jobTplRender;
@@ -1108,6 +1129,7 @@ class JobDetail extends Component {
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.started && <Countdown name="Complete duration" expiredTime={jobCompleteDuration} />}
                                             {disputeStt.started &&
                                                 (disputeStt.clientResponseDuration > 0 && (
                                                     <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />

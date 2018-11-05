@@ -147,7 +147,14 @@ class JobBrowser extends Component {
     BidCreatedInit = job => {
         //console.log('BidCreatedInit success: ', job);
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { indexJobHash: web3.sha3(job.jobHash) },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = jobData => {
@@ -157,7 +164,7 @@ class JobBrowser extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { jobHash: web3.sha3(jobData.data.jobHash) },
+            { indexJobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );
