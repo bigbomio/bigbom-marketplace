@@ -1,7 +1,7 @@
 import axios from 'axios';
 import LocalStorage from '../_utils/localStorage';
 
-const apiUrl = 'https://dev-api.bigbom.net';
+let apiUrl = 'https://dev-api.bigbom.net';
 
 let returnUrl = 'http://localhost:3000/';
 let loginUrl = 'http://localhost:3000/';
@@ -9,9 +9,11 @@ let loginUrl = 'http://localhost:3000/';
 if (process.env.REACT_APP_ENV === 'uat') {
     returnUrl = 'http://uat-marketplace.bigbom.net';
     loginUrl = 'http://uat-marketplace.bigbom.net';
+    apiUrl = 'https://uat-api.bigbom.net';
 } else if (process.env.REACT_APP_ENV === 'production') {
     returnUrl = 'https://marketplace.bigbom.com/';
     loginUrl = 'https://marketplace.bigbom.com/';
+    apiUrl = 'https://api.bigbom.com';
 }
 
 function dataFetch(options) {
