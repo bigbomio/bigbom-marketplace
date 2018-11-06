@@ -5,9 +5,9 @@ import createBrowserHistory from 'history/createBrowserHistory';
 import rootReducer from '../reducers';
 
 export const browserHistory = createBrowserHistory();
+export const store = createStore(rootReducer);
 
 const storeConfig = () => {
-    const store = createStore(rootReducer);
     return store;
 };
 

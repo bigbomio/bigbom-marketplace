@@ -1,20 +1,25 @@
 import axios from 'axios';
 import LocalStorage from '../_utils/localStorage';
+import { store } from '../stores';
+import * as listTypes from '../components/home/consts';
+import * as listTypesCommon from '../components/common/consts';
 
-let apiUrl = 'https://dev-api.bigbom.net';
+const env = process.env.REACT_APP_ENV;
 
-let returnUrl = 'http://localhost:3000/';
-let loginUrl = 'http://localhost:3000/';
-
-if (process.env.REACT_APP_ENV === 'uat') {
-    returnUrl = 'http://uat-marketplace.bigbom.net';
-    loginUrl = 'http://uat-marketplace.bigbom.net';
-    apiUrl = 'https://uat-api.bigbom.net';
-} else if (process.env.REACT_APP_ENV === 'production') {
-    returnUrl = 'https://marketplace.bigbom.com/';
-    loginUrl = 'https://marketplace.bigbom.com/';
-    apiUrl = 'https://api.bigbom.com';
-}
+const envConfig = {
+    dev: {
+        returnUrl: 'https://dev-marketplace.bigbom.net/?',
+        apiUrl: 'https://dev-api.bigbom.net',
+    },
+    uat: {
+        returnUrl: 'https://uat-marketplace.bigbom.net/?',
+        apiUrl: 'https://aut-api.bigbom.net',
+    },
+    production: {
+        returnUrl: 'https://marketplace.bigbom.com/?',
+        apiUrl: 'https://api.bigbom.net',
+    },
+};
 
 function dataFetch(options) {
     return axios(options)
@@ -40,7 +45,7 @@ function dataFetch(options) {
 }
 
 async function refreshToken() {
-    const endpoint = `${apiUrl}/authentication`;
+    const endpoint = `${envConfig[env].apiUrl}/authentication`;
     const userToken = LocalStorage.getItemJson('userToken');
     const options = {
         method: 'GET',
@@ -57,11 +62,30 @@ async function refreshToken() {
 
 function getTokenSaved() {
     const userToken = LocalStorage.getItemJson('userToken');
-    return userToken.token;
+    const accountInfo = {
+        email: '',
+        firstName: '',
+        lastName: '',
+        wallets: [],
+    };
+    if (userToken) {
+        return userToken.token;
+    } else {
+        // logout account
+        store.dispatch({
+            type: listTypes.LOGOUT_METAMASK,
+        });
+        store.dispatch({
+            type: listTypesCommon.SAVE_ACCOUNT_INFO,
+            accountInfo,
+        });
+        LocalStorage.removeItem('userToken');
+        LocalStorage.removeItem('userInfo');
+    }
 }
 
 function getHashFromAddress(address) {
-    const endpoint = `${apiUrl}/authentication/meta-auth/${address}`;
+    const endpoint = `${envConfig[env].apiUrl}/authentication/meta-auth/${address}`;
     const options = {
         url: endpoint,
         method: 'GET',
@@ -70,7 +94,7 @@ function getHashFromAddress(address) {
 }
 
 function getToken(data) {
-    const endpoint = `${apiUrl}/authentication/meta-auth`;
+    const endpoint = `${envConfig[env].apiUrl}/authentication/meta-auth`;
     const options = {
         method: 'POST',
         url: endpoint,
@@ -83,33 +107,35 @@ function getToken(data) {
 }
 
 function createUser(data) {
-    const endpoint = `${apiUrl}/users`;
+    const endpoint = `${envConfig[env].apiUrl}/users`;
+    const returnUrl = envConfig[env].returnUrl;
     const options = {
         method: 'POST',
         url: endpoint,
         headers: {
             'Content-Type': 'application/json',
         },
-        data: data,
+        data: { ...data, returnUrl },
     };
     return dataFetch(options);
 }
 
 function addWallet(data) {
-    const endpoint = `${apiUrl}/users/public/addWallet`;
+    const endpoint = `${envConfig[env].apiUrl}/users/public/addWallet`;
+    const returnUrl = envConfig[env].returnUrl;
     const options = {
         method: 'POST',
         url: endpoint,
         headers: {
             'Content-Type': 'application/json',
         },
-        data: { ...data, returnUrl, loginUrl },
+        data: { ...data, returnUrl },
     };
     return dataFetch(options);
 }
 
 async function getUser() {
-    const endpoint = `${apiUrl}/users`;
+    const endpoint = `${envConfig[env].apiUrl}/users`;
     const token = await getTokenSaved();
     const options = {
         method: 'GET',
@@ -122,7 +148,7 @@ async function getUser() {
 }
 
 async function getWallets() {
-    const endpoint = `${apiUrl}/wallets`;
+    const endpoint = `${envConfig[env].apiUrl}/wallets`;
     const token = await getTokenSaved();
     return axios({
         method: 'GET',
@@ -143,7 +169,7 @@ async function getWallets() {
 
 async function getUserByWallet(wallet) {
     const token = await getTokenSaved();
-    const endpoint = `${apiUrl}/wallets/info/${wallet}`;
+    const endpoint = `${envConfig[env].apiUrl}/wallets/info/${wallet}`;
     const options = {
         method: 'GET',
         url: endpoint,
