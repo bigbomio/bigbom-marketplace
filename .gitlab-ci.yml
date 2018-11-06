@@ -1,53 +1,56 @@
-image: docker:latest
-
+image: 'docker:latest'
 services:
-    - docker:dind
-
+    - 'docker:dind'
 variables:
-    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_HOST: 'tcp://localhost:2375'
+    BUCKET_URL_dev: 'gs://dev-marketplace.bigbom.net'
+    BUCKET_URL_uat: 'gs://uat-marketplace.bigbom.net'
     BUCKET_URL_production: 'gs://marketplace.bigbom.com'
-    BUCKET_URL_staging: 'gs://staging-marketplace.bigbom.net'
-
 stages:
     - test
     - deploy
-
 test:
     stage: test
-    script: echo "unit test"
+    script: 'docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && yarn test"'
     only:
-        - /^release-/
-        - /^hotfix-/
-        - /^staging-/
+        - '/^v([0-9.]+)(-RC[\d+])?$/'
         - master
-
-k8s-deploy-staging:
-    stage: deploy
+before_script:
+    - 'echo ${GOOGLE_KEY} > google-key.json'
+    - 'echo ${GOOGLE_STORAGE} > google-storage.json'
+deploy-dev:
     image: google/cloud-sdk
+    stage: deploy
     script:
-        - BUCKET_URL=$BUCKET_URL_staging
-        - echo "$GOOGLE_STORAGE" > key.json
-        - gcloud auth activate-service-account --key-file key.json
-        - docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && npm run build:${CI_ENVIRONMENT_NAME}"
-        - gsutil -m -h "Cache-Control:public, max-age=604800" rsync -r -d ./build ${BUCKET_URL}
+        - 'BUCKET_URL=${BUCKET_URL_dev}'
+        - 'docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && yarn run build:${CI_ENVIRONMENT_NAME}"'
+        - gcloud auth activate-service-account --key-file google-storage.json
+        - 'gsutil -m -h "Cache-Control:public, max-age=604800" rsync -r -d ./build ${BUCKET_URL}'
     environment:
-        name: staging
+        name: dev
     only:
-        - /^staging-/
         - master
-
-k8s-deploy-production:
-    stage: deploy
+deploy-uat:
     image: google/cloud-sdk
+    stage: deploy
     script:
-        - BUCKET_URL=$BUCKET_URL_production
-        - echo "$GOOGLE_STORAGE" > key.json
-        - gcloud auth activate-service-account --key-file key.json
-        - docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && npm run build:${CI_ENVIRONMENT_NAME}"
-        - gsutil -m -h "Cache-Control:public, max-age=604800" rsync -r -d ./build ${BUCKET_URL}
+        - 'BUCKET_URL=${BUCKET_URL_uat}'
+        - 'docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && yarn run build:${CI_ENVIRONMENT_NAME}"'
+        - gcloud auth activate-service-account --key-file google-storage.json
+        - 'gsutil -m -h "Cache-Control:public, max-age=604800" rsync -r -d ./build ${BUCKET_URL}'
+    environment:
+        name: uat
+    only:
+        - '/^v([0-9.]+)-RC[\d+]$/'
+deploy-production:
+    image: google/cloud-sdk
+    stage: deploy
+    script:
+        - 'BUCKET_URL=${BUCKET_URL_production}'
+        - 'docker run --rm -v ${PWD}:/home -w /home node:latest sh -c "yarn install && yarn run build:${CI_ENVIRONMENT_NAME}"'
+        - gcloud auth activate-service-account --key-file google-storage.json
+        - 'gsutil -m -h "Cache-Control:public, max-age=604800" rsync -r -d ./build ${BUCKET_URL}'
     environment:
         name: production
-    when: manual
     only:
-        - /^release-/
-        - /^hotfix-/
+        - '/^v([0-9.]+)$/'

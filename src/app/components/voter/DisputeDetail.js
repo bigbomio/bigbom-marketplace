@@ -11,6 +11,7 @@ import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../common/actions';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
+import LocalStorage from '../../_utils/localStorage';
 
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
@@ -70,6 +71,26 @@ class DisputeDetail extends Component {
         }
     };
 
+    setActionBtnStt = async (action, done) => {
+        const { match, web3 } = this.props;
+        const defaultAccount = await web3.eth.defaultAccount;
+        const jobHash = match.params.disputeId;
+        this.setState({ [action]: done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done });
+    };
+
+    getActionBtnStt = async action => {
+        const { match, web3 } = this.props;
+        const defaultAccount = await web3.eth.defaultAccount;
+        const jobHash = await match.params.disputeId;
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
+        if (actionStt) {
+            this.setState({ [action]: actionStt.done });
+        } else {
+            this.setState({ [action]: false });
+        }
+    };
+
     getDisputeResult = async jobHash => {
         const { web3 } = this.props;
         let voteResult = {};
@@ -88,6 +109,7 @@ class DisputeDetail extends Component {
             return;
         }
         // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+
         voteResult = {
             clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
             freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
@@ -128,6 +150,7 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
+        this.setActionBtnStt('getRewardDone', true);
         this.setState({
             dialogLoading: false,
             dialogContent: null,
@@ -173,6 +196,10 @@ class DisputeDetail extends Component {
             if (this.mounted) {
                 this.setState({ getRewardRight: true });
             }
+        } else {
+            if (this.mounted) {
+                this.setState({ getRewardRight: false });
+            }
         }
     };
 
@@ -186,10 +213,15 @@ class DisputeDetail extends Component {
         });
     };
 
+    sttAtionInit = () => {
+        this.getActionBtnStt('revealDone');
+        this.getActionBtnStt('getRewardDone');
+    };
+
     disputeDataInit = async disputeData => {
-        //console.log('disputeDataInit', disputeData);
         const { match, web3 } = this.props;
         const jobHash = match.params.disputeId;
+        this.sttAtionInit();
         abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
         const URl = abiConfig.getIpfsLink() + jobHash;
         const dispute = {
@@ -228,9 +260,12 @@ class DisputeDetail extends Component {
 
     checkAccount = () => {
         const { reload, setReload } = this.props;
-        if (reload) {
-            this.getDispute();
-            setReload(false);
+        const { isLoading } = this.state;
+        if (!isLoading) {
+            if (reload) {
+                this.getDispute();
+                setReload(false);
+            }
         }
     };
 
@@ -336,6 +371,10 @@ class DisputeDetail extends Component {
         const { disputeData } = this.state;
         const { web3, revealVote } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        this.setActionBtnDisabled(true);
+        this.setState({
+            dialogLoading: true,
+        });
         const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
             disputeData.jobHash,
             revealVote.addressChoice,
@@ -354,36 +393,37 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
-        console.log(tx);
-        this.getDisputeResult(disputeData.jobHash);
+        this.setActionBtnStt('revealDone', true);
+        abiConfig.transactionWatch(web3, tx, () => this.getDisputeResult(disputeData.jobHash));
     };
 
     // check allowance
     checkAllowance = async () => {
-        const { web3, vote, balances, setActionBtnDisabled } = this.props;
+        const { web3, vote, accountInfo } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
-        setActionBtnDisabled(true);
+        this.setActionBtnDisabled(true);
         const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
 
         /// check balance
-        if (balances.ETH <= 0) {
+        if (defaultWallet[0].balances.ETH <= 0) {
             this.setState({
                 dialogLoading: false,
                 actStt: {
                     title: 'Error: ',
                     err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+                    text: 'Sorry, you have insufficient funds! You can not vote if your balance less than fee.',
                     link: '',
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, balances.BBO) < vote.token) {
+        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < vote.token) {
             this.setState({
                 dialogLoading: false,
                 actStt: {
                     title: 'Error: ',
                     err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than stake deposit.',
+                    text: 'Sorry, you have insufficient funds! You can not vote if your BBO balance less than stake deposit.',
                     link: (
                         <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
                             Get free BBO
@@ -501,6 +541,8 @@ class DisputeDetail extends Component {
             reveal,
             getRewardRight,
             isFinal,
+            revealDone,
+            getRewardDone,
         } = this.state;
         let disputeTplRender;
         const { web3 } = this.props;
@@ -652,7 +694,7 @@ class DisputeDetail extends Component {
                                 ) : (
                                     <Grid container className="reveal-submit">
                                         {disputeData.revealEndDate > Date.now() ? (
-                                            <ButtonBase className="btn btn-normal btn-orange" onClick={this.revealConfirm}>
+                                            <ButtonBase className="btn btn-normal btn-orange" disabled={revealDone} onClick={this.revealConfirm}>
                                                 Reveal Vote
                                             </ButtonBase>
                                         ) : (
@@ -661,7 +703,11 @@ class DisputeDetail extends Component {
                                             </ButtonBase>
                                         )}
                                         {getRewardRight && (
-                                            <ButtonBase className="btn btn-normal btn-orange btn-right" onClick={this.getRewardConfirm}>
+                                            <ButtonBase
+                                                className="btn btn-normal btn-orange btn-right"
+                                                disabled={getRewardDone}
+                                                onClick={this.getRewardConfirm}
+                                            >
                                                 Claim Reward
                                             </ButtonBase>
                                         )}
@@ -691,13 +737,8 @@ class DisputeDetail extends Component {
                     <div className="container-wrp full-top-wrp">
                         <div className="container wrapper">
                             <Grid container className="main-intro">
-                                <Grid item xs={8}>
+                                <Grid item xs={10}>
                                     {disputeData && <h1>{disputeData.jobDispute.title}</h1>}
-                                </Grid>
-                                <Grid item xs={4} className="main-intro-right">
-                                    <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
-                                        <i className="fas fa-plus" /> Create A Job Like This
-                                    </ButtonBase>
                                 </Grid>
                             </Grid>
                         </div>
@@ -729,7 +770,7 @@ DisputeDetail.propTypes = {
     history: PropTypes.object.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
     vote: PropTypes.object.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
     setVoteInputDisable: PropTypes.func.isRequired,
     revealVote: PropTypes.object.isRequired,
     reload: PropTypes.bool.isRequired,
@@ -741,7 +782,7 @@ const mapStateToProps = state => {
         reload: state.commonReducer.reload,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
         vote: state.voterReducer.vote,
         revealVote: state.voterReducer.revealVote,
     };

@@ -13,14 +13,15 @@ import Select from 'react-select';
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
+
+import { saveJobs } from './actions';
 import { setReload } from '../common/actions';
-import { saveJobs } from '../client/actions';
 
 const categories = settingsApi.getCategories();
 
 let jobs = [];
 
-class FreelancerDashboard extends Component {
+class YourJobs extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -62,7 +63,7 @@ class FreelancerDashboard extends Component {
         const { web3 } = this.props;
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
+        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', { owner: web3.eth.defaultAccount }, this.JobCreatedInit);
     };
 
     getBiddingStt(stts) {
@@ -76,11 +77,22 @@ class FreelancerDashboard extends Component {
         return true;
     }
 
+    checkAccount = () => {
+        const { reload, setReload } = this.props;
+        const { isLoading } = this.state;
+        if (!isLoading) {
+            if (reload) {
+                this.getJobs();
+                setReload(false);
+            }
+        }
+    };
+
     JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
         const event = eventLog.data;
         if (!eventLog.data) {
-            this.setState({ stt: { err: true, text: 'You have no any bid!' }, isLoading: false });
+            this.setState({ stt: { err: true, text: 'You have no any job!' }, isLoading: false });
             return;
         }
         const jobHash = Utils.toAscii(event.args.jobHash);
@@ -102,8 +114,8 @@ class FreelancerDashboard extends Component {
                 jobHash: jobHash,
                 category: Utils.toAscii(event.args.category),
                 expired: event.args.expired.toString(),
-                status: jobStatus,
                 jobBlockNumber: event.blockNumber,
+                status: jobStatus,
                 bid: [],
             };
             fetch(URl)
@@ -129,17 +141,16 @@ class FreelancerDashboard extends Component {
         }
     };
 
-    checkAccount = () => {
-        const { reload, setReload } = this.props;
-        if (reload) {
-            this.getJobs();
-            setReload(false);
-        }
-    };
-
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobHash: web3.sha3(job.jobHash) }, job, this.BidAcceptedInit);
+        abiConfig.getPastEventsMergeBidToJob(
+            web3,
+            'BBFreelancerBid',
+            'BidCreated',
+            { indexJobHash: web3.sha3(job.jobHash) },
+            job,
+            this.BidAcceptedInit
+        );
     };
 
     BidAcceptedInit = async jobData => {
@@ -148,19 +159,15 @@ class FreelancerDashboard extends Component {
             web3,
             'BBFreelancerBid',
             'BidAccepted',
-            { jobHash: web3.sha3(jobData.data.jobHash) },
+            { indexJobHash: web3.sha3(jobData.data.jobHash) },
             jobData.data,
             this.JobsInit
         );
     };
 
     JobsInit = jobData => {
-        const { web3, saveJobs } = this.props;
-        for (let freelancer of jobData.data.bid) {
-            if (freelancer.address === web3.eth.defaultAccount) {
-                jobs.push(jobData.data);
-            }
-        }
+        const { saveJobs } = this.props;
+        jobs.push(jobData.data);
         const uqJobs = Utils.removeDuplicates(jobs, 'id'); // fix duplicate data
         if (this.mounted) {
             saveJobs(uqJobs);
@@ -251,72 +258,76 @@ class FreelancerDashboard extends Component {
     };
 
     jobsRender = () => {
+        const { match } = this.props;
         const { Jobs, stt } = this.state;
-        if (Jobs.length > 0) {
-            return !stt.err ? (
-                <Grid container className="list-body">
-                    {Jobs.map(job => {
-                        return !job.err ? (
-                            <Grid key={job.id} container className="list-body-row">
-                                <Grid item xs={7} className="title">
-                                    <Link to={`jobs/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+        //console.log(Jobs);
+        if (Jobs) {
+            if (Jobs.length > 0) {
+                return !stt.err ? (
+                    <Grid container className="list-body">
+                        {Jobs.map(job => {
+                            return !job.err ? (
+                                <Grid key={job.id} container className="list-body-row">
+                                    <Grid item xs={7} className="title">
+                                        <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        {job.budget && (
+                                            <span className="bold">
+                                                {Utils.currencyFormat(job.budget.max_sum)}
+                                                {' ( ' + job.currency.label + ' ) '}
+                                            </span>
+                                        )}
+                                    </Grid>
+                                    <Grid item xs={1}>
+                                        {job.bid.length}
+                                    </Grid>
+                                    <Grid item xs={2} className="status">
+                                        {Utils.getStatusJob(job.status)}
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={2}>
-                                    {job.budget && (
-                                        <span className="bold">
-                                            {Utils.currencyFormat(job.budget.max_sum)}
-                                            {' ( ' + job.currency.label + ' ) '}
-                                        </span>
-                                    )}
+                            ) : (
+                                <Grid key={job.id} container className="list-body-row">
+                                    <Grid item xs={7} className="title">
+                                        <span className="err">{Utils.toAscii(job.id)}</span>
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        ---
+                                    </Grid>
+                                    <Grid item xs={1}>
+                                        ---
+                                    </Grid>
+                                    <Grid item xs={2}>
+                                        ---
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={1}>
-                                    {job.bid.length}
-                                </Grid>
-                                <Grid item xs={2} className="status">
-                                    {Utils.getStatusJob(job.status)}
-                                </Grid>
-                            </Grid>
-                        ) : (
-                            <Grid key={job.id} container className="list-body-row">
-                                <Grid item xs={7} className="title">
-                                    <span className="err">{Utils.toAscii(job.id)}</span>
-                                </Grid>
-                                <Grid item xs={2}>
-                                    ---
-                                </Grid>
-                                <Grid item xs={1}>
-                                    ---
-                                </Grid>
-                                <Grid item xs={2}>
-                                    ---
-                                </Grid>
-                            </Grid>
-                        );
-                    })}
-                </Grid>
-            ) : (
-                <Grid container className="no-data">
-                    {stt.text}
-                </Grid>
-            );
-        } else {
-            return (
-                <Grid container className="no-data">
-                    You have no any bid!
-                </Grid>
-            );
+                            );
+                        })}
+                    </Grid>
+                ) : (
+                    <Grid container className="no-data">
+                        {stt.text}
+                    </Grid>
+                );
+            } else {
+                return (
+                    <Grid container className="no-data">
+                        You have no any job!
+                    </Grid>
+                );
+            }
         }
     };
 
     render() {
         const { selectedCategory, isLoading } = this.state;
         return (
-            <div className="container-wrp">
+            <div id="client" className="container-wrp">
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
                             <Grid item xs={8}>
-                                <h1>Your bids</h1>
+                                <h1>Your Jobs</h1>
                             </Grid>
                             <Grid item xs={4} className="main-intro-right">
                                 <ButtonBase onClick={this.createAction} className="btn btn-normal btn-white btn-create">
@@ -459,7 +470,8 @@ class FreelancerDashboard extends Component {
     }
 }
 
-FreelancerDashboard.propTypes = {
+YourJobs.propTypes = {
+    match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
@@ -475,9 +487,12 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = { saveJobs, setReload };
+const mapDispatchToProps = {
+    saveJobs,
+    setReload,
+};
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(FreelancerDashboard);
+)(YourJobs);

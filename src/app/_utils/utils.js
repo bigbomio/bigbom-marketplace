@@ -325,6 +325,27 @@ class Utils {
     toWidth(a, b) {
         return a / ((a + b) / 100);
     }
+
+    copyStringToClipboard(str) {
+        var el = document.createElement('textarea');
+        el.value = str;
+        el.setAttribute('readonly', '');
+        el.style = { position: 'absolute', left: '-9999px' };
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+    }
+
+    isEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return email ? re.test(String(email).toLowerCase()) : false;
+    }
+
+    getURLParam(param) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(param);
+    }
 }
 
 export default new Utils();

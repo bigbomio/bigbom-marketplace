@@ -23,7 +23,7 @@ export const saveRevealVote = revealVote => {
 
 export const setVoteInputDisable = voteInputDisable => {
     return {
-        type: listTypes.SAVE_VOTE_INPUT_DISABLE,
+        type: listTypes.SET_VOTE_INPUT_DISABLE,
         voteInputDisable,
     };
 };

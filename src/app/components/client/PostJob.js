@@ -83,27 +83,33 @@ class ClientPostJob extends Component {
         }
         // check event logs
         if (jobLog) {
-            this.setState({
-                isLoading: false,
-                status: {
-                    title: 'Create New Job: ',
-                    err: false,
-                    text: 'Your job has been created! Please waiting for confirm from your network.',
-                    link: abiConfig.getTXlink() + jobLog,
-                },
-            });
-            setTimeout(() => {
-                if (this.mounted) {
-                    this.handleClose();
-                }
-            }, 10000);
+            abiConfig.transactionWatch(web3, jobLog, () => this.createJobDone(jobHash));
+            // this.setState({
+            //     isLoading: false,
+            //     status: {
+            //         title: 'Create New Job: ',
+            //         err: false,
+            //         text: 'Your job has been created! Please waiting for confirm from your network.',
+            //         link: abiConfig.getTXlink() + jobLog,
+            //     },
+            // });
+            // setTimeout(() => {
+            //     if (this.mounted) {
+            //         this.handleClose();
+            //     }
+            // }, 10000);
         }
     }
 
+    createJobDone = jobHash => {
+        const { history } = this.props;
+        history.push('/client/your-jobs/' + jobHash);
+    };
+
     creatJob = () => {
-        const { balances } = this.props;
-        //console.log(balances);
-        if (balances.ETH <= 0) {
+        const { accountInfo } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
+        if (defaultWallet[0].balances.ETH <= 0) {
             this.setState({
                 open: true,
                 status: {
@@ -247,6 +253,13 @@ class ClientPostJob extends Component {
                     if (setState) {
                         this.setState({
                             estimatedTimeErr: 'Please enter your estimated time least 1 hour',
+                        });
+                    }
+                    return false;
+                } else if (Number(val) > 6360) {
+                    if (setState) {
+                        this.setState({
+                            estimatedTimeErr: 'Please enter your estimated time most 1 year (6360 Hours)',
                         });
                     }
                     return false;
@@ -657,12 +670,13 @@ class ClientPostJob extends Component {
 
 ClientPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
+    history: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
     };
 };
 

@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Link, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Dashboard from './Dashboard';
+import YourBids from './YourBids';
 import JobDetailBid from './JobDetailBid';
 import JobBrowse from './JobBrowse';
 import NotFound from '../NotFound';
@@ -39,9 +39,9 @@ class FreelancerContainer extends Component {
                 component: JobBrowse,
             },
             {
-                title: 'My Bid',
-                path: `${match.url}/bid`,
-                component: Dashboard,
+                title: 'Your Bids',
+                path: `${match.url}/jobs`,
+                component: YourBids,
             },
         ];
 

@@ -9,9 +9,15 @@
         }
         .nav {
             float: right;
-            padding-top: 5px;
+            &.not-login-yet {
+                margin-top: 7px;
+            }
             li {
                 display: inline-block;
+                position: relative;
+                .get-bbo-btn {
+                    margin-top: -2px;
+                }
                 &.active {
                     a {
                         color: $green;
@@ -27,7 +33,151 @@
                         color: #111;
                     }
                 }
+                &.profile {
+                    margin-left: 20px;
+                    .avatar {
+                        cursor: pointer;
+                    }
+                    .blue {
+                        background: $blue;
+                        color: #fff;
+                    }
+                    .red {
+                        background: rgb(235, 88, 88);
+                        color: #fff;
+                    }
+                    .pink {
+                        background: palevioletred;
+                        color: #fff;
+                    }
+                    .green {
+                        background: $green;
+                        color: #fff;
+                    }
+                    .orange {
+                        background: $orange;
+                        color: #fff;
+                    }
+                    .yellow {
+                        background: yellowgreen;
+                        color: #fff;
+                    }
+                    .dark {
+                        background: #777;
+                        color: #fff;
+                    }
+                }
+                .user-info {
+                    background: #fff;
+                    box-shadow: $normalShadow;
+                    padding: 20px;
+                    position: absolute;
+                    right: 0;
+                    min-width: 300px;
+                    z-index: 9999;
+                    margin-top: 12px;
+                    border-top: 1px solid #eee;
+                    visibility: hidden;
+                    &.hide {
+                        visibility: hidden;
+                    }
+                    &.show {
+                        visibility: visible;
+                    }
+                    .user-info-item {
+                        width: 100%;
+                        float: left;
+                        padding-bottom: 15px;
+                        &.top {
+                            margin-bottom: 10px;
+                        }
+                        &.balance {
+                            font-size: 20px;
+                            font-weight: bold;
+                            color: #555;
+                            display: flex;
+                            span {
+                                width: 50px;
+                                font-weight: normal;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                margin-left: 10px;
+                                background: #f9f9f9;
+                                border: 1px solid #ccc;
+                                font-size: 14px;
+                                color: #888;
+                            }
+                        }
+                        .avatar-left {
+                            float: left;
+                        }
+                        .avatar-right {
+                            float: left;
+                            font-size: 16px;
+                            font-weight: bold;
+                            padding-left: 5px;
+                            padding-top: 3px;
+                            .email {
+                                font-weight: normal;
+                                padding-top: 5px;
+                                color: #777;
+                                font-size: 13px;
+                            }
+                        }
+                        &.addresses {
+                            padding-top: 10px;
+                            border-top: 1px solid #ccc;
+                            .address-item {
+                                display: flex;
+                                padding: 6px 0;
+                                font-size: 14px;
+                                .address {
+                                    padding: 4px 0;
+                                    background: #f9f9f9;
+                                    border-radius: 10px;
+                                    border: 1px solid #ccc;
+                                    color: #777;
+                                    width: 200px;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    cursor: pointer;
+                                    &.selected {
+                                        box-shadow: $thinShadow;
+                                        color: $darkBlue;
+                                        border-color: $darkBlue;
+                                    }
+                                }
+                                .default {
+                                    color: #888;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    padding-left: 5px;
+                                }
+                                .set-default {
+                                    padding: 5px 10px;
+                                    background: $darkBlue;
+                                    color: #fff;
+                                    border-radius: 4px;
+                                    font-size: 12px;
+                                    display: flex;
+                                    align-items: center;
+                                    margin-left: 10px;
+                                    cursor: pointer;
+                                    &:hover {
+                                        background: $blue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        }
+        .top-login {
+            margin-left: 20px;
         }
     }
 }

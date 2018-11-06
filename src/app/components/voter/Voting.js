@@ -114,12 +114,8 @@ class Voting extends Component {
                 <Grid container className="voting-choice">
                     <Grid item xs={12}>
                         Your choice:
-                        <span onClick={() => this.choice(true)} className={choice === 'client' ? 'selected' : ''}>
-                            {options.clientChoice.name}
-                        </span>
-                        <span onClick={() => this.choice(false)} className={choice === 'freelancer' ? 'selected' : ''}>
-                            {options.freelancerChoice.name}
-                        </span>
+                        <span className={choice === 'client' ? 'selected' : ''}>{options.clientChoice.name}</span>
+                        <span className={choice === 'freelancer' ? 'selected' : ''}>{options.freelancerChoice.name}</span>
                     </Grid>
                 </Grid>
                 <Grid container className="voting-options-vote">

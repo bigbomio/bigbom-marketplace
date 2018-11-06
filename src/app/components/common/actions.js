@@ -1,12 +1,5 @@
 import * as listTypes from './consts';
 
-export const setBalances = balances => {
-    return {
-        type: listTypes.SET_BALANCES,
-        balances,
-    };
-};
-
 export const setYourNetwork = yourNetwork => {
     return {
         type: listTypes.SET_YOUR_NETWORK,
@@ -32,5 +25,19 @@ export const setReload = reload => {
     return {
         type: listTypes.SET_RELOAD,
         reload,
+    };
+};
+
+export const saveAccountInfo = accountInfo => {
+    return {
+        type: listTypes.SAVE_ACCOUNT_INFO,
+        accountInfo,
+    };
+};
+
+export const setRegister = register => {
+    return {
+        type: listTypes.SET_REGISTER,
+        register,
     };
 };

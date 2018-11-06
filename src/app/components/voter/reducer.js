@@ -29,7 +29,7 @@ const voterReducer = (state = initData, action) => {
                 vote,
             };
         }
-        case nameActList.SAVE_VOTE_INPUT_DISABLE: {
+        case nameActList.SET_VOTE_INPUT_DISABLE: {
             let voteInputDisable = cloneDeep(state.voteInputDisable);
             voteInputDisable = action.voteInputDisable;
             return {

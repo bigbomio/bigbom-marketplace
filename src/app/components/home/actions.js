@@ -12,17 +12,17 @@ export const logoutMetamask = () => {
     };
 };
 
-export const setAccount = defaultAccount => {
-    return {
-        type: listTypes.SET_ACCOUNT,
-        defaultAccount,
-    };
-};
-
 export const setNetwork = network => {
     return {
         type: listTypes.SET_NETWORK,
         network,
+    };
+};
+
+export const setAccount = defaultAccount => {
+    return {
+        type: listTypes.SET_ACCOUNT,
+        defaultAccount,
     };
 };
 

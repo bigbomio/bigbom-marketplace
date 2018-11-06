@@ -43,7 +43,6 @@ class Manage extends Component {
     componentDidMount() {
         const { isConnected } = this.props;
         const { isLoading } = this.state;
-
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
@@ -58,15 +57,15 @@ class Manage extends Component {
     componentWillUnmount() {
         this.mounted = false;
         clearInterval(this.checkMetamaskID);
+        clearTimeout(this.loadDataTimeout);
     }
 
     getDisputes = () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         disputes = [];
-
         // time out 20s
-        setTimeout(() => {
+        this.loadDataTimeout = setTimeout(() => {
             if (disputes.length <= 0) {
                 this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
                 return;
@@ -83,7 +82,7 @@ class Manage extends Component {
         const eventInstance = ctInstance.instance.DisputeFinalized(
             { indexJobHash: web3.sha3(jobHash) },
             {
-                fromBlock: 3165089, // should use recent number
+                fromBlock: 4369092, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
@@ -108,9 +107,13 @@ class Manage extends Component {
 
     checkAccount = () => {
         const { reload, setReload } = this.props;
-        if (reload) {
-            this.getDisputes();
-            setReload(false);
+        const { isLoading } = this.state;
+        if (!isLoading) {
+            if (reload) {
+                clearTimeout(this.loadDataTimeout);
+                this.getDisputes();
+                setReload(false);
+            }
         }
     };
 
@@ -154,7 +157,7 @@ class Manage extends Component {
         this.handleMenuItemSort(null, selectedIndex, disputes);
         if (this.mounted) {
             saveDisputes(uqDisputes);
-            this.setState({ isLoading: false });
+            this.setState({ isLoading: false, stt: { err: false, text: '' } });
         }
     };
 

@@ -10,6 +10,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 import { setSttDisputeCreated } from './actions';
+import LocalStorage from '../../_utils/localStorage';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -34,6 +35,7 @@ class CreateDispute extends Component {
 
     createDispute = async proofHash => {
         const { web3, jobHash, setSttDisputeCreated } = this.props;
+        const defaultAccount = await web3.eth.defaultAccount;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [err, tx] = await Utils.callMethod(ctInstance.instance.startPoll)(jobHash, proofHash, {
             from: ctInstance.defaultAccount,
@@ -64,15 +66,17 @@ class CreateDispute extends Component {
             },
         });
         setSttDisputeCreated(true);
+        LocalStorage.setItemJson('disputeCreated-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done: true });
     };
 
     createProofHash = async () => {
         const { proof, imgs } = this.state;
-        const { jobHash, votingParams, balances, web3 } = this.props;
+        const { jobHash, votingParams, accountInfo, web3 } = this.props;
+        const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await abiConfig.getAllowance(web3, 'BBDispute');
 
         /// check balance
-        if (balances.ETH <= 0) {
+        if (defaultWallet[0].balances.ETH <= 0) {
             this.setState({
                 isDone: true,
                 isLoading: false,
@@ -84,7 +88,7 @@ class CreateDispute extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, balances.BBO) < Number(votingParams.stakeDeposit)) {
+        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < Number(votingParams.stakeDeposit)) {
             this.setState({
                 isDone: true,
                 isLoading: false,
@@ -249,7 +253,7 @@ CreateDispute.propTypes = {
     checkedDispute: PropTypes.bool.isRequired,
     jobHash: PropTypes.string.isRequired,
     web3: PropTypes.any.isRequired,
-    balances: PropTypes.any.isRequired,
+    accountInfo: PropTypes.any.isRequired,
     votingParams: PropTypes.object.isRequired,
     setSttDisputeCreated: PropTypes.func.isRequired,
 };
@@ -257,7 +261,7 @@ CreateDispute.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        balances: state.commonReducer.balances,
+        accountInfo: state.commonReducer.accountInfo,
         votingParams: state.freelancerReducer.votingParams,
     };
 };

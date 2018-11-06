@@ -152,6 +152,9 @@ a {
             }
         }
     }
+    .account-info {
+        min-height: 46px;
+    }
 }
 .nav {
     .top-selection {
@@ -280,6 +283,123 @@ a {
         }
         button {
             margin-top: -10px;
+        }
+    }
+}
+
+.login-page {
+    min-height: 380px;
+    justify-content: center;
+    align-items: center;
+    .connect-item {
+        padding: 30px 40px 30px 40px !important;
+        box-shadow: 0 -5px #2eae3b !important;
+    }
+    .logo {
+        text-align: center;
+        img {
+            width: 120px;
+        }
+    }
+    .name {
+        font-size: 25px;
+        font-weight: bold;
+        color: #fff;
+        text-align: center;
+        text-shadow: $thinShadow;
+    }
+    .btn {
+        width: 200px;
+        border-radius: 4px !important;
+        border-bottom: 4px solid #ccc;
+        text-transform: uppercase;
+    }
+    .register-wrp {
+        width: 400px;
+        input {
+            padding: 10px 20px;
+            width: 100%;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.15);
+            -webkit-transition: all 0.3s ease-in-out;
+            -moz-transition: all 0.3s ease-in-out;
+            -ms-transition: all 0.3s ease-in-out;
+            -o-transition: all 0.3s ease-in-out;
+            outline: none;
+            color: #fff;
+            border: 1px solid rgb(187, 252, 160);
+            border-radius: 4px;
+            &::placeholder {
+                color: rgb(187, 223, 174);
+                opacity: 1;
+            }
+            &:focus {
+                border: 1px solid rgb(255, 255, 255);
+            }
+        }
+        .form-row {
+            margin-top: 20px;
+            position: relative;
+            .form-row-input {
+                flex-wrap: nowrap;
+            }
+            .first-name {
+                margin-right: 10px;
+            }
+            .form-row-label {
+                font-size: 14px;
+                color: #fff;
+                padding-bottom: 5px;
+                text-shadow: $thinShadow;
+            }
+            &.confirm {
+                margin-top: 10px;
+                .err {
+                    margin-top: 2px;
+                }
+            }
+            .wallet {
+                background: #f9f9f9;
+                padding: 5px 0px;
+                text-align: center;
+                color: #4f82a7;
+                font-size: 15px;
+            }
+        }
+    }
+    .err {
+        position: absolute;
+        right: -225px;
+        width: 220px;
+        font-size: 12px;
+        padding: 5px 10px;
+        background: #f18313;
+        line-height: 14px;
+        color: #fff;
+        margin-top: 20px;
+    }
+    .register-loading {
+        svg {
+            color: #fff;
+        }
+        color: #fff;
+        font-size: 20px;
+        text-shadow: $thinShadow;
+        min-height: inherit;
+    }
+    .note {
+        text-align: center;
+        color: #fff;
+        line-height: 24px;
+        font-size: 18px;
+        text-shadow: $thinShadow;
+        width: 600px;
+        i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            border: 5px solid $green;
+            border-radius: 50%;
+            box-shadow: $thinShadow;
         }
     }
 }

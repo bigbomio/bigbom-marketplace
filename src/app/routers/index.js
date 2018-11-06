@@ -13,8 +13,10 @@ import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
 
 import abiConfig from '../_services/abiConfig';
+import services from '../_services/services';
 import Utils from '../_utils/utils';
-import { setYourNetwork, setBalances, setReload } from '../components/common/actions';
+import LocalStorage from '../_utils/localStorage';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../components/common/actions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
@@ -28,8 +30,7 @@ class Routers extends PureComponent {
     }
 
     componentDidMount() {
-        const { setWeb3 } = this.props;
-        setWeb3(global.web3);
+        this.setWeb3();
         this.checkMetamaskID = setInterval(() => {
             this.checkMetamask();
         }, 1000);
@@ -49,6 +50,18 @@ class Routers extends PureComponent {
         return state;
     }
 
+    setWeb3 = async () => {
+        const { setWeb3 } = this.props;
+        setWeb3(global.web3);
+        if (window.ethereum) {
+            try {
+                await window.ethereum.enable();
+            } catch (error) {
+                console.log('Access denied!');
+            }
+        }
+    };
+
     getNetwork = async () => {
         const { web3, setYourNetwork } = this.props;
         let [err, netId] = await Utils.callMethod(web3.version.getNetwork)();
@@ -58,56 +71,93 @@ class Routers extends PureComponent {
         }
     };
 
-    getBalance = async () => {
-        const { web3, setBalances } = this.props;
-        let balances = {
-            ETH: 0,
-            BBO: 0,
+    logout = () => {
+        const { logoutMetamask, saveAccountInfo } = this.props;
+        const accountInfo = {
+            email: '',
+            firstName: '',
+            lastName: '',
+            wallets: [],
         };
-        web3.eth.getBalance(web3.eth.defaultAccount, (err, balance) => {
-            const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-            balances.ETH = ethBalance;
-            //console.log(ethBalance, 'ETH');
-        });
+        logoutMetamask();
+        LocalStorage.removeItem('userInfo');
+        LocalStorage.removeItem('userToken');
+        saveAccountInfo(accountInfo);
+    };
 
-        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(BBOinstance.defaultAccount, {
-            from: BBOinstance.defaultAccount,
-            gasPrice: +BBOinstance.gasPrice.toString(10),
-        });
+    accountsInit = async (account, network) => {
+        const { web3, saveAccountInfo, setAccount, setNetwork } = this.props;
+        const userInfo = LocalStorage.getItemJson('userInfo');
+        if (userInfo) {
+            const isHaveAddress = userInfo.wallets.filter(addr => addr.address === web3.eth.defaultAccount);
+            if (isHaveAddress.length > 0) {
+                // if wallet has existed in current account's wallet list, login and get account info
+                const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
+                let accounts = [];
+                for (let acc of userInfo.wallets) {
+                    let address = {
+                        address: acc.address,
+                        default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
+                        balances: { ETH: 0, BBO: 0 },
+                    };
+                    await web3.eth.getBalance(acc.address, (err, balance) => {
+                        const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                        address.balances.ETH = ethBalance;
+                    });
+                    const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+                    const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
 
-        if (!errBalance) {
-            const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-            balances.BBO = BBOBalance;
-            //console.log(BBOBalance, 'BBO');
+                    if (!errBalance) {
+                        const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                        address.balances.BBO = BBOBalance;
+                    }
+                    accounts.push(address);
+                }
+                userInfo.wallets = accounts;
+                saveAccountInfo(userInfo);
+                setAccount(account);
+                setNetwork(network);
+                this.getNetwork();
+            } else {
+                // if wallet has not existed in current account's wallet list, logout current account
+                this.logout();
+            }
+        } else {
+            this.logout();
         }
-        setBalances(balances);
     };
 
     checkMetamask = async () => {
-        const { isConnected, logoutMetamask, setAccount, defaultAccount, setNetwork, setReload, history, setCheckAcount, checkAccount } = this.props;
+        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload } = this.props;
         const { web3 } = this.state;
-        if (!checkAccount) {
-            return;
-        }
         if (isConnected) {
+            const userToken = LocalStorage.getItemJson('userToken');
+            if (userToken && userToken.expired <= Date.now()) {
+                services.refreshToken();
+            }
+            if (!checkAccount) {
+                return;
+            }
             try {
                 const { account, network } = await Utils.connectMetaMask(web3);
                 if (account) {
-                    this.getBalance();
                     if (defaultAccount !== account) {
-                        setAccount(account);
-                        setNetwork(network);
-                        this.getNetwork();
+                        this.accountsInit(account, network);
                         if (defaultAccount) {
                             setReload(true);
                         }
+                    } else {
+                        setReload(false);
                     }
                 }
             } catch (error) {
-                logoutMetamask();
+                this.logout();
+                setCheckAcount(false);
             }
         } else {
+            if (web3.eth.defaultAccount === undefined) {
+                setRegister(false);
+            }
             history.push('/');
             setCheckAcount(false);
         }
@@ -157,14 +207,16 @@ Routers.propTypes = {
     isConnected: PropTypes.bool.isRequired,
     defaultAccount: PropTypes.string.isRequired,
     setWeb3: PropTypes.func.isRequired,
+    setAccount: PropTypes.func.isRequired,
     logoutMetamask: PropTypes.func.isRequired,
     setCheckAcount: PropTypes.func.isRequired,
-    setAccount: PropTypes.func.isRequired,
     setNetwork: PropTypes.func.isRequired,
     setYourNetwork: PropTypes.func.isRequired,
-    setBalances: PropTypes.func.isRequired,
     setReload: PropTypes.func.isRequired,
     checkAccount: PropTypes.bool.isRequired,
+    saveAccountInfo: PropTypes.func.isRequired,
+    accountInfo: PropTypes.object.isRequired,
+    setRegister: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -173,6 +225,7 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         defaultAccount: state.homeReducer.defaultAccount,
         checkAccount: state.homeReducer.checkAccount,
+        accountInfo: state.commonReducer.accountInfo,
     };
 };
 
@@ -181,11 +234,12 @@ const mapDispatchToProps = {
     setWeb3,
     logoutMetamask,
     setCheckAcount,
-    setAccount,
     setNetwork,
+    setAccount,
     setYourNetwork,
-    setBalances,
     setReload,
+    saveAccountInfo,
+    setRegister,
 };
 
 export default connect(

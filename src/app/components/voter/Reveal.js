@@ -103,7 +103,7 @@ class Reveal extends Component {
         );
         if (!errCheckHash) {
             if (!re) {
-                this.setState({ err: 'Invalid json file, this file is not json file for this job.' });
+                this.setState({ err: 'Sorry, invalid file!' });
                 return;
             } else {
                 this.setState({ err: null });

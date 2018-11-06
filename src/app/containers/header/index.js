@@ -11,10 +11,13 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Avatar from '@material-ui/core/Avatar';
+import Fade from '@material-ui/core/Fade';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
 import Utils from '../../_utils/utils';
-
 import RoutersAuthen from '../../routers/RoutersAuthen';
+import { setRegister } from '../../components/common/actions';
 
 const options = [
     { text: 'View as Client', icon: 'fas fa-user-tie' },
@@ -29,7 +32,12 @@ class Header extends PureComponent {
             routes: RoutersAuthen,
             anchorEl: null,
             selectedIndex: Utils.getCookie('view') !== '' ? 0 : Utils.getCookie('view'),
+            checked: false,
         };
+    }
+
+    componentDidMount() {
+        this.getAvatarClass();
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
@@ -42,6 +50,18 @@ class Header extends PureComponent {
 
     getBBO = () => {
         window.open('https://faucet.ropsten.bigbom.net/', '_blank');
+    };
+
+    getNameAvatar = () => {
+        const { accountInfo } = this.props;
+        if (accountInfo) {
+            return accountInfo.firstName.charAt(0).toUpperCase();
+        }
+        return null;
+    };
+
+    getAvatarClass = () => {
+        this.setState({ avatarColor: Utils.getCookie('avatar') });
     };
 
     login = () => {
@@ -75,8 +95,29 @@ class Header extends PureComponent {
         this.setState({ anchorEl: null });
     };
 
+    handleClickAway = () => {
+        const userMenu = document.getElementById('user-info');
+        userMenu.classList.add('hide');
+        userMenu.classList.remove('show');
+        this.setState({
+            checked: false,
+        });
+    };
+
+    profileOpen = () => {
+        const userMenu = document.getElementById('user-info');
+        userMenu.classList.add('show');
+        userMenu.classList.remove('hide');
+        this.setState(state => ({ checked: !state.checked }));
+    };
+
     render() {
-        const { routes, anchorEl } = this.state;
+        const { routes, anchorEl, avatarColor, checked } = this.state;
+        const { setRegister, accountInfo } = this.props;
+        let defaultWallet;
+        if (accountInfo.wallets.length > 0) {
+            defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
+        }
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
@@ -87,14 +128,7 @@ class Header extends PureComponent {
                             </Link>
                         </div>
                         {routes.length && (
-                            <ul className="nav">
-                                {/* {!isConnected && (
-                                    <li>
-                                        <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.login()}>
-                                            Login
-                                        </ButtonBase>
-                                    </li>
-                                )} */}
+                            <ul className={accountInfo.wallets.length > 0 ? 'nav' : 'nav not-login-yet'}>
                                 <li>
                                     <List component="nav" className="top-selection">
                                         <ListItem
@@ -124,10 +158,73 @@ class Header extends PureComponent {
                                     </Menu>
                                 </li>
                                 <li>
-                                    <ButtonBase variant="contained" className="btn btn-normal btn-green" onClick={() => this.getBBO()}>
+                                    <ButtonBase variant="contained" className="btn btn-normal btn-green get-bbo-btn" onClick={() => this.getBBO()}>
                                         Get Free BBO
                                     </ButtonBase>
                                 </li>
+                                {accountInfo.wallets.length > 0 ? (
+                                    <ClickAwayListener onClickAway={this.handleClickAway}>
+                                        <li className="profile">
+                                            <Avatar className={'avatar ' + avatarColor} onClick={this.profileOpen}>
+                                                {this.getNameAvatar()}
+                                            </Avatar>
+                                            <Fade in={checked}>
+                                                <div className="user-info" id="user-info">
+                                                    <ul>
+                                                        <li className="user-info-item top">
+                                                            <Avatar className={'avatar avatar-left ' + avatarColor}>{this.getNameAvatar()}</Avatar>
+                                                            {accountInfo && (
+                                                                <div className="avatar-right">
+                                                                    <div>
+                                                                        {accountInfo.firstName} {accountInfo.lastName}
+                                                                    </div>
+                                                                    <div className="email">{accountInfo.email}</div>
+                                                                </div>
+                                                            )}
+                                                        </li>
+                                                        {defaultWallet && (
+                                                            <li className="user-info-item balance">
+                                                                {Utils.currencyFormat(defaultWallet[0].balances.ETH)} <span>ETH</span>
+                                                            </li>
+                                                        )}
+
+                                                        {defaultWallet && (
+                                                            <li className="user-info-item balance">
+                                                                {Utils.currencyFormat(defaultWallet[0].balances.BBO)} <span>BBO</span>
+                                                            </li>
+                                                        )}
+                                                        <li className="user-info-item addresses">
+                                                            {accountInfo.wallets.map(wallet => {
+                                                                return (
+                                                                    <div className="address-item" key={wallet.address}>
+                                                                        <div
+                                                                            title="Click to copy"
+                                                                            className={wallet.default ? 'address selected' : 'address'}
+                                                                            onClick={() => Utils.copyStringToClipboard(wallet.address)}
+                                                                        >
+                                                                            {Utils.truncate(wallet.address, 23)}
+                                                                        </div>
+                                                                        {wallet.default && <span className="default">Default</span>}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </Fade>
+                                        </li>
+                                    </ClickAwayListener>
+                                ) : (
+                                    <li>
+                                        <ButtonBase
+                                            variant="contained"
+                                            className="btn btn-normal btn-white get-bbo-btn top-login"
+                                            onClick={() => setRegister(false)}
+                                        >
+                                            Login
+                                        </ButtonBase>
+                                    </li>
+                                )}
                             </ul>
                         )}
                     </header>
@@ -139,13 +236,22 @@ class Header extends PureComponent {
 
 Header.propTypes = {
     history: PropTypes.object.isRequired,
+    accountInfo: PropTypes.object.isRequired,
+    setRegister: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
-    return { isConnected: state.homeReducer.isConnected, view: state.commonReducer.view };
+    return {
+        isConnected: state.homeReducer.isConnected,
+        web3: state.homeReducer.web3,
+        view: state.commonReducer.view,
+        accountInfo: state.commonReducer.accountInfo,
+    };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    setRegister,
+};
 
 export default connect(
     mapStateToProps,

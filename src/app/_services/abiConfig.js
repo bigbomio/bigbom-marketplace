@@ -1,5 +1,8 @@
 import IPFS from 'ipfs-mini';
 import Utils from '../_utils/utils';
+import services from '../_services/services';
+
+//import web3v1 from './web3'; // web3 v1
 
 import BBFreelancerJob from '../_services/abi/BBFreelancerJob.json';
 import BBFreelancerBid from '../_services/abi/BBFreelancerBid.json';
@@ -9,97 +12,74 @@ import BBDispute from '../_services/abi/BBDispute.json';
 import BBVoting from '../_services/abi/BBVoting.json';
 import BBParams from '../_services/abi/BBParams.json';
 
-const fromBlock = 3165089;
+const ropstenAbi = {
+    BBFreelancerJob: {
+        address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+        abi: BBFreelancerJob.abi,
+    },
+    BBFreelancerBid: {
+        address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+        abi: BBFreelancerBid.abi,
+    },
+    BBFreelancerPayment: {
+        address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+        abi: BBFreelancerPayment.abi,
+    },
+    BigbomTokenExtended: {
+        address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+        abi: BigbomTokenExtended.abi,
+    },
+    BBDispute: {
+        address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+        abi: BBDispute.abi,
+    },
+    BBVoting: {
+        address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+        abi: BBVoting.abi,
+    },
+    BBParams: {
+        address: '0x2866cef47dce5db897678695d08f0633102f164a',
+        abi: BBParams.abi,
+    },
+};
+
+// const rinkebyAbi = {
+//     BBFreelancerJob: {
+//         address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
+//         abi: BBFreelancerJob.abi,
+//     },
+//     BBFreelancerBid: {
+//         address: '0xf01cc898b9245930a345bec82423b87f602cb8e4',
+//         abi: BBFreelancerBid.abi,
+//     },
+//     BBFreelancerPayment: {
+//         address: '0x22ce61d3c44e5a005a9b9f4485cfbc660c1c2ef3',
+//         abi: BBFreelancerPayment.abi,
+//     },
+//     BigbomTokenExtended: {
+//         address: '0x2ddc511802a37039c42c6bdb36028b2f8992b0fe',
+//         abi: BigbomTokenExtended.abi,
+//     },
+//     BBDispute: {
+//         address: '0x278636913d5203a057adb7e0521b8df9431bdaa5',
+//         abi: BBDispute.abi,
+//     },
+//     BBVoting: {
+//         address: '0x54a7cb877948518444e4c97c426cf47718ac94c3',
+//         abi: BBVoting.abi,
+//     },
+//     BBParams: {
+//         address: '0xb1b1e7f9223bca9d66aa97b773935d4aec13165d',
+//         abi: BBParams.abi,
+//     },
+// };
+
+//let fromBlock = 3165089; // rinkeby
+let fromBlock = 4369092; // ropsten
 
 class abiConfigs {
-    // getContract(type) {
-    //     switch (type) {
-    //         case 'BBFreelancerJob':
-    //             return {
-    //                 address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
-    //                 abi: BBFreelancerJob.abi,
-    //             };
-    //         case 'BBFreelancerBid':
-    //             return {
-    //                 address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
-    //                 abi: BBFreelancerBid.abi,
-    //             };
-    //         case 'BBFreelancerPayment':
-    //             return {
-    //                 address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
-    //                 abi: BBFreelancerPayment.abi,
-    //             };
-    //         case 'BigbomTokenExtended':
-    //             return {
-    //                 address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
-    //                 abi: BigbomTokenExtended.abi,
-    //             };
-    //         case 'BBDispute':
-    //             return {
-    //                 address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
-    //                 abi: BBDispute.abi,
-    //             };
-    //         case 'BBVoting':
-    //             return {
-    //                 address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
-    //                 abi: BBVoting.abi,
-    //             };
-    //         case 'BBParams':
-    //             return {
-    //                 address: '0x2866cef47dce5db897678695d08f0633102f164a',
-    //                 abi: BBParams.abi,
-    //             };
-    //         default:
-    //             return {
-    //                 address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
-    //                 abi: BBFreelancerJob.abi,
-    //             };
-    //     }
-    // }
-
     getContract(type) {
-        switch (type) {
-            case 'BBFreelancerJob':
-                return {
-                    address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
-                    abi: BBFreelancerJob.abi,
-                };
-            case 'BBFreelancerBid':
-                return {
-                    address: '0xf01cc898b9245930a345bec82423b87f602cb8e4',
-                    abi: BBFreelancerBid.abi,
-                };
-            case 'BBFreelancerPayment':
-                return {
-                    address: '0x22ce61d3c44e5a005a9b9f4485cfbc660c1c2ef3',
-                    abi: BBFreelancerPayment.abi,
-                };
-            case 'BigbomTokenExtended':
-                return {
-                    address: '0x2ddc511802a37039c42c6bdb36028b2f8992b0fe',
-                    abi: BigbomTokenExtended.abi,
-                };
-            case 'BBDispute':
-                return {
-                    address: '0x278636913d5203a057adb7e0521b8df9431bdaa5',
-                    abi: BBDispute.abi,
-                };
-            case 'BBVoting':
-                return {
-                    address: '0x54a7cb877948518444e4c97c426cf47718ac94c3',
-                    abi: BBVoting.abi,
-                };
-            case 'BBParams':
-                return {
-                    address: '0xb1b1e7f9223bca9d66aa97b773935d4aec13165d',
-                    abi: BBParams.abi,
-                };
-            default:
-                return {
-                    address: '0x71356605e4f79fd07b01cc187bdcbc1f4025db1f',
-                    abi: BBFreelancerJob.abi,
-                };
-        }
+        return ropstenAbi[type];
     }
 
     getIpfs() {
@@ -111,18 +91,16 @@ class abiConfigs {
         //return 'https://cloudflare-ipfs.com/ipfs/';
     }
 
-    // getTXlink() {
-    //     return 'https://ropsten.etherscan.io/tx/';
-    // }
-
     getTXlink() {
-        return 'https://rinkeby.etherscan.io/tx/';
+        return 'https://ropsten.etherscan.io/tx/';
+        //return 'https://rinkeby.etherscan.io/tx/'; //'RINKEBY';
     }
 
     async contractInstanceGenerator(web3, type) {
         const defaultAccount = web3.eth.defaultAccount;
         const address = this.getContract(type).address;
-        const abiInstance = web3.eth.contract(this.getContract(type).abi);
+        const abi = this.getContract(type).abi;
+        const abiInstance = web3.eth.contract(abi);
         const instance = await abiInstance.at(address);
         const gasPrice = await Utils.callMethodWithReject(web3.eth.getGasPrice)();
         return {
@@ -247,6 +225,21 @@ class abiConfigs {
         });
     }
 
+    async filterJobByBider(web3, callback) {
+        const filter = { owner: web3.eth.defaultAccount };
+        const contractInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        contractInstance.instance.BidCreated(
+            filter,
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            },
+            (error, eventResult) => {
+                callback(Utils.toAscii(eventResult.args.jobHash));
+            }
+        );
+    }
+
     async getPastEventsMergeBidToJob(web3, type, event, filter, mergeData, callback) {
         const contractInstance = await this.contractInstanceGenerator(web3, type);
         let results = {
@@ -264,8 +257,22 @@ class abiConfigs {
                 results.status = { err: true, text: 'something went wrong! can not get events log :(' };
                 callback(results);
             }
-            let bidAddr = '';
+            //console.log('getPastEventsMergeBidToJob', events);
             for (let event of events) {
+                const userInfoFetch = await services.getUserByWallet(event.args.owner);
+
+                let user = {
+                    fullName: event.args.owner,
+                    walletAddress: event.args.owner,
+                    email: '',
+                };
+                if (userInfoFetch) {
+                    user = {
+                        fullName: userInfoFetch.userInfo.firstName + ' ' + userInfoFetch.userInfo.lastName,
+                        walletAddress: event.args.owner,
+                        email: userInfoFetch.userInfo.email,
+                    };
+                }
                 const bidTpl = {
                     address: event.args.owner,
                     award: Utils.WeiToBBO(web3, event.args.bid.toString()),
@@ -275,26 +282,46 @@ class abiConfigs {
                     accepted: false,
                     canceled: false,
                     bidBlockNumber: event.blockNumber,
+                    freelancerInfo: user,
                 };
-                if (web3.sha3(mergeData.jobHash) === event.args.jobHash) {
-                    // get latest bid for each address
-                    if (bidTpl.address !== bidAddr) {
-                        bidAddr = bidTpl.address;
-                        mergeData.bid.push(bidTpl);
-                    } else {
-                        mergeData.bid.map((b, i) => {
-                            if (b.address === bidTpl.address) {
-                                mergeData.bid[i] = bidTpl;
-                            }
-                            return mergeData;
-                        });
+
+                mergeData.bid.push(bidTpl);
+                if (mergeData.bid.length > 0) {
+                    for (let i = 0; i < mergeData.bid.length; i++) {
+                        if (mergeData.bid[i].address === event.args.owner) {
+                            mergeData.bid[i] = bidTpl;
+                        }
                     }
+                    mergeData.bid = Utils.removeDuplicates(mergeData.bid, 'address');
                 }
             }
             results.data = mergeData;
             results.status = { err: false, text: 'get events log success!' };
             this.getBidCancalled(web3, filter, results.data, callback);
         });
+    }
+
+    async jobStarted(web3, jobData, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        ctInstance.instance.JobStarted(
+            { indexJobHash: web3.sha3(jobData.data.jobHash) },
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, re) => {
+                //console.log('jobStarted', re);
+                if (err) {
+                    console.log(err);
+                } else {
+                    const blockLog = await this.getBlock(web3, re.blockNumber);
+                    const result = {
+                        created: blockLog.timestamp,
+                    };
+                    callback(jobData, result);
+                }
+            }
+        );
     }
 
     async getPastEventsBidAccepted(web3, type, event, filter, jobData, callback) {
@@ -314,14 +341,11 @@ class abiConfigs {
             }
             // console.log('event bid accepted  -------', events);
             for (let e of events) {
-                const jobHashE = e.args.jobHash;
                 if (jobData.bid.length > 0) {
                     for (let bid of jobData.bid) {
-                        if (web3.sha3(jobData.jobHash) === jobHashE) {
-                            if (bid.address === e.args.freelancer) {
-                                bid.accepted = true;
-                                bid.acceptedBlockNumber = e.blockNumber;
-                            }
+                        if (bid.address === e.args.freelancer) {
+                            bid.accepted = true;
+                            bid.acceptedBlockNumber = e.blockNumber;
                         }
                     }
                 } else {
@@ -734,6 +758,20 @@ class abiConfigs {
                 }
             }
         );
+    }
+
+    async transactionWatch(web3, hashString, callback) {
+        async function getReceipt() {
+            const [, receipt] = await Utils.callMethod(web3.eth.getTransactionReceipt)(hashString);
+            if (receipt) {
+                clearInterval(watch);
+                callback();
+                return;
+            }
+        }
+        const watch = setInterval(async () => {
+            getReceipt();
+        }, 1000);
     }
 }
 

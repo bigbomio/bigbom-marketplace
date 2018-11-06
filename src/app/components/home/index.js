@@ -5,8 +5,11 @@ import posed from 'react-pose';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
-import LoginMethods from '../login/loginMethods';
+import LoginMetamask from '../login/loginMetamask';
+import UserInfoNav from '../../components/common/UserInfoNav';
+import Utils from '../../_utils/utils';
 
 const ContainerProps = {
     open: {
@@ -38,15 +41,52 @@ class Home extends Component {
         super(props);
         this.state = {
             isLogout: false,
-            isLogin: false,
+            isReady: false,
+            sttText: null,
         };
     }
 
     componentDidMount() {
-        this.setState({ isLogout: true, isLogin: true });
+        const { accountInfo } = this.props;
+        this.setState({ isLogout: true });
+
+        const confirmStatus = Utils.getURLParam('status');
+        this.setConfirmStt(confirmStatus);
+
+        // time for login metamask checking
+        if (accountInfo.wallets) {
+            if (accountInfo.wallets.length <= 0) {
+                setTimeout(() => {
+                    this.setState({ isReady: true });
+                }, 1200);
+            } else {
+                this.setState({ isReady: true });
+            }
+        } else {
+            this.setState({ isReady: true });
+        }
     }
 
-    disconnectRender = () => {
+    setConfirmStt = stt => {
+        switch (stt) {
+            case '0':
+                this.setState({ sttText: 'Sorry, data is invalid!' });
+                break;
+            case '1':
+                this.setState({ sttText: 'Thank you! Your account has been confirmed!' });
+                break;
+            case '2':
+                this.setState({ sttText: 'Sorry, your link has been expired!' });
+                break;
+            case '3':
+                this.setState({ sttText: 'Your wallet has been added to your account!' });
+                break;
+            default:
+                this.setState({ sttText: null });
+        }
+    };
+
+    connectedRender = () => {
         const { isLogout } = this.state;
         return (
             <Container id="intro" className="home-intro sidebar" pose={isLogout ? 'open' : 'closed'}>
@@ -78,23 +118,33 @@ class Home extends Component {
     };
 
     render() {
-        const { isLogin } = this.state;
-        const { history, isConnected } = this.props;
-        return (
+        const { history, isConnected, register } = this.props;
+        const { isReady, sttText } = this.state;
+        return isReady ? (
             <div id="home" className="container-wrp">
-                <div className="container-wrp home-wrp full-top-wrp">
-                    <div className="container wrapper">
-                        {!isConnected ? <LoginMethods history={history} isLogin={isLogin} /> : this.disconnectRender()}
+                <div className="container-wrp main-nav">
+                    <div className="container">
+                        <UserInfoNav />
                     </div>
+                </div>
+                <div className="container-wrp home-wrp full-top-wrp">
+                    <div className="container wrapper">{isConnected ? this.connectedRender() : <LoginMetamask history={history} />}</div>
                 </div>
                 <div className="container wrapper">
                     <Grid container className="home-content">
-                        {!isConnected && (
-                            <Grid container>
-                                <h2>Your have disconnected your account!</h2>
-                                <p className="note">Please choose a method to Login again</p>
-                            </Grid>
-                        )}
+                        {!isConnected &&
+                            (sttText ? (
+                                <Grid container>
+                                    <h2>{sttText}</h2>
+                                </Grid>
+                            ) : (
+                                !register && (
+                                    <Grid container>
+                                        <h2>You have disconnected your account!</h2>
+                                        <p className="note">Please try again.</p>
+                                    </Grid>
+                                )
+                            ))}
                         {/* <Grid container>
                             <h2>Pick your job right now </h2>
                         </Grid>
@@ -130,6 +180,15 @@ class Home extends Component {
                     </Grid>
                 </div>
             </div>
+        ) : (
+            <div id="home" className="container-wrp">
+                <Grid container className="single-body">
+                    <div className="loading">
+                        <CircularProgress size={50} color="secondary" />
+                        <span>Loading...</span>
+                    </div>
+                </Grid>
+            </div>
         );
     }
 }
@@ -137,11 +196,15 @@ class Home extends Component {
 Home.propTypes = {
     history: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    accountInfo: PropTypes.object.isRequired,
+    register: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {
     return {
         isConnected: state.homeReducer.isConnected,
+        accountInfo: state.commonReducer.accountInfo,
+        register: state.commonReducer.register,
     };
 };
 

@@ -4,7 +4,9 @@
     "private": true,
     "dependencies": {
         "@material-ui/core": "^1.4.2",
+        "axios": "^0.18.0",
         "cross-env": "^5.2.0",
+        "ethereumjs-util": "^6.0.0",
         "ethjs": "^0.4.0",
         "history": "^4.7.2",
         "ipfs-mini": "^1.1.2",
@@ -26,7 +28,8 @@
         "react-select": "^2.0.0",
         "redux": "^4.0.0",
         "reselect": "^3.0.1",
-        "socketcluster-client": "^13.0.0"
+        "socketcluster-client": "^13.0.0",
+        "web3": "^1.0.0-beta.36"
     },
     "devDependencies": {
         "babel-cli": "^6.26.0",
@@ -52,12 +55,13 @@
         "watch-css": "npm run build-css && node-sass-chokidar src/styles -o src/styles --watch --recursive",
         "start-js": "react-scripts start",
         "build-js": "react-scripts build",
-        "start:dev": "cross-env REACT_APP_ENV=dev npm-run-all -p watch-css start-js",
+        "start": "cross-env REACT_APP_ENV=dev npm-run-all -p watch-css start-js",
         "start:uat": "cross-env REACT_APP_ENV=uat npm-run-all -p watch-css start-js",
         "prebuild": "npm-run-all build:clean",
         "build:clean": "rimraf ./build",
         "build:production": "cross-env REACT_APP_ENV=production npm-run-all build-css build-js",
-        "build:staging": "cross-env REACT_APP_ENV=production npm-run-all build-css build-js",
+        "build:uat": "cross-env REACT_APP_ENV=uat npm-run-all build-css build-js",
+        "build:dev": "cross-env REACT_APP_ENV=dev npm-run-all build-css build-js",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject",
         "generate": "plop --plopfile internals/generators/index.js"
