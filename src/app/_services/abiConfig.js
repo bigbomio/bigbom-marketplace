@@ -137,6 +137,27 @@ class abiConfigs {
         return true;
     }
 
+    async approveNotWait(web3, ctName, value) {
+        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
+        BBOinstance.instance.approve(
+            ctInstance.address,
+            value,
+            {
+                from: ctInstance.defaultAccount,
+                gasPrice: +ctInstance.gasPrice.toString(10),
+            },
+            (err, re) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(re);
+                }
+            }
+        );
+        return true;
+    }
+
     async checkPayment(web3, jobHash, callback) {
         const jobInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const now = Date.now();
@@ -260,6 +281,7 @@ class abiConfigs {
             //console.log('getPastEventsMergeBidToJob', events);
             for (let event of events) {
                 const userInfoFetch = await services.getUserByWallet(event.args.owner);
+                console.log('userInfoFetch', userInfoFetch);
 
                 let user = {
                     fullName: event.args.owner,

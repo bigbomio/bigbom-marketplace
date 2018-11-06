@@ -124,7 +124,6 @@ class LoginMetamask extends Component {
                     // if existed, continue login with user data result
                     LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: userData.token });
                     const wallets = await services.getWallets();
-                    console.log('wallets', wallets);
                     userInfo = {
                         email: userData.info.email,
                         firstName: userData.info.firstName,
@@ -291,9 +290,8 @@ class LoginMetamask extends Component {
 
         this.setState({ isLoading: true });
         const userCreated = await services.createUser(data);
-
         // if email existed, add wallet
-        if (userCreated.message === 'EmailExist') {
+        if (userCreated && userCreated.message === 'EmailExist') {
             const dataWallet = {
                 email,
                 hash: token,
@@ -301,7 +299,7 @@ class LoginMetamask extends Component {
 
             const addWallet = await services.addWallet(dataWallet);
             // count wallet of this email, if < 5, accept to add more
-            if (addWallet.message === 'TooManyWallets') {
+            if (addWallet && addWallet.message === 'TooManyWallets') {
                 if (this.mounted) {
                     this.setState({
                         isLoading: false,
@@ -312,7 +310,7 @@ class LoginMetamask extends Component {
                 }
                 return;
             }
-            if (addWallet.message === 'OK') {
+            if (addWallet && addWallet.message === 'OK') {
                 if (this.mounted) {
                     this.setState({
                         isLoading: false,
@@ -332,7 +330,12 @@ class LoginMetamask extends Component {
                     userCreated: true,
                     note: `Your account has been created! We have sent to ${email} a verify link, please checking your email.`,
                 });
+                return;
             }
+        }
+
+        if (this.mounted) {
+            this.setState({ open: true, errMsg: 'Something went wrong! Can not create account!', isLoading: false });
         }
     };
 

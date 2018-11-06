@@ -1238,7 +1238,7 @@ class JobDetailBid extends Component {
             disputeCreated,
             jobCompleteDuration,
         } = this.state;
-        console.log(jobData);
+        //console.log(jobData);
 
         const { web3 } = this.props;
         let jobTplRender;

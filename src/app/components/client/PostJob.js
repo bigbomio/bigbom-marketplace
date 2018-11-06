@@ -102,8 +102,24 @@ class ClientPostJob extends Component {
     }
 
     createJobDone = jobHash => {
-        const { history } = this.props;
-        history.push('/client/your-jobs/' + jobHash);
+        const content = function() {
+            return (
+                <span>
+                    Your job has been created! View your job <a href={`/client/your-jobs/${jobHash}`}>HERE</a>
+                </span>
+            );
+        };
+        setTimeout(() => {
+            this.setState({
+                isLoading: false,
+                status: {
+                    title: 'Create New Job: ',
+                    err: false,
+                    text: content(),
+                    link: null,
+                },
+            });
+        }, 1000);
     };
 
     creatJob = () => {
@@ -671,7 +687,6 @@ class ClientPostJob extends Component {
 ClientPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
     accountInfo: PropTypes.any.isRequired,
-    history: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
