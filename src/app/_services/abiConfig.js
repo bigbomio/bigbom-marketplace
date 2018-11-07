@@ -281,18 +281,15 @@ class abiConfigs {
             //console.log('getPastEventsMergeBidToJob', events);
             for (let event of events) {
                 const userInfoFetch = await services.getUserByWallet(event.args.owner);
-                console.log('userInfoFetch', userInfoFetch);
 
                 let user = {
                     fullName: event.args.owner,
                     walletAddress: event.args.owner,
-                    email: '',
                 };
                 if (userInfoFetch) {
                     user = {
                         fullName: userInfoFetch.userInfo.firstName + ' ' + userInfoFetch.userInfo.lastName,
                         walletAddress: event.args.owner,
-                        email: userInfoFetch.userInfo.email,
                     };
                 }
                 const bidTpl = {

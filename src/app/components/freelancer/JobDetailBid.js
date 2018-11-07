@@ -725,7 +725,6 @@ class JobDetailBid extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
-            console.log(jobStatus);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
                 setActionBtnDisabled(true);
@@ -735,16 +734,15 @@ class JobDetailBid extends Component {
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const employerInfo = await services.getUserByWallet(jobStatusLog[0]);
+            console.log(employerInfo);
             let employer = {
                 fullName: jobStatusLog[0],
                 walletAddress: jobStatusLog[0],
-                email: '',
             };
             if (employerInfo !== undefined) {
                 employer = {
                     fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
                     walletAddress: jobStatusLog[0],
-                    email: employerInfo.userInfo.email,
                 };
             }
             const jobTpl = {
