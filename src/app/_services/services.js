@@ -57,7 +57,9 @@ async function refreshToken() {
     const tokenFetch = await dataFetch(options);
     const tokenExpired = Date.now() + 15 * 60 * 1000; // 15p to refresh token
     LocalStorage.removeItem('userToken');
-    LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: tokenFetch.token });
+    if (tokenFetch) {
+        LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: tokenFetch.token });
+    }
 }
 
 function getTokenSaved() {

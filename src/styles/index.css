@@ -747,7 +747,10 @@ body {
                 font-size: 13px; }
             #header header .nav li .user-info .user-info-item.addresses {
               padding-top: 10px;
-              border-top: 1px solid #ccc; }
+              border-top: 1px dotted #ccc;
+              border-bottom: 1px dotted #ccc;
+              margin-bottom: 15px;
+              padding-bottom: 10px; }
               #header header .nav li .user-info .user-info-item.addresses .address-item {
                 display: flex;
                 padding: 6px 0;
@@ -785,6 +788,16 @@ body {
                   cursor: pointer; }
                   #header header .nav li .user-info .user-info-item.addresses .address-item .set-default:hover {
                     background: #0ca1f9; }
+          #header header .nav li .user-info .logout span {
+            padding: 5px 20px;
+            display: inline-block;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+            cursor: pointer;
+            line-height: 16px;
+            color: #444; }
     #header header .top-login {
       margin-left: 20px; }
 

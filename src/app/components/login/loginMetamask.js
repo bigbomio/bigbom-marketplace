@@ -79,8 +79,10 @@ class LoginMetamask extends Component {
             accounts.push(address);
         }
         userInfo.wallets = accounts;
-        saveAccountInfo(userInfo);
-        LocalStorage.setItemJson('userInfo', userInfo);
+        if (userInfo) {
+            saveAccountInfo(userInfo);
+            LocalStorage.setItemJson('userInfo', userInfo);
+        }
         loginMetamask();
         this.radomClass(); // set color for avatar
         history.goBack();
@@ -113,16 +115,18 @@ class LoginMetamask extends Component {
                         }
                     }
                     const userData = await services.getToken({ signature, hash });
-                    // if not existed on server, show register form for user and return to exit login function
-                    if (!userData.info) {
-                        if (this.mounted) {
-                            this.setState({ token: userData.token, isLoading: false });
+                    if (userData) {
+                        // if not existed on server, show register form for user and return to exit login function
+                        if (!userData.info) {
+                            if (this.mounted) {
+                                this.setState({ token: userData.token, isLoading: false });
+                            }
+                            setRegister(true);
+                            return;
                         }
-                        setRegister(true);
-                        return;
+                        // if existed, continue login with user data result
+                        LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: userData.token });
                     }
-                    // if existed, continue login with user data result
-                    LocalStorage.setItemJson('userToken', { expired: tokenExpired, token: userData.token });
                     const wallets = await services.getWallets();
                     userInfo = {
                         email: userData.info.email,
