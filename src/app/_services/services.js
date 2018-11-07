@@ -8,15 +8,15 @@ const env = process.env.REACT_APP_ENV;
 
 const envConfig = {
     dev: {
-        returnUrl: 'https://dev-marketplace.bigbom.net/?',
+        returnUrl: 'https://dev-marketplace.bigbom.net/',
         apiUrl: 'https://dev-api.bigbom.net',
     },
     uat: {
-        returnUrl: 'https://uat-marketplace.bigbom.net/?',
+        returnUrl: 'https://uat-marketplace.bigbom.net/',
         apiUrl: 'https://aut-api.bigbom.net',
     },
     production: {
-        returnUrl: 'https://marketplace.bigbom.com/?',
+        returnUrl: 'https://marketplace.bigbom.com/',
         apiUrl: 'https://api.bigbom.net',
     },
 };
