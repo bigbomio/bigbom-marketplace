@@ -165,9 +165,9 @@ class Header extends PureComponent {
                                 {accountInfo.wallets.length > 0 ? (
                                     <ClickAwayListener onClickAway={this.handleClickAway}>
                                         <li className="profile">
-                                            <Avatar className={'avatar ' + avatarColor} onClick={this.profileOpen}>
+                                            <div id="avatar-custom" className={'avatar ' + avatarColor} onClick={this.profileOpen}>
                                                 {this.getNameAvatar()}
-                                            </Avatar>
+                                            </div>
                                             <Fade in={checked}>
                                                 <div className="user-info" id="user-info">
                                                     <ul>

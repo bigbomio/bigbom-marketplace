@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
+
+import { setReload } from '../../components/common/actions';
 
 let countdown;
 
@@ -15,8 +19,10 @@ class Countdown extends Component {
     }
 
     componentDidMount() {
+        const { setReload } = this.props;
         this.bidDuration();
         this.mounted = true;
+        setReload(false);
     }
 
     componentWillUnmount() {
@@ -32,7 +38,7 @@ class Countdown extends Component {
     }
 
     bidDuration = () => {
-        const { isSecond } = this.props;
+        const { isSecond, reload, setReload } = this.props;
         countdown = setInterval(() => {
             const { expiredTime } = this.state;
             let time = expiredTime;
@@ -52,8 +58,11 @@ class Countdown extends Component {
                 if (distance <= 0) {
                     this.setState({ countDown: { exprired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
                     setTimeout(() => {
+                        if (reload) {
+                            setReload(true);
+                        }
                         clearInterval(countdown);
-                    }, 200);
+                    }, 1000);
                 } else {
                     this.setState({ countDown: { exprired: false, days, hours, minutes, seconds } });
                 }
@@ -86,11 +95,25 @@ class Countdown extends Component {
 Countdown.propTypes = {
     name: PropTypes.string,
     isSecond: PropTypes.bool,
+    reload: PropTypes.bool,
+    setReload: PropTypes.func.isRequired,
 };
 
 Countdown.defaultProps = {
     name: null,
     isSecond: false,
+    reload: false,
 };
 
-export default Countdown;
+const mapStateToProps = () => {
+    return {};
+};
+
+const mapDispatchToProps = {
+    setReload,
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Countdown);

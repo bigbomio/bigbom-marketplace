@@ -38,10 +38,8 @@ class Reveal extends Component {
         if (voteResult.freelancerVotes > 0) {
             freelancerW = Utils.toWidth(voteResult.freelancerVotes, voteResult.clientVotes);
         }
-
         const clientWidth = { width: clientW + '%' };
         const freelancerWidth = { width: freelancerW + '%' };
-        console.log(voteResult);
         return (
             <Grid item xs={12} className="voting-options">
                 <Grid container className="result-show">

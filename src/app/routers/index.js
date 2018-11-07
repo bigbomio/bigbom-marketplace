@@ -72,7 +72,7 @@ class Routers extends PureComponent {
     };
 
     logout = () => {
-        const { logoutMetamask, saveAccountInfo } = this.props;
+        const { logoutMetamask, saveAccountInfo, setReload } = this.props;
         const accountInfo = {
             email: '',
             firstName: '',
@@ -83,6 +83,7 @@ class Routers extends PureComponent {
         LocalStorage.removeItem('userInfo');
         LocalStorage.removeItem('userToken');
         saveAccountInfo(accountInfo);
+        setReload(false);
     };
 
     accountsInit = async (account, network) => {

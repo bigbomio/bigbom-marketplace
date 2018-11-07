@@ -665,6 +665,15 @@ body {
           margin-left: 20px; }
           #header header .nav li.profile .avatar {
             cursor: pointer; }
+          #header header .nav li.profile #avatar-custom {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-transform: uppercase; }
           #header header .nav li.profile .blue {
             background: #0ca1f9;
             color: #fff; }
