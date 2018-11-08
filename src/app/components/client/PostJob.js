@@ -539,7 +539,7 @@ class ClientPostJob extends Component {
                 <div className="container-wrp full-top-wrp">
                     <div className="container wrapper">
                         <Grid container className="main-intro">
-                            <h1>Tell your freelancer what you need done</h1>
+                            <h1>Tell your freelancer what you need to be done</h1>
                             <span className="description">
                                 Contact skilled freelancers within minutes. View profiles, ratings, portfolios and chat with them. Pay the freelancer
                                 only when you are 100% satisfied with their work.

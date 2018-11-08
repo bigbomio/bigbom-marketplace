@@ -491,7 +491,7 @@ class JobDetailBid extends Component {
                     return (
                         <div className="dispute-actions">
                             <span className="note">
-                                <i className="fas fa-ban red" /> Sorry, job owner has <span className="bold">rejected payment</span> for you.{' '}
+                                <i className="fas fa-ban red" /> Sorry, your client has <span className="bold">rejected</span> your payment.{' '}
                                 <Popper
                                     placement="top"
                                     anchorEl={anchorEl}
@@ -540,7 +540,7 @@ class JobDetailBid extends Component {
                                 </span>
                             ) : (
                                 <span className="note">
-                                    <span className="bold">You have created dispute for this job</span>, please waiting for response from your client.
+                                    <span className="bold">Dispute submitted</span>, please waiting for response from your client.
                                 </span>
                             )}
                         </div>
@@ -877,7 +877,7 @@ class JobDetailBid extends Component {
             actStt: {
                 title: '',
                 err: false,
-                text: 'Your bid has been created! Please waiting for confirm from your network.',
+                text: 'Transaction broadcasted! Please waiting for confirmation from network.',
                 link: (
                     <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
                         HERE
@@ -911,7 +911,7 @@ class JobDetailBid extends Component {
             dialogLoading: false,
             actStt: {
                 err: false,
-                text: 'Your bid has been canceled! Please waiting for confirm from your network.',
+                text: 'Transaction broadcasted! Please waiting for confirmation from network.',
                 link: (
                     <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
                         HERE
@@ -946,7 +946,7 @@ class JobDetailBid extends Component {
             actStt: {
                 title: '',
                 err: false,
-                text: 'This job has been started! Please waiting for confirm from your network.',
+                text: 'Transaction broadcasted! Please waiting for confirmation from network.',
                 link: (
                     <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
                         HERE
@@ -981,7 +981,7 @@ class JobDetailBid extends Component {
             actStt: {
                 title: '',
                 err: false,
-                text: 'This job has been completed! Please waiting for confirm from your network.',
+                text: 'Transaction broadcasted! Please waiting for confirmation from network.',
                 link: (
                     <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
                         HERE
@@ -1016,7 +1016,7 @@ class JobDetailBid extends Component {
             actStt: {
                 title: '',
                 err: false,
-                text: 'You have claimed! Please waiting for confirm from your network.',
+                text: 'Transaction broadcasted! Please waiting for confirmation from network.',
                 link: (
                     <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
                         HERE
@@ -1039,7 +1039,7 @@ class JobDetailBid extends Component {
                     actions: this.createBid,
                 },
                 dialogContent: null,
-                actStt: { title: 'Do you want to bid this job?', err: false, text: null, link: '' },
+                actStt: { title: 'Please confirm placing your bid', err: false, text: null, link: '' },
             });
         }
     };
@@ -1052,7 +1052,7 @@ class JobDetailBid extends Component {
                 actionText: 'Cancel',
                 actions: this.cancelBid,
             },
-            actStt: { title: 'Do you want to cancel bid this job?', err: false, text: null, link: '' },
+            actStt: { title: 'Do you want to cancel your bid?', err: false, text: null, link: '' },
         });
     };
 
@@ -1116,7 +1116,7 @@ class JobDetailBid extends Component {
                 actions: () => this.updateDispute(false),
             },
             open: true,
-            actStt: { title: 'Do you want to renewal of this dispute?', err: false, text: null, link: '' },
+            actStt: { title: 'Do you want to extend this dispute?', err: false, text: null, link: '' },
             dialogContent: null,
         });
     };
@@ -1130,7 +1130,7 @@ class JobDetailBid extends Component {
                 actions: this.finalizeDispute,
             },
             dialogContent: null,
-            actStt: { title: 'Do you want to finalize dispute for this job?', err: false, text: null, link: '' },
+            actStt: { title: 'Please confirm that you want to close this dispute', err: false, text: null, link: '' },
         });
     };
 
@@ -1144,7 +1144,7 @@ class JobDetailBid extends Component {
                 this.setState({ timeErr: 'Please enter your estimated time at least 1 hour' });
                 return false;
             } else if (val > max) {
-                this.setState({ timeErr: 'Please do not enter longer job period' });
+                this.setState({ timeErr: 'Your estimation is bigger than estimated, please bid again' });
                 return false;
             }
             return true;
@@ -1162,12 +1162,12 @@ class JobDetailBid extends Component {
                     return false;
                 } else {
                     this.setState({
-                        awardErr: 'You enter your bid too low, your bid may not be accepted by this cause',
+                        awardErr: 'Your bid is way too low, and it may never win this job',
                     });
                     return true;
                 }
             } else if (val > max) {
-                this.setState({ awardErr: 'Please do not enter more than job estimated budget' });
+                this.setState({ awardErr: 'Please do not place your bid larger than estimated budget' });
                 return false;
             }
             return true;
@@ -1284,7 +1284,7 @@ class JobDetailBid extends Component {
                                                 {timeErr && <span className="err">{timeErr}</span>}
                                             </Grid>
                                             <Grid item xs={4} className="mkp-form-row-sub">
-                                                <span className="mkp-form-row-label">Award ({jobData.currency.label})</span>
+                                                <span className="mkp-form-row-label">Bid Amount ({jobData.currency.label})</span>
                                                 <span className="mkp-form-row-description">Your bid for this job</span>
                                                 <input
                                                     className={awardErr ? 'input-err' : ''}
@@ -1387,7 +1387,7 @@ class JobDetailBid extends Component {
                                 </Grid>
                                 {jobData.status.bidding && (
                                     <Grid container className="freelancer-bidding">
-                                        <h2>Freelancer bidding</h2>
+                                        <h2>Current Bids</h2>
                                         <Grid container className="list-container">
                                             <Grid container className="list-header">
                                                 <Grid item xs={8}>
