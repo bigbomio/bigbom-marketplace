@@ -323,7 +323,7 @@ class abiConfigs {
     async jobStarted(web3, jobData, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerJob');
         ctInstance.instance.JobStarted(
-            { indexJobHash: web3.sha3(jobData.data.jobHash) },
+            { indexJobHash: web3.sha3(jobData.jobHash) },
             {
                 fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
