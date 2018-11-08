@@ -52,7 +52,7 @@ class Header extends PureComponent {
     }
 
     getBBO = () => {
-        window.open('https://faucet.ropsten.bigbom.net/', '_blank');
+        window.open('https://bigbomio.github.io/bbo-faucet-testnet/', '_blank');
     };
 
     getNameAvatar = () => {

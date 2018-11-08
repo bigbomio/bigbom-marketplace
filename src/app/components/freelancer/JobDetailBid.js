@@ -583,8 +583,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                            ? 'Your dispute has had result and you are losers.'
-                                            : 'Your dispute has had result, but there is not winner.'}
+                                        ? 'Your dispute has had result and you are losers.'
+                                        : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -698,6 +698,9 @@ class JobDetailBid extends Component {
         if (!refresh) {
             if (jobs.length > 0) {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
+                if (jobData[0].status.started) {
+                    abiConfig.jobStarted(web3, jobData[0], this.jobStarted);
+                }
                 if (jobData[0].status.reject) {
                     abiConfig.getReasonPaymentRejected(web3, jobData[0].jobHash, this.getReasonPaymentRejected);
                 }
@@ -734,7 +737,6 @@ class JobDetailBid extends Component {
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const employerInfo = await services.getUserByWallet(jobStatusLog[0]);
-            console.log(employerInfo);
             let employer = {
                 fullName: jobStatusLog[0],
                 walletAddress: jobStatusLog[0],
@@ -804,15 +806,15 @@ class JobDetailBid extends Component {
 
     jobStarted = async (jobData, jobStarted) => {
         const { web3, history } = this.props;
-        const bidAccepted = jobData.data.bid.filter(bid => bid.accepted);
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
         const jobCompleteDuration = (jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
         if (this.mounted) {
-            if (web3.eth.defaultAccount === jobData.data.owner) {
-                history.push('/client/your-jobs/' + jobData.data.jobHash);
+            if (web3.eth.defaultAccount === jobData.owner) {
+                history.push('/client/your-jobs/' + jobData.jobHash);
             }
             this.setState({
-                jobData: jobData.data,
-                isOwner: web3.eth.defaultAccount === jobData.data.owner,
+                jobData: jobData,
+                isOwner: web3.eth.defaultAccount === jobData.owner,
                 isLoading: false,
                 jobCompleteDuration,
             });
@@ -822,7 +824,7 @@ class JobDetailBid extends Component {
     JobsInit = jobData => {
         const { web3, history } = this.props;
         if (jobData.data.status.started) {
-            abiConfig.jobStarted(web3, jobData, this.jobStarted);
+            abiConfig.jobStarted(web3, jobData.data, this.jobStarted);
         } else {
             if (this.mounted) {
                 if (web3.eth.defaultAccount === jobData.data.owner) {
@@ -1340,8 +1342,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                            ? jobData.estimatedTime / 24 + ' Days'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                        ? jobData.estimatedTime / 24 + ' Days'
+                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1432,8 +1434,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                            ? freelancer.timeDone / 24 + ' Days'
-                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                        ? freelancer.timeDone / 24 + ' Days'
+                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );
