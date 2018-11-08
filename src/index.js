@@ -10,7 +10,7 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import { unregister } from './registerServiceWorker';
 
 // Store
-import store, { browserHistory } from './app/stores';
+import storeConfig, { browserHistory } from './app/stores';
 
 // Custom
 import { muiDefault as muiTheme } from './material-ui-theme';
@@ -22,7 +22,7 @@ import Routes from './app/routers';
 
 ReactDOM.render(
     <div className="App" id="bigbomMarketplace">
-        <Provider store={store()}>
+        <Provider store={storeConfig()}>
             <MuiThemeProvider theme={muiTheme}>
                 <Routes history={browserHistory} />
             </MuiThemeProvider>

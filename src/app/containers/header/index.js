@@ -16,8 +16,11 @@ import Fade from '@material-ui/core/Fade';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 
 import Utils from '../../_utils/utils';
+import LocalStorage from '../../_utils/localStorage';
 import RoutersAuthen from '../../routers/RoutersAuthen';
-import { setRegister } from '../../components/common/actions';
+
+import { logoutMetamask } from '../../components/home/actions';
+import { setRegister, saveAccountInfo } from '../../components/common/actions';
 
 const options = [
     { text: 'View as Client', icon: 'fas fa-user-tie' },
@@ -111,6 +114,20 @@ class Header extends PureComponent {
         this.setState(state => ({ checked: !state.checked }));
     };
 
+    logout = () => {
+        const { logoutMetamask, saveAccountInfo } = this.props;
+        const accountInfo = {
+            email: '',
+            firstName: '',
+            lastName: '',
+            wallets: [],
+        };
+        logoutMetamask();
+        LocalStorage.removeItem('userInfo');
+        LocalStorage.removeItem('userToken');
+        saveAccountInfo(accountInfo);
+    };
+
     render() {
         const { routes, anchorEl, avatarColor, checked } = this.state;
         const { setRegister, accountInfo } = this.props;
@@ -165,9 +182,9 @@ class Header extends PureComponent {
                                 {accountInfo.wallets.length > 0 ? (
                                     <ClickAwayListener onClickAway={this.handleClickAway}>
                                         <li className="profile">
-                                            <Avatar className={'avatar ' + avatarColor} onClick={this.profileOpen}>
+                                            <div id="avatar-custom" className={'avatar ' + avatarColor} onClick={this.profileOpen}>
                                                 {this.getNameAvatar()}
-                                            </Avatar>
+                                            </div>
                                             <Fade in={checked}>
                                                 <div className="user-info" id="user-info">
                                                     <ul>
@@ -209,6 +226,9 @@ class Header extends PureComponent {
                                                                 );
                                                             })}
                                                         </li>
+                                                        <li className="logout">
+                                                            <span onClick={this.logout}>Logout</span>
+                                                        </li>
                                                     </ul>
                                                 </div>
                                             </Fade>
@@ -238,6 +258,8 @@ Header.propTypes = {
     history: PropTypes.object.isRequired,
     accountInfo: PropTypes.object.isRequired,
     setRegister: PropTypes.func.isRequired,
+    logoutMetamask: PropTypes.func.isRequired,
+    saveAccountInfo: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -251,6 +273,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
     setRegister,
+    logoutMetamask,
+    saveAccountInfo,
 };
 
 export default connect(

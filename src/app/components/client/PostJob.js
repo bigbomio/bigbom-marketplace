@@ -529,11 +529,9 @@ class ClientPostJob extends Component {
                         )}
                     </DialogContent>
                     <DialogActions>
-                        {!isLoading && (
-                            <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
-                                Close
-                            </ButtonBase>
-                        )}
+                        <ButtonBase onClick={this.handleClose} className="btn btn-normal btn-default">
+                            Close
+                        </ButtonBase>
                     </DialogActions>
                 </Dialog>
                 <div className="container-wrp full-top-wrp">

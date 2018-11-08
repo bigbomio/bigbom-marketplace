@@ -782,7 +782,7 @@ class abiConfigs {
     async transactionWatch(web3, hashString, callback) {
         async function getReceipt() {
             const [, receipt] = await Utils.callMethod(web3.eth.getTransactionReceipt)(hashString);
-            if (receipt) {
+            if (receipt.blockNumber !== null) {
                 clearInterval(watch);
                 callback();
                 return;

@@ -38,6 +38,16 @@
                     .avatar {
                         cursor: pointer;
                     }
+                    #avatar-custom {
+                        height: 40px;
+                        width: 40px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        text-transform: uppercase;
+                    }
                     .blue {
                         background: $blue;
                         color: #fff;
@@ -127,7 +137,10 @@
                         }
                         &.addresses {
                             padding-top: 10px;
-                            border-top: 1px solid #ccc;
+                            border-top: 1px dotted #ccc;
+                            border-bottom: 1px dotted #ccc;
+                            margin-bottom: 15px;
+                            padding-bottom: 10px;
                             .address-item {
                                 display: flex;
                                 padding: 6px 0;
@@ -171,6 +184,19 @@
                                     }
                                 }
                             }
+                        }
+                    }
+                    .logout {
+                        span {
+                            padding: 5px 20px;
+                            display: inline-block;
+                            background: #f9f9f9;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            font-size: 14px;
+                            cursor: pointer;
+                            line-height: 16px;
+                            color: #444;
                         }
                     }
                 }

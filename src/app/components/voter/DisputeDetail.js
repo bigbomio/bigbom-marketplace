@@ -607,9 +607,9 @@ class DisputeDetail extends Component {
                                     <p>Remaining time</p>
                                     {!reveal ? (
                                         disputeData.evidenceEndDate > Date.now() ? (
-                                            <Countdown expiredTime={disputeData.evidenceEndDate} />
+                                            <Countdown reload expiredTime={disputeData.evidenceEndDate} />
                                         ) : (
-                                            <Countdown expiredTime={disputeData.commitEndDate} />
+                                            <Countdown reload expiredTime={disputeData.commitEndDate} />
                                         )
                                     ) : (
                                         <Countdown expiredTime={disputeData.revealEndDate} />
