@@ -87,8 +87,8 @@ class abiConfigs {
     }
 
     getIpfsLink() {
-        return 'https://ipfs.infura.io/ipfs/';
-        //return 'https://cloudflare-ipfs.com/ipfs/';
+        //return 'https://ipfs.infura.io/ipfs/';
+        return 'https://cloudflare-ipfs.com/ipfs/';
     }
 
     getTXlink() {
