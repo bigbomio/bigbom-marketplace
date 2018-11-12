@@ -1711,7 +1711,8 @@ a {
         font-size: 14px;
         color: #fff;
         padding-bottom: 5px;
-        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+        font-weight: bold; }
       .login-page .register-wrp .form-row.confirm {
         margin-top: 10px; }
         .login-page .register-wrp .form-row.confirm .err {
@@ -1745,7 +1746,8 @@ a {
     line-height: 24px;
     font-size: 18px;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-    width: 600px; }
+    width: 600px;
+    font-weight: bold; }
     .login-page .note i {
       font-size: 40px;
       margin-bottom: 10px;
