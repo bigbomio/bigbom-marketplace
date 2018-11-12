@@ -389,7 +389,8 @@ class JobDetail extends Component {
                 history.push('/freelancer/jobs/' + jobHash);
                 return;
             }
-            const jobStatus = Utils.getStatus(jobStatusLog);
+            const jobStatus = await Utils.getStatus(jobStatusLog);
+            console.log(jobStatus);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
             }
@@ -1128,20 +1129,22 @@ class JobDetail extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
-                                            {jobData.status.started && <Countdown name="Complete duration" expiredTime={jobCompleteDuration} />}
+                                            {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.started && (
+                                                <Countdown reload name="Complete duration" expiredTime={jobCompleteDuration} />
+                                            )}
                                             {disputeStt.started &&
                                                 (disputeStt.clientResponseDuration > 0 && (
-                                                    <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                    <Countdown reload name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ))}
                                             {freelancerDispute.responded &&
                                                 (freelancerDispute.commitDuration > 0 && (
-                                                    <Countdown name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
+                                                    <Countdown reload name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
                                                 ))}
                                             {paymentDuration !== 0 &&
                                                 (!jobData.status.reject &&
                                                     (!jobData.status.disputing && (
-                                                        <Countdown name="Payment duration" expiredTime={paymentDuration} />
+                                                        <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
                                                     )))}
                                         </Grid>
                                     </Grid>

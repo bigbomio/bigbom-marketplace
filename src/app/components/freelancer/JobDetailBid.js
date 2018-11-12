@@ -840,7 +840,9 @@ class JobDetailBid extends Component {
     };
 
     bidSwitched = open => {
-        this.setState({ checkedBid: open, awardErr: '' });
+        document.getElementById('time').value = '';
+        document.getElementById('award').value = '';
+        this.setState({ checkedBid: open, awardErr: '', time: 0, award: 0 });
     };
 
     back = () => {
@@ -1178,6 +1180,9 @@ class JobDetailBid extends Component {
 
     inputOnChange = (e, field) => {
         const val = Number(e.target.value);
+        const { jobData } = this.state;
+        const max = Number(jobData.budget.max_sum); // job budget
+        const min = max / 10; // 10% of budget
         if (field === 'time') {
             if (!this.validate(val, 'time')) {
                 return;
@@ -1187,7 +1192,11 @@ class JobDetailBid extends Component {
             if (!this.validate(val, 'award')) {
                 return;
             }
-            this.setState({ award: val, awardErr: null });
+            if (val > min) {
+                this.setState({ award: val, awardErr: null });
+            } else {
+                this.setState({ award: val });
+            }
         }
     };
 
@@ -1269,6 +1278,8 @@ class JobDetailBid extends Component {
                                     {this.actions()}
                                 </div>
                                 {this.disputeActions()}
+
+                                {/* Bid stage */}
                                 <Fade in={checkedBid}>
                                     <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
                                         <Grid container className="mkp-form-row">
@@ -1310,6 +1321,7 @@ class JobDetailBid extends Component {
                                         </Grid>
                                     </Grid>
                                 </Fade>
+                                {/* End bid stage */}
 
                                 {!disputeCreated && (
                                     <CreateDispute
@@ -1346,21 +1358,27 @@ class JobDetailBid extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
-                                            {jobData.status.started && <Countdown name="Complete duration" expiredTime={jobCompleteDuration} />}
+                                            {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.started && (
+                                                <Countdown reload name="Complete duration" expiredTime={jobCompleteDuration} />
+                                            )}
                                             {disputeStt.started &&
                                                 (disputeStt.clientResponseDuration > 0 ? (
-                                                    <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                    <Countdown reload name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ) : (
                                                     clientRespondedDispute.responded &&
                                                     (clientRespondedDispute.commitDuration > 0 && (
-                                                        <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                                        <Countdown
+                                                            reload
+                                                            name="Voting Duration"
+                                                            expiredTime={clientRespondedDispute.commitDuration}
+                                                        />
                                                     ))
                                                 ))}
                                             {paymentDuration !== 0 &&
                                                 (!jobData.status.reject &&
                                                     (!jobData.status.disputing && (
-                                                        <Countdown name="Payment duration" expiredTime={paymentDuration} />
+                                                        <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
                                                     )))}
                                         </Grid>
                                     </Grid>

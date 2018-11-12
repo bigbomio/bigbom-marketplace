@@ -1284,7 +1284,8 @@ body {
     border: 1px solid #ccc;
     padding: 10px;
     margin: 20px 0;
-    text-align: left; }
+    text-align: left;
+    display: none; }
     .voting-options .voting-options-secret p {
       padding-bottom: 10px; }
     .voting-options .voting-options-secret span {

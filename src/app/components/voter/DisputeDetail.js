@@ -694,9 +694,18 @@ class DisputeDetail extends Component {
                                 ) : (
                                     <Grid container className="reveal-submit">
                                         {disputeData.revealEndDate > Date.now() ? (
-                                            <ButtonBase className="btn btn-normal btn-orange" disabled={revealDone} onClick={this.revealConfirm}>
-                                                Reveal Vote
-                                            </ButtonBase>
+                                            <span>
+                                                <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
+                                                    View Vote Result
+                                                </ButtonBase>
+                                                <ButtonBase
+                                                    className="btn btn-normal btn-orange btn-right"
+                                                    disabled={revealDone}
+                                                    onClick={this.revealConfirm}
+                                                >
+                                                    Reveal Vote
+                                                </ButtonBase>
+                                            </span>
                                         ) : (
                                             <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
                                                 View Vote Result
