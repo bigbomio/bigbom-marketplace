@@ -8,6 +8,7 @@ import YourBids from './YourBids';
 import JobDetailBid from './JobDetailBid';
 import JobBrowse from './JobBrowse';
 import NotFound from '../NotFound';
+import Parameters from '../Parameters';
 import UserInfoNav from '../../components/common/UserInfoNav';
 
 import { setView } from '../common/actions';
@@ -42,6 +43,11 @@ class FreelancerContainer extends Component {
                 title: 'Your Bids',
                 path: `${match.url}/jobs`,
                 component: YourBids,
+            },
+            {
+                title: 'Parameters',
+                path: `${match.url}/parameters`,
+                component: Parameters,
             },
         ];
 

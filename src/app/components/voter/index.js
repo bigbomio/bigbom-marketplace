@@ -9,6 +9,7 @@ import DisputeDetail from './DisputeDetail';
 import DisputeBrowse from './DisputeBrowse';
 import NotFound from '../NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
+import Parameters from '../Parameters';
 
 import { setView } from '../common/actions';
 
@@ -42,6 +43,11 @@ class VoterContainer extends Component {
                 title: 'Manage',
                 path: `${match.url}/manage`,
                 component: Manage,
+            },
+            {
+                title: 'Parameters',
+                path: `${match.url}/parameters`,
+                component: Parameters,
             },
         ];
 

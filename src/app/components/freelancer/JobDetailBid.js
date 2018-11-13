@@ -250,14 +250,14 @@ class JobDetailBid extends Component {
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = match.params.jobId;
         this.setState({ [action]: done });
-        LocalStorage.setItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount + '-' + jobHash, { done });
     };
 
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = await match.params.jobId;
-        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount + '-' + jobHash);
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
         } else {
@@ -311,6 +311,7 @@ class JobDetailBid extends Component {
         this.setActionBtnStt('finalizeDisputeDone', true);
         this.setState({
             dialogLoading: false,
+            dialogContent: null,
             actStt: {
                 err: false,
                 text: 'Your request has been sent! Please waiting for confirm from your network.',
@@ -1017,6 +1018,7 @@ class JobDetailBid extends Component {
         this.setState({
             claimPaymentDone: true,
             dialogLoading: false,
+            dialogContent: null,
             actStt: {
                 title: '',
                 err: false,
@@ -1087,14 +1089,27 @@ class JobDetailBid extends Component {
     };
 
     confirmClaimPayment = () => {
+        const { jobData } = this.state;
         this.setActionBtnDisabled(false);
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
+        const dialogContent = () => {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> as your
+                        payment.
+                    </p>
+                </div>
+            );
+        };
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Claim',
                 actions: this.claimPayment,
             },
-            dialogContent: null,
+            dialogContent: dialogContent(),
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
         });
     };
@@ -1125,6 +1140,32 @@ class JobDetailBid extends Component {
         });
     };
 
+    dialogContentFinalizeDispute = () => {
+        const { isFinalWithoutAgainst, jobData, voteWinner } = this.state;
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
+        if (isFinalWithoutAgainst || voteWinner === 'freelancer') {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> into
+                        your account as the payment for this job. Your staked tokens also will be refunded into your account.
+                    </p>
+                </div>
+            );
+        } else {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> will be sent from
+                        escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become reward for voters.
+                    </p>
+                </div>
+            );
+        }
+    };
+
     confirmFinalizeDispute = () => {
         this.setActionBtnDisabled(false);
         this.setState({
@@ -1133,7 +1174,7 @@ class JobDetailBid extends Component {
                 actionText: 'Finalize',
                 actions: this.finalizeDispute,
             },
-            dialogContent: null,
+            dialogContent: this.dialogContentFinalizeDispute(),
             actStt: { title: 'Do you want to finalize dispute for this job?', err: false, text: null, link: '' },
         });
     };

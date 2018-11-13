@@ -9,6 +9,7 @@ import JobDetail from '../../components/client/JobDetail';
 import PostJob from '../../components/client//PostJob';
 import NotFound from '../../components/NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
+import Parameters from '../Parameters';
 
 import { setView } from '../common/actions';
 
@@ -44,6 +45,11 @@ class ClientCatagories extends Component {
                 title: 'Your Jobs',
                 path: `${match.url}/your-jobs`,
                 component: YourJobs,
+            },
+            {
+                title: 'Parameters',
+                path: `${match.url}/parameters`,
+                component: Parameters,
             },
         ];
 

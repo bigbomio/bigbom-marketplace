@@ -33,6 +33,12 @@ class ResponseDispute extends Component {
         };
     }
 
+    componentDidMount() {
+        const { web3, votingParams } = this.props;
+        const stakeDeposit = Utils.currencyFormat(Utils.WeiToBBO(web3, Number(votingParams.stakeDeposit)));
+        this.setState({ stakeDeposit });
+    }
+
     responseDispute = async proofHash => {
         const { web3, jobHash, setSttRespondedDispute } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
@@ -66,7 +72,7 @@ class ResponseDispute extends Component {
             },
         });
         setSttRespondedDispute(true);
-        LocalStorage.setItemJson('sttRespondedDispute-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done: true });
+        LocalStorage.setItemJson('sttRespondedDispute-' + defaultAccount + '-' + jobHash, { done: true });
     };
 
     createProofHash = async () => {
@@ -178,7 +184,7 @@ class ResponseDispute extends Component {
     };
 
     render() {
-        const { proofErr, isLoading, actStt, isDone, checkedDisputeResult, submitDisabled } = this.state;
+        const { proofErr, isLoading, actStt, isDone, checkedDisputeResult, submitDisabled, stakeDeposit } = this.state;
         const { closeAct, checkedDispute } = this.props;
         return isLoading ? (
             <div className="loading">
@@ -233,6 +239,14 @@ class ResponseDispute extends Component {
                                 </Grid>
                             </Grid> */}
                     <Grid container className="mkp-form-row">
+                        <div className="dialog-note build-in-note">
+                            <i className="fas fa-exclamation-circle" />
+                            <p>
+                                By confirming this action, you will deposit <span className="bold">{stakeDeposit} BBO</span> into staking contract. If
+                                you win the dispute, your staked tokens will be refunded to you account. If you loose the dispute, your staked tokens
+                                will be use as the reward for voter.
+                            </p>
+                        </div>
                         <ButtonBase className="btn btn-normal btn-blue e-left" onClick={() => this.createProofHash()} disabled={submitDisabled}>
                             <i className="fas fa-check" /> Create
                         </ButtonBase>

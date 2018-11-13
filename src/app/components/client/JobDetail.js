@@ -168,14 +168,14 @@ class JobDetail extends Component {
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = match.params.jobId;
         this.setState({ [action]: done });
-        LocalStorage.setItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount + '-' + jobHash, { done });
     };
 
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = await match.params.jobId;
-        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount + '-' + jobHash);
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
         } else {
@@ -279,6 +279,7 @@ class JobDetail extends Component {
             },
             finalizeDisputeDone: true,
             dialogLoading: false,
+            dialogContent: null,
         });
         this.setActionBtnDisabled(true);
     };
@@ -390,7 +391,6 @@ class JobDetail extends Component {
                 return;
             }
             const jobStatus = await Utils.getStatus(jobStatusLog);
-            console.log(jobStatus);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
             }
@@ -488,6 +488,7 @@ class JobDetail extends Component {
             this.setState({
                 dialogLoading: false,
                 actStt: { title: 'Error: ', err: true, text: 'Can not accept bid! :(', link: '' },
+                dialogContent: null,
             });
             console.log('errAccept', errAccept);
             return;
@@ -505,6 +506,7 @@ class JobDetail extends Component {
                 ),
             },
             dialogLoading: false,
+            dialogContent: null,
         });
     };
 
@@ -522,6 +524,7 @@ class JobDetail extends Component {
                     text: 'Sorry, you have insufficient funds! You can not create a job if your ETH balance less than fee.',
                     link: '',
                 },
+                dialogContent: null,
             });
             return;
         } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < Number(bidValue)) {
@@ -537,6 +540,7 @@ class JobDetail extends Component {
                         </a>
                     ),
                 },
+                dialogContent: null,
             });
             return;
         }
@@ -627,6 +631,7 @@ class JobDetail extends Component {
                 ),
             },
             dialogLoading: false,
+            dialogContent: null,
         });
     };
 
@@ -662,12 +667,24 @@ class JobDetail extends Component {
                 ),
             },
             dialogLoading: false,
+            dialogContent: null,
         });
     };
 
     confirmAccept = bid => {
         const { web3 } = this.props;
         this.setActionBtnDisabled(false);
+        const dialogContent = () => {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will deposit <span className="bold">{Utils.currencyFormat(bid.award)} BBO</span> into our
+                        escrow contract. Please make sure you understand what you&#39;re doing.
+                    </p>
+                </div>
+            );
+        };
         this.setState({
             open: true,
             bidAddress: bid.address,
@@ -677,7 +694,7 @@ class JobDetail extends Component {
                 actions: this.acceptBidInit,
             },
             actStt: { title: 'Do you want to accept bid?', err: false, text: null, link: '' },
-            dialogContent: null,
+            dialogContent: dialogContent(),
         });
     };
 
@@ -694,6 +711,32 @@ class JobDetail extends Component {
         });
     };
 
+    dialogContentFinalizeDispute = () => {
+        const { jobData, voteWinner } = this.state;
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
+        if (voteWinner === 'client') {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> into
+                        your account as the payment for this job. Your staked tokens also will be refunded into your account.
+                    </p>
+                </div>
+            );
+        } else {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> will be sent from
+                        escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become reward for voters.
+                    </p>
+                </div>
+            );
+        }
+    };
+
     confirmFinalizeDispute = () => {
         this.setActionBtnDisabled(false);
         this.setState({
@@ -703,7 +746,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to finalize this dispute?', err: false, text: null, link: '' },
-            dialogContent: null,
+            dialogContent: this.dialogContentFinalizeDispute(),
         });
     };
 
@@ -734,7 +777,20 @@ class JobDetail extends Component {
     };
 
     confirmPayment = () => {
+        const { jobData } = this.state;
         this.setActionBtnDisabled(false);
+        const bidAccepted = jobData.bid.filter(b => b.accepted);
+        const dialogContent = () => {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will allow escrow contract to pay your freelancer{' '}
+                        <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO </span> from your deposit balance.
+                    </p>
+                </div>
+            );
+        };
         this.setState({
             dialogData: {
                 actionText: 'Payment',
@@ -742,7 +798,7 @@ class JobDetail extends Component {
             },
             open: true,
             actStt: { title: 'Do you want to payment for this job?', err: false, text: null, link: '' },
-            dialogContent: null,
+            dialogContent: dialogContent(),
         });
     };
 
