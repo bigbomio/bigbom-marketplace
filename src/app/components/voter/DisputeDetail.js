@@ -76,14 +76,14 @@ class DisputeDetail extends Component {
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = match.params.disputeId;
         this.setState({ [action]: done });
-        LocalStorage.setItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount + '-' + jobHash, { done });
     };
 
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = await match.params.disputeId;
-        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount + '-' + jobHash);
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
         } else {
@@ -168,9 +168,21 @@ class DisputeDetail extends Component {
     };
 
     getRewardConfirm = () => {
+        const { reward } = this.state;
+        const dialogContent = () => {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will be able to get <span className="bold">{Utils.currencyFormat(reward)} BBO</span> as your
+                        reward.
+                    </p>
+                </div>
+            );
+        };
         this.setState({
             open: true,
-            dialogContent: null,
+            dialogContent: dialogContent(),
             dialogData: {
                 actionText: 'Claim Reward',
                 actions: this.getReward,
@@ -194,11 +206,11 @@ class DisputeDetail extends Component {
         }
         if (Number(result.toString()) > 0) {
             if (this.mounted) {
-                this.setState({ getRewardRight: true });
+                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result.toString())) });
             }
         } else {
             if (this.mounted) {
-                this.setState({ getRewardRight: false });
+                this.setState({ getRewardRight: false, reward: 0 });
             }
         }
     };
@@ -694,9 +706,18 @@ class DisputeDetail extends Component {
                                 ) : (
                                     <Grid container className="reveal-submit">
                                         {disputeData.revealEndDate > Date.now() ? (
-                                            <ButtonBase className="btn btn-normal btn-orange" disabled={revealDone} onClick={this.revealConfirm}>
-                                                Reveal Vote
-                                            </ButtonBase>
+                                            <span>
+                                                <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
+                                                    View Vote Result
+                                                </ButtonBase>
+                                                <ButtonBase
+                                                    className="btn btn-normal btn-orange btn-right"
+                                                    disabled={revealDone}
+                                                    onClick={this.revealConfirm}
+                                                >
+                                                    Reveal Vote
+                                                </ButtonBase>
+                                            </span>
                                         ) : (
                                             <ButtonBase className="btn btn-normal btn-blue" onClick={this.viewVoteResult}>
                                                 View Vote Result

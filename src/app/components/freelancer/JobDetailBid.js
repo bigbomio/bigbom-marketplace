@@ -250,14 +250,14 @@ class JobDetailBid extends Component {
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = match.params.jobId;
         this.setState({ [action]: done });
-        LocalStorage.setItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase(), { done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount + '-' + jobHash, { done });
     };
 
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const jobHash = await match.params.jobId;
-        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount.toLowerCase() + '-' + jobHash.toLowerCase());
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount + '-' + jobHash);
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
         } else {
@@ -311,6 +311,7 @@ class JobDetailBid extends Component {
         this.setActionBtnStt('finalizeDisputeDone', true);
         this.setState({
             dialogLoading: false,
+            dialogContent: null,
             actStt: {
                 err: false,
                 text: 'Your request has been sent! Please waiting for confirm from your network.',
@@ -840,7 +841,9 @@ class JobDetailBid extends Component {
     };
 
     bidSwitched = open => {
-        this.setState({ checkedBid: open, awardErr: '' });
+        document.getElementById('time').value = '';
+        document.getElementById('award').value = '';
+        this.setState({ checkedBid: open, awardErr: '', time: 0, award: 0 });
     };
 
     back = () => {
@@ -1015,6 +1018,7 @@ class JobDetailBid extends Component {
         this.setState({
             claimPaymentDone: true,
             dialogLoading: false,
+            dialogContent: null,
             actStt: {
                 title: '',
                 err: false,
@@ -1085,14 +1089,27 @@ class JobDetailBid extends Component {
     };
 
     confirmClaimPayment = () => {
+        const { jobData } = this.state;
         this.setActionBtnDisabled(false);
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
+        const dialogContent = () => {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> as your
+                        payment.
+                    </p>
+                </div>
+            );
+        };
         this.setState({
             open: true,
             dialogData: {
                 actionText: 'Claim',
                 actions: this.claimPayment,
             },
-            dialogContent: null,
+            dialogContent: dialogContent(),
             actStt: { title: 'Do you want to claim payment this job?', err: false, text: null, link: '' },
         });
     };
@@ -1123,6 +1140,32 @@ class JobDetailBid extends Component {
         });
     };
 
+    dialogContentFinalizeDispute = () => {
+        const { isFinalWithoutAgainst, jobData, voteWinner } = this.state;
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
+        if (isFinalWithoutAgainst || voteWinner === 'freelancer') {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> into
+                        your account as the payment for this job. Your staked tokens also will be refunded into your account.
+                    </p>
+                </div>
+            );
+        } else {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> will be sent from
+                        escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become reward for voters.
+                    </p>
+                </div>
+            );
+        }
+    };
+
     confirmFinalizeDispute = () => {
         this.setActionBtnDisabled(false);
         this.setState({
@@ -1131,7 +1174,7 @@ class JobDetailBid extends Component {
                 actionText: 'Finalize',
                 actions: this.finalizeDispute,
             },
-            dialogContent: null,
+            dialogContent: this.dialogContentFinalizeDispute(),
             actStt: { title: 'Please confirm that you want to close this dispute', err: false, text: null, link: '' },
         });
     };
@@ -1178,6 +1221,9 @@ class JobDetailBid extends Component {
 
     inputOnChange = (e, field) => {
         const val = Number(e.target.value);
+        const { jobData } = this.state;
+        const max = Number(jobData.budget.max_sum); // job budget
+        const min = max / 10; // 10% of budget
         if (field === 'time') {
             if (!this.validate(val, 'time')) {
                 return;
@@ -1187,7 +1233,11 @@ class JobDetailBid extends Component {
             if (!this.validate(val, 'award')) {
                 return;
             }
-            this.setState({ award: val, awardErr: null });
+            if (val > min) {
+                this.setState({ award: val, awardErr: null });
+            } else {
+                this.setState({ award: val });
+            }
         }
     };
 
@@ -1269,6 +1319,8 @@ class JobDetailBid extends Component {
                                     {this.actions()}
                                 </div>
                                 {this.disputeActions()}
+
+                                {/* Bid stage */}
                                 <Fade in={checkedBid}>
                                     <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
                                         <Grid container className="mkp-form-row">
@@ -1310,6 +1362,7 @@ class JobDetailBid extends Component {
                                         </Grid>
                                     </Grid>
                                 </Fade>
+                                {/* End bid stage */}
 
                                 {!disputeCreated && (
                                     <CreateDispute
@@ -1346,21 +1399,27 @@ class JobDetailBid extends Component {
                                                             : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            {jobData.status.bidding && <Countdown name="Bid duration" expiredTime={jobData.expiredTime} />}
-                                            {jobData.status.started && <Countdown name="Complete duration" expiredTime={jobCompleteDuration} />}
+                                            {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.started && (
+                                                <Countdown reload name="Complete duration" expiredTime={jobCompleteDuration} />
+                                            )}
                                             {disputeStt.started &&
                                                 (disputeStt.clientResponseDuration > 0 ? (
-                                                    <Countdown name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                    <Countdown reload name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ) : (
                                                     clientRespondedDispute.responded &&
                                                     (clientRespondedDispute.commitDuration > 0 && (
-                                                        <Countdown name="Voting Duration" expiredTime={clientRespondedDispute.commitDuration} />
+                                                        <Countdown
+                                                            reload
+                                                            name="Voting Duration"
+                                                            expiredTime={clientRespondedDispute.commitDuration}
+                                                        />
                                                     ))
                                                 ))}
                                             {paymentDuration !== 0 &&
                                                 (!jobData.status.reject &&
                                                     (!jobData.status.disputing && (
-                                                        <Countdown name="Payment duration" expiredTime={paymentDuration} />
+                                                        <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
                                                     )))}
                                         </Grid>
                                     </Grid>

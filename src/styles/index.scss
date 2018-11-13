@@ -351,6 +351,7 @@ a {
                 color: #fff;
                 padding-bottom: 5px;
                 text-shadow: $thinShadow;
+                font-weight: bold;
             }
             &.confirm {
                 margin-top: 10px;
@@ -394,12 +395,97 @@ a {
         font-size: 18px;
         text-shadow: $thinShadow;
         width: 600px;
+        font-weight: bold;
         i {
             font-size: 40px;
             margin-bottom: 10px;
             border: 5px solid $green;
             border-radius: 50%;
             box-shadow: $thinShadow;
+        }
+    }
+}
+
+.dialog-note {
+    padding: 10px;
+    background: #f9fdce;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #333;
+    border: 1px solid #c3e262;
+    i {
+        font-size: 30px;
+        color: #ffb100;
+    }
+    &.build-in-note {
+        line-height: 20px;
+        margin-bottom: 20px;
+        margin-top: -10px;
+        i {
+            float: left;
+            margin-right: 10px;
+            margin-top: 6px;
+        }
+    }
+}
+
+.bb-parameters {
+    padding: 20px;
+    box-shadow: $normalShadow;
+    margin-bottom: 40px;
+    margin-top: 30px;
+    border-radius: 10px;
+    line-height: 20px;
+    font-size: 15px;
+    .type {
+        padding: 15px 20px;
+        color: #fff;
+        font-size: 18px;
+        border-radius: 5px;
+        margin-top: -46px;
+        background: rgba(100, 164, 217, 1);
+        background: -moz-linear-gradient(left, rgba(100, 164, 217, 1) 0%, rgba(84, 153, 199, 1) 100%);
+        background: -webkit-gradient(left top, right top, color-stop(0%, rgba(100, 164, 217, 1)), color-stop(100%, rgba(84, 153, 199, 1)));
+        background: -webkit-linear-gradient(left, rgba(100, 164, 217, 1) 0%, rgba(84, 153, 199, 1) 100%);
+        background: -o-linear-gradient(left, rgba(100, 164, 217, 1) 0%, rgba(84, 153, 199, 1) 100%);
+        background: -ms-linear-gradient(left, rgba(100, 164, 217, 1) 0%, rgba(84, 153, 199, 1) 100%);
+        background: linear-gradient(to right, rgba(100, 164, 217, 1) 0%, rgba(84, 153, 199, 1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#64a4d9', endColorstr='#5499c7', GradientType=1 );
+    }
+    .header {
+        div {
+            padding: 20px;
+            font-weight: bold;
+            color: #0b82c7;
+        }
+        border-bottom: 1px solid #ddd;
+    }
+    .row {
+        border-bottom: 1px solid #ddd;
+        div {
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            &.name {
+                font-weight: bold;
+            }
+            &.description {
+                font-size: 15px;
+            }
+            &.value {
+                justify-content: center;
+                font-size: 14px;
+                span {
+                    padding: 2px 5px;
+                    display: inline-block;
+                    background: #f9f9f9;
+                    border-radius: 4px;
+                    box-shadow: $thinShadow;
+                }
+            }
+        }
+        &:last-child {
+            border-bottom: none;
         }
     }
 }
