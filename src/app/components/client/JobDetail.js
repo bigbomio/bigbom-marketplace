@@ -1222,7 +1222,7 @@ class JobDetail extends Component {
                                 </Grid>
 
                                 <Grid container className="freelancer-bidding">
-                                    <h2>Freelancer bidding</h2>
+                                    <h2>Current Bids</h2>
                                     <Grid container className="list-container">
                                         <Grid container className="list-header">
                                             <Grid item xs={6}>
