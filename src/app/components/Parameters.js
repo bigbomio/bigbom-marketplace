@@ -45,13 +45,13 @@ class Parameters extends Component {
                                                         <Grid item xs={3}>
                                                             Name
                                                         </Grid>
-                                                        <Grid item xs={5}>
+                                                        <Grid item xs={4}>
                                                             Description
                                                         </Grid>
                                                         <Grid item xs={1}>
                                                             Value
                                                         </Grid>
-                                                        <Grid item xs={3}>
+                                                        <Grid item xs={4}>
                                                             RealParams
                                                         </Grid>
                                                     </Grid>
@@ -61,13 +61,13 @@ class Parameters extends Component {
                                                                 <Grid item xs={3} className="name">
                                                                     {param.name}
                                                                 </Grid>
-                                                                <Grid item xs={5} className="description">
+                                                                <Grid item xs={4} className="description">
                                                                     {param.description}
                                                                 </Grid>
                                                                 <Grid item xs={1} className="value">
                                                                     <span>{param.value}</span>
                                                                 </Grid>
-                                                                <Grid item xs={3} className="real-params">
+                                                                <Grid item xs={4} className="real-params">
                                                                     {param.realParams}
                                                                 </Grid>
                                                             </Grid>

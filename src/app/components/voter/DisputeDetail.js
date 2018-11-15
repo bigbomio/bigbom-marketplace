@@ -124,7 +124,7 @@ class DisputeDetail extends Component {
                 },
                 actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
             });
-        }, 500);
+        }, 1000);
     };
 
     setFinalizedStt = isFinal => {
