@@ -11,6 +11,7 @@ import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
+import WithrawToken from '../components/WithrawToken';
 
 import abiConfig from '../_services/abiConfig';
 import services from '../_services/services';
@@ -86,36 +87,44 @@ class Routers extends PureComponent {
         setReload(false);
     };
 
+    updateBalance = async userInfo => {
+        const { web3, saveAccountInfo } = this.props;
+        // if wallet has existed in current account's wallet list, login and get account info
+        const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
+        let accounts = [];
+        for (let acc of userInfo.wallets) {
+            let address = {
+                address: acc.address,
+                default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
+                balances: { ETH: 0, BBO: 0 },
+            };
+
+            // get eth balance
+            await web3.eth.getBalance(acc.address, (err, balance) => {
+                const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                address.balances.ETH = ethBalance;
+            });
+
+            // get bbo balance
+            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+            const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
+            if (!errBalance) {
+                const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                address.balances.BBO = BBOBalance;
+            }
+            accounts.push(address);
+        }
+        userInfo.wallets = accounts;
+        saveAccountInfo(userInfo);
+    };
+
     accountsInit = async (account, network) => {
-        const { web3, saveAccountInfo, setAccount, setNetwork } = this.props;
+        const { web3, setAccount, setNetwork } = this.props;
         const userInfo = LocalStorage.getItemJson('userInfo');
         if (userInfo) {
             const isHaveAddress = userInfo.wallets.filter(addr => addr.address === web3.eth.defaultAccount);
             if (isHaveAddress.length > 0) {
-                // if wallet has existed in current account's wallet list, login and get account info
-                const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
-                let accounts = [];
-                for (let acc of userInfo.wallets) {
-                    let address = {
-                        address: acc.address,
-                        default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
-                        balances: { ETH: 0, BBO: 0 },
-                    };
-                    await web3.eth.getBalance(acc.address, (err, balance) => {
-                        const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-                        address.balances.ETH = ethBalance;
-                    });
-                    const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-                    const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
-
-                    if (!errBalance) {
-                        const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-                        address.balances.BBO = BBOBalance;
-                    }
-                    accounts.push(address);
-                }
-                userInfo.wallets = accounts;
-                saveAccountInfo(userInfo);
+                this.updateBalance(userInfo);
                 setAccount(account);
                 setNetwork(network);
                 this.getNetwork();
@@ -133,8 +142,12 @@ class Routers extends PureComponent {
         const { web3 } = this.state;
         if (isConnected) {
             const userToken = LocalStorage.getItemJson('userToken');
-            if (userToken && userToken.expired <= Date.now()) {
-                services.refreshToken();
+            if (userToken) {
+                if (userToken.expired <= Date.now()) {
+                    services.refreshToken();
+                }
+            } else {
+                this.logout();
             }
             if (!checkAccount) {
                 return;
@@ -148,6 +161,10 @@ class Routers extends PureComponent {
                             setReload(true);
                         }
                     } else {
+                        const userInfo = LocalStorage.getItemJson('userInfo');
+                        if (userInfo) {
+                            this.updateBalance(userInfo);
+                        }
                         setReload(false);
                     }
                 }
@@ -190,6 +207,7 @@ class Routers extends PureComponent {
                             <Header history={history} />
                             <Switch>
                                 <Route exact path="/" component={Home} />
+                                <Route path="/withraw" component={WithrawToken} />
                                 {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
                                 <Route component={NotFound} />
                             </Switch>

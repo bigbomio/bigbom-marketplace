@@ -223,6 +223,11 @@ class JobDetail extends Component {
         }
     };
 
+    rejectDurationInit = result => {
+        const rejectPaymentDuration = Number(result.created) * 1000;
+        this.setState({ rejectPaymentDuration });
+    };
+
     checkAccount = () => {
         const { reload, setReload } = this.props;
         const { isLoading } = this.state;
@@ -353,6 +358,7 @@ class JobDetail extends Component {
         this.getActionBtnStt('paymentDone');
         this.getActionBtnStt('cancelDone');
         this.getActionBtnStt('sttRespondedDispute');
+        this.getActionBtnStt('claimDepositDone');
     };
 
     jobDataInit = async refresh => {
@@ -365,6 +371,9 @@ class JobDetail extends Component {
                 const jobData = jobs.filter(job => job.jobHash === jobHash);
                 if (jobData[0].status.disputing) {
                     this.disputeSttInit();
+                }
+                if (jobData[0].status.reject) {
+                    abiConfig.getReasonPaymentRejected(web3, jobHash, this.rejectDurationInit);
                 }
                 if (jobData[0].owner !== web3.eth.defaultAccount) {
                     history.push('/freelancer/jobs/' + jobHash);
@@ -393,6 +402,8 @@ class JobDetail extends Component {
             const jobStatus = await Utils.getStatus(jobStatusLog);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
+            } else if (jobStatus.reject) {
+                abiConfig.getReasonPaymentRejected(web3, jobHash, this.rejectDurationInit);
             }
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
@@ -635,6 +646,42 @@ class JobDetail extends Component {
         });
     };
 
+    claimDeposit = async () => {
+        const { jobHash } = this.state;
+        const { web3 } = this.props;
+        this.setActionBtnDisabled(true);
+        this.setState({ dialogLoading: true });
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
+            from: jobInstance.defaultAccount,
+            gasPrice: +jobInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setActionBtnStt('claimDepositDone', false);
+            this.setState({
+                dialogLoading: false,
+                actStt: { title: 'Error: ', err: true, text: 'Can not re-claim your deposit! :(' },
+            });
+            console.log(err);
+            return;
+        }
+        this.setActionBtnStt('claimDepositDone', true);
+        this.setState({
+            actStt: {
+                title: '',
+                err: false,
+                text: 'Your request have been sent! Please waiting for confirm from your network.',
+                link: (
+                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                        HERE
+                    </a>
+                ),
+            },
+            dialogLoading: false,
+            dialogContent: null,
+        });
+    };
+
     rejectPayment = async () => {
         const { jobHash } = this.state;
         const { web3, reason } = this.props;
@@ -802,6 +849,32 @@ class JobDetail extends Component {
         });
     };
 
+    confirmClaimDeposit = () => {
+        const { jobData } = this.state;
+        this.setActionBtnDisabled(false);
+        const bidAccepted = jobData.bid.filter(b => b.accepted);
+        const dialogContent = () => {
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        By confirming this action, your <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO </span> BBO deposited
+                        in the escrow contract will be send back to your account.
+                    </p>
+                </div>
+            );
+        };
+        this.setState({
+            dialogData: {
+                actionText: 'Re-claim',
+                actions: this.claimDeposit,
+            },
+            open: true,
+            actStt: { title: 'Do you want to re-claim your deposit?', err: false, text: null, link: '' },
+            dialogContent: dialogContent(),
+        });
+    };
+
     confirmRejectPayment = () => {
         this.setActionBtnDisabled(true);
         this.setState({
@@ -869,7 +942,7 @@ class JobDetail extends Component {
     };
 
     jobActions = () => {
-        const { jobData, cancelDone, paymentDone, rejectPaymentDone, disputeStt } = this.state;
+        const { jobData, cancelDone, paymentDone, rejectPaymentDone, disputeStt, rejectPaymentDuration, claimDepositDone } = this.state;
         //console.log(jobData);
         if (jobData.status.bidding || jobData.status.bidAccepted) {
             return (
@@ -895,11 +968,23 @@ class JobDetail extends Component {
                 </span>
             );
         } else if (jobData.status.reject && disputeStt.clientResponseDuration <= 0) {
-            return (
-                <div className="note">
-                    <span className="bold">You have rejected payment for freelancer</span>, please waiting for response from your freelancer.
-                </div>
-            );
+            if (rejectPaymentDuration <= Date.now()) {
+                return (
+                    <ButtonBase
+                        className="btn btn-normal btn-orange btn-back btn-bid right"
+                        disabled={claimDepositDone}
+                        onClick={this.confirmClaimDeposit}
+                    >
+                        Re-claim Deposit
+                    </ButtonBase>
+                );
+            } else {
+                return (
+                    <div className="note">
+                        <span className="bold">You have rejected payment for freelancer</span>, please waiting for response from your freelancer.
+                    </div>
+                );
+            }
         }
     };
 
@@ -1034,8 +1119,8 @@ class JobDetail extends Component {
                             {voteWinner === 'client'
                                 ? 'Your dispute has had result and you are winner.'
                                 : voteWinner === 'freelancer'
-                                    ? 'Your dispute has had result and you are losers.'
-                                    : 'Your dispute has had result, but there is not winner.'}
+                                ? 'Your dispute has had result and you are losers.'
+                                : 'Your dispute has had result, but there is not winner.'}
                             <i
                                 className="fas fa-info-circle icon-popper-note"
                                 aria-owns={isPopperOpen ? 'mouse-over-drawn' : null}
@@ -1114,6 +1199,7 @@ class JobDetail extends Component {
             paymentDuration,
             sttRespondedDispute,
             jobCompleteDuration,
+            rejectPaymentDuration,
         } = this.state;
         const { web3 } = this.props;
         let jobTplRender;
@@ -1181,8 +1267,8 @@ class JobDetail extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                            ? jobData.estimatedTime / 24 + ' Days'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                        ? jobData.estimatedTime / 24 + ' Days'
+                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1198,10 +1284,13 @@ class JobDetail extends Component {
                                                     <Countdown reload name="Voting Duration" expiredTime={freelancerDispute.commitDuration} />
                                                 ))}
                                             {paymentDuration !== 0 &&
-                                                (!jobData.status.reject &&
-                                                    (!jobData.status.disputing && (
-                                                        <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
-                                                    )))}
+                                                (!jobData.status.reject && !jobData.status.disputing && (
+                                                    <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
+                                                ))}
+
+                                            {jobData.status.reject && rejectPaymentDuration && (
+                                                <Countdown reload name="Reject duration" expiredTime={rejectPaymentDuration} />
+                                            )}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -1279,8 +1368,8 @@ class JobDetail extends Component {
                                                                 {freelancer.timeDone <= 24
                                                                     ? freelancer.timeDone + ' H'
                                                                     : Number.isInteger(freelancer.timeDone / 24)
-                                                                        ? freelancer.timeDone / 24 + ' Days'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                    ? freelancer.timeDone / 24 + ' Days'
+                                                                    : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                             </Grid>
                                                             <Grid item xs={2} className="action">
                                                                 {this.bidActions(freelancer)}

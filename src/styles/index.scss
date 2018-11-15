@@ -470,7 +470,7 @@ a {
                 font-weight: bold;
             }
             &.description {
-                font-size: 15px;
+                font-size: 14px;
             }
             &.value {
                 justify-content: center;
@@ -486,6 +486,19 @@ a {
         }
         &:last-child {
             border-bottom: none;
+        }
+    }
+}
+.withraw-token {
+    min-height: 400px;
+    .withraw-form {
+        width: 500px;
+        .withraw-form-title {
+            padding: 20px 0;
+            font-size: 20px;
+        }
+        input {
+            width: 100%;
         }
     }
 }

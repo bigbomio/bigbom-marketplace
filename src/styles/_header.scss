@@ -187,16 +187,26 @@
                         }
                     }
                     .logout {
+                        width: 100%;
                         span {
-                            padding: 5px 20px;
+                            padding: 5px 10px;
                             display: inline-block;
                             background: #f9f9f9;
                             border: 1px solid #ccc;
                             border-radius: 3px;
                             font-size: 14px;
                             cursor: pointer;
+                            font-size: 12px;
+                            font-weight: bold;
                             line-height: 16px;
                             color: #444;
+                            &.withraw {
+                                color: rgb(42, 100, 148);
+                                border-color: rgb(117, 149, 175);
+                            }
+                            &.right {
+                                float: right;
+                            }
                         }
                     }
                 }

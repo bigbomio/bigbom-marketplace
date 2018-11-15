@@ -48,7 +48,7 @@ class Header extends PureComponent {
             return null;
         }
         Utils.setCookie('view', nextProps.view, 30);
-        return { selectedIndex: nextProps.view };
+        return { selectedIndex: nextProps.view, web3: nextProps.web3 };
     }
 
     getBBO = () => {
@@ -126,6 +126,11 @@ class Header extends PureComponent {
         LocalStorage.removeItem('userInfo');
         LocalStorage.removeItem('userToken');
         saveAccountInfo(accountInfo);
+    };
+
+    withraw = () => {
+        const { history } = this.props;
+        history.push('/withraw');
     };
 
     render() {
@@ -227,7 +232,12 @@ class Header extends PureComponent {
                                                             })}
                                                         </li>
                                                         <li className="logout">
-                                                            <span onClick={this.logout}>Logout</span>
+                                                            <span onClick={this.withraw} className="withraw">
+                                                                Withdraw voting rights
+                                                            </span>
+                                                            <span onClick={this.logout} className="right">
+                                                                Logout
+                                                            </span>
                                                         </li>
                                                     </ul>
                                                 </div>

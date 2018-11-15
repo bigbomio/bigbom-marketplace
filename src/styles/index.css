@@ -788,16 +788,25 @@ body {
                   cursor: pointer; }
                   #header header .nav li .user-info .user-info-item.addresses .address-item .set-default:hover {
                     background: #0ca1f9; }
-          #header header .nav li .user-info .logout span {
-            padding: 5px 20px;
-            display: inline-block;
-            background: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 14px;
-            cursor: pointer;
-            line-height: 16px;
-            color: #444; }
+          #header header .nav li .user-info .logout {
+            width: 100%; }
+            #header header .nav li .user-info .logout span {
+              padding: 5px 10px;
+              display: inline-block;
+              background: #f9f9f9;
+              border: 1px solid #ccc;
+              border-radius: 3px;
+              font-size: 14px;
+              cursor: pointer;
+              font-size: 12px;
+              font-weight: bold;
+              line-height: 16px;
+              color: #444; }
+              #header header .nav li .user-info .logout span.withraw {
+                color: #2a6494;
+                border-color: #7595af; }
+              #header header .nav li .user-info .logout span.right {
+                float: right; }
     #header header .top-login {
       margin-left: 20px; }
 
@@ -1811,7 +1820,7 @@ a {
       .bb-parameters .row div.name {
         font-weight: bold; }
       .bb-parameters .row div.description {
-        font-size: 15px; }
+        font-size: 14px; }
       .bb-parameters .row div.value {
         justify-content: center;
         font-size: 14px; }
@@ -1823,3 +1832,13 @@ a {
           box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
     .bb-parameters .row:last-child {
       border-bottom: none; }
+
+.withraw-token {
+  min-height: 400px; }
+  .withraw-token .withraw-form {
+    width: 500px; }
+    .withraw-token .withraw-form .withraw-form-title {
+      padding: 20px 0;
+      font-size: 20px; }
+    .withraw-token .withraw-form input {
+      width: 100%; }
