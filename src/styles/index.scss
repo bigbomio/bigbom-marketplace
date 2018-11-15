@@ -454,7 +454,7 @@ a {
     }
     .header {
         div {
-            padding: 20px;
+            padding: 20px 10px;
             font-weight: bold;
             color: #0b82c7;
         }
@@ -473,8 +473,9 @@ a {
                 font-size: 14px;
             }
             &.value {
-                justify-content: center;
-                font-size: 14px;
+                //justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
                 span {
                     padding: 2px 5px;
                     display: inline-block;
@@ -482,6 +483,9 @@ a {
                     border-radius: 4px;
                     box-shadow: $thinShadow;
                 }
+            }
+            &.real-params {
+                font-size: 14px;
             }
         }
         &:last-child {

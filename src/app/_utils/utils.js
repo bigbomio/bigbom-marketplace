@@ -346,6 +346,11 @@ class Utils {
         const url = new URL(window.location.href);
         return url.searchParams.get(param);
     }
+
+    secondsToHours(seconds) {
+        const hours = Number(seconds) / 60 / 60;
+        return hours;
+    }
 }
 
 export default new Utils();

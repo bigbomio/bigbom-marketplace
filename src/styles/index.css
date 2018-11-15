@@ -803,8 +803,12 @@ body {
               line-height: 16px;
               color: #444; }
               #header header .nav li .user-info .logout span.withraw {
-                color: #2a6494;
-                border-color: #7595af; }
+                background: #3a74a3;
+                color: #fff;
+                border-color: #3a74a3; }
+                #header header .nav li .user-info .logout span.withraw:hover {
+                  background: #4f88b8;
+                  border-color: #4f88b8; }
               #header header .nav li .user-info .logout span.right {
                 float: right; }
     #header header .top-login {
@@ -1808,7 +1812,7 @@ a {
   .bb-parameters .header {
     border-bottom: 1px solid #ddd; }
     .bb-parameters .header div {
-      padding: 20px;
+      padding: 20px 10px;
       font-weight: bold;
       color: #0b82c7; }
   .bb-parameters .row {
@@ -1822,14 +1826,16 @@ a {
       .bb-parameters .row div.description {
         font-size: 14px; }
       .bb-parameters .row div.value {
-        justify-content: center;
-        font-size: 14px; }
+        font-size: 12px;
+        font-weight: bold; }
         .bb-parameters .row div.value span {
           padding: 2px 5px;
           display: inline-block;
           background: #f9f9f9;
           border-radius: 4px;
           box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+      .bb-parameters .row div.real-params {
+        font-size: 14px; }
     .bb-parameters .row:last-child {
       border-bottom: none; }
 

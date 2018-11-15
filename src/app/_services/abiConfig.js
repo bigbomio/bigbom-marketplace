@@ -12,34 +12,68 @@ import BBDispute from '../_services/abi/BBDispute.json';
 import BBVoting from '../_services/abi/BBVoting.json';
 import BBParams from '../_services/abi/BBParams.json';
 
+const env = process.env.REACT_APP_ENV;
+
 const ropstenAbi = {
-    BBFreelancerJob: {
-        address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
-        abi: BBFreelancerJob.abi,
+    dev: {
+        BBFreelancerJob: {
+            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            abi: BBFreelancerJob.abi,
+        },
+        BBFreelancerBid: {
+            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            abi: BBFreelancerBid.abi,
+        },
+        BBFreelancerPayment: {
+            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            abi: BBFreelancerPayment.abi,
+        },
+        BigbomTokenExtended: {
+            address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+            abi: BigbomTokenExtended.abi,
+        },
+        BBDispute: {
+            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            abi: BBDispute.abi,
+        },
+        BBVoting: {
+            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            abi: BBVoting.abi,
+        },
+        BBParams: {
+            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            abi: BBParams.abi,
+        },
     },
-    BBFreelancerBid: {
-        address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
-        abi: BBFreelancerBid.abi,
-    },
-    BBFreelancerPayment: {
-        address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
-        abi: BBFreelancerPayment.abi,
-    },
-    BigbomTokenExtended: {
-        address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
-        abi: BigbomTokenExtended.abi,
-    },
-    BBDispute: {
-        address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
-        abi: BBDispute.abi,
-    },
-    BBVoting: {
-        address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
-        abi: BBVoting.abi,
-    },
-    BBParams: {
-        address: '0x2866cef47dce5db897678695d08f0633102f164a',
-        abi: BBParams.abi,
+    production: {
+        BBFreelancerJob: {
+            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            abi: BBFreelancerJob.abi,
+        },
+        BBFreelancerBid: {
+            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            abi: BBFreelancerBid.abi,
+        },
+        BBFreelancerPayment: {
+            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            abi: BBFreelancerPayment.abi,
+        },
+        BigbomTokenExtended: {
+            address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+            abi: BigbomTokenExtended.abi,
+        },
+        BBDispute: {
+            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            abi: BBDispute.abi,
+        },
+        BBVoting: {
+            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            abi: BBVoting.abi,
+        },
+        BBParams: {
+            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            abi: BBParams.abi,
+        },
     },
 };
 
@@ -79,7 +113,7 @@ let fromBlock = 4369092; // ropsten
 
 class abiConfigs {
     getContract(type) {
-        return ropstenAbi[type];
+        return ropstenAbi[env][type];
     }
 
     getIpfs() {
@@ -430,27 +464,17 @@ class abiConfigs {
 
     async getVotingParams(web3, callback) {
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBParams');
-        ctInstance.instance.getVotingParams(
-            {
-                from: web3.eth.defaultAccount,
-            },
-            (err, re) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    const votingParams = {
-                        minVotes: re[0].toString(),
-                        maxVotes: re[1].toString(),
-                        stakeDeposit: re[2].toString(),
-                        evidenceDuration: re[3].toString(),
-                        commitDuration: re[4].toString(),
-                        revealDuration: re[5].toString(),
-                        bboRewards: re[6].toString(),
-                    };
-                    callback(votingParams);
-                }
-            }
-        );
+        const [, params] = await Utils.callMethod(ctInstance.instance.getVotingParams)();
+        const votingParams = {
+            minVotes: params[0].toString(),
+            maxVotes: params[1].toString(),
+            stakeDeposit: params[2].toString(),
+            evidenceDuration: params[3].toString(),
+            commitDuration: params[4].toString(),
+            revealDuration: params[5].toString(),
+            bboRewards: params[6].toString(),
+        };
+        callback(votingParams);
     }
 
     async getDisputeFinalized(web3, jobHash, callback) {
