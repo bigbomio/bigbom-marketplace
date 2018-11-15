@@ -92,7 +92,7 @@ class YourJobs extends Component {
         const { web3 } = this.props;
         const event = eventLog.data;
         if (!eventLog.data) {
-            this.setState({ stt: { err: true, text: 'You have no any job!' }, isLoading: false });
+            this.setState({ stt: { err: true, text: 'You don\'t have any jobs!' }, isLoading: false });
             return;
         }
         const jobHash = Utils.toAscii(event.args.jobHash);
@@ -312,7 +312,7 @@ class YourJobs extends Component {
             } else {
                 return (
                     <Grid container className="no-data">
-                        You have no any job!
+                        You don't have any jobs !
                     </Grid>
                 );
             }

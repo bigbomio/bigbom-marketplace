@@ -91,7 +91,7 @@ class Home extends Component {
         return (
             <Container id="intro" className="home-intro sidebar" pose={isLogout ? 'open' : 'closed'}>
                 <Square className="col-6">
-                    <h1>Hire expert freelancers for any job</h1>
+                    <h1>Find a freelancer or find a job</h1>
                     <div className="buttons">
                         <ButtonBase className="btn btn-medium btn-white left" onClick={() => this.HomeAction('postJobAction')}>
                             Find a Freelancer

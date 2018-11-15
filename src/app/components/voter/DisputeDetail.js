@@ -369,7 +369,7 @@ class DisputeDetail extends Component {
             actStt: {
                 title: '',
                 err: false,
-                text: 'Your vote has send! Please waiting for confirm from your network.',
+                text: 'Transaction broadcasted! Please waiting for confirmation from network.',
                 link: (
                     <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
                         HERE
