@@ -201,8 +201,13 @@
                             line-height: 16px;
                             color: #444;
                             &.withraw {
-                                color: rgb(42, 100, 148);
-                                border-color: rgb(117, 149, 175);
+                                background: rgb(58, 116, 163);
+                                color: #fff;
+                                border-color: rgb(58, 116, 163);
+                                &:hover {
+                                    background: rgb(79, 136, 184);
+                                    border-color: rgb(79, 136, 184);
+                                }
                             }
                             &.right {
                                 float: right;
