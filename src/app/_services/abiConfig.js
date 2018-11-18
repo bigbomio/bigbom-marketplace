@@ -45,7 +45,7 @@ const ropstenAbi = {
             abi: BBParams.abi,
         },
     },
-    aut: {
+    uat: {
         BBFreelancerJob: {
             address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
             abi: BBFreelancerJob.abi,
