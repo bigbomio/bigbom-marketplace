@@ -45,6 +45,36 @@ const ropstenAbi = {
             abi: BBParams.abi,
         },
     },
+    uat: {
+        BBFreelancerJob: {
+            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            abi: BBFreelancerJob.abi,
+        },
+        BBFreelancerBid: {
+            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            abi: BBFreelancerBid.abi,
+        },
+        BBFreelancerPayment: {
+            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            abi: BBFreelancerPayment.abi,
+        },
+        BigbomTokenExtended: {
+            address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+            abi: BigbomTokenExtended.abi,
+        },
+        BBDispute: {
+            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            abi: BBDispute.abi,
+        },
+        BBVoting: {
+            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            abi: BBVoting.abi,
+        },
+        BBParams: {
+            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            abi: BBParams.abi,
+        },
+    },
     production: {
         BBFreelancerJob: {
             address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
