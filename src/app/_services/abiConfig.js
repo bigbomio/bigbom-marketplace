@@ -4,105 +4,118 @@ import services from '../_services/services';
 
 //import web3v1 from './web3'; // web3 v1
 
-import BBFreelancerJob from '../_services/abi/BBFreelancerJob.json';
-import BBFreelancerBid from '../_services/abi/BBFreelancerBid.json';
-import BBFreelancerPayment from '../_services/abi/BBFreelancerPayment.json';
-import BigbomTokenExtended from '../_services/abi/BigbomTokenExtended.json'; // bbo
-import BBDispute from '../_services/abi/BBDispute.json';
-import BBVoting from '../_services/abi/BBVoting.json';
-import BBParams from '../_services/abi/BBParams.json';
+import BBFreelancerJob_dev from '../_services/abi_dev/BBFreelancerJob.json';
+import BBFreelancerBid_dev from '../_services/abi_dev/BBFreelancerBid.json';
+import BBFreelancerPayment_dev from '../_services/abi_dev/BBFreelancerPayment.json';
+import BigbomTokenExtended_dev from '../_services/abi_dev/BigbomTokenExtended.json'; // bbo
+import BBVotingHelper_dev from '../_services/abi_dev/BBVotingHelper.json';
+import BBDispute_dev from '../_services/abi_dev/BBDispute.json';
+import BBVoting_dev from '../_services/abi_dev/BBVoting.json';
+import BBParams_dev from '../_services/abi_dev/BBParams.json';
+
+import BBFreelancerJob_prod from '../_services/abi_production/BBFreelancerJob.json';
+import BBFreelancerBid_prod from '../_services/abi_production/BBFreelancerBid.json';
+import BBFreelancerPayment_prod from '../_services/abi_production/BBFreelancerPayment.json';
+import BigbomTokenExtended_prod from '../_services/abi_production/BigbomTokenExtended.json'; // bbo
+import BBDispute_prod from '../_services/abi_production/BBDispute.json';
+import BBVoting_prod from '../_services/abi_production/BBVoting.json';
+import BBParams_prod from '../_services/abi_production/BBParams.json';
 
 const env = process.env.REACT_APP_ENV;
 
 const ropstenAbi = {
     dev: {
         BBFreelancerJob: {
-            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
-            abi: BBFreelancerJob.abi,
+            address: '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1',
+            abi: BBFreelancerJob_dev,
         },
         BBFreelancerBid: {
-            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
-            abi: BBFreelancerBid.abi,
+            address: '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4',
+            abi: BBFreelancerBid_dev,
         },
         BBFreelancerPayment: {
-            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
-            abi: BBFreelancerPayment.abi,
+            address: '0x253f112b946a72a008343d5bccd14e04288ca45c',
+            abi: BBFreelancerPayment_dev,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
-            abi: BigbomTokenExtended.abi,
+            abi: BigbomTokenExtended_dev,
+        },
+        BBVotingHelper: {
+            address: '0x771911025b4eafb6395042b7dca728b275e5d8c0',
+            abi: BBVotingHelper_dev,
         },
         BBDispute: {
-            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
-            abi: BBDispute.abi,
+            address: '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e',
+            abi: BBDispute_dev,
         },
         BBVoting: {
-            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
-            abi: BBVoting.abi,
+            address: '0xc7252214d78b15f37b94ae73027419a9f275c36f',
+            abi: BBVoting_dev,
         },
         BBParams: {
-            address: '0x2866cef47dce5db897678695d08f0633102f164a',
-            abi: BBParams.abi,
+            address: '0xc0647055b50dce8751908bfbd7f1d219ed592d6f',
+            abi: BBParams_dev,
         },
     },
     uat: {
         BBFreelancerJob: {
             address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
-            abi: BBFreelancerJob.abi,
+            abi: BBFreelancerJob_prod,
         },
         BBFreelancerBid: {
             address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
-            abi: BBFreelancerBid.abi,
+            abi: BBFreelancerBid_prod,
         },
         BBFreelancerPayment: {
             address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
-            abi: BBFreelancerPayment.abi,
+            abi: BBFreelancerPayment_prod,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
-            abi: BigbomTokenExtended.abi,
+            abi: BigbomTokenExtended_prod,
         },
         BBDispute: {
             address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
-            abi: BBDispute.abi,
+            abi: BBDispute_prod,
         },
         BBVoting: {
             address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
-            abi: BBVoting.abi,
+            abi: BBVoting_prod,
         },
         BBParams: {
             address: '0x2866cef47dce5db897678695d08f0633102f164a',
-            abi: BBParams.abi,
+            abi: BBParams_prod,
         },
     },
     production: {
         BBFreelancerJob: {
             address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
-            abi: BBFreelancerJob.abi,
+            abi: BBFreelancerJob_prod,
         },
         BBFreelancerBid: {
             address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
-            abi: BBFreelancerBid.abi,
+            abi: BBFreelancerBid_prod,
         },
         BBFreelancerPayment: {
             address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
-            abi: BBFreelancerPayment.abi,
+            abi: BBFreelancerPayment_prod,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
-            abi: BigbomTokenExtended.abi,
+            abi: BigbomTokenExtended_prod,
         },
         BBDispute: {
             address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
-            abi: BBDispute.abi,
+            abi: BBDispute_prod,
         },
         BBVoting: {
             address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
-            abi: BBVoting.abi,
+            abi: BBVoting_prod,
         },
         BBParams: {
             address: '0x2866cef47dce5db897678695d08f0633102f164a',
-            abi: BBParams.abi,
+            abi: BBParams_prod,
         },
     },
 };

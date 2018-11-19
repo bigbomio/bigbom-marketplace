@@ -17,7 +17,7 @@ const envConfig = {
     },
     production: {
         returnUrl: 'https://marketplace.bigbom.com/',
-        apiUrl: 'https://api.bigbom.net',
+        apiUrl: 'https://uat-api.bigbom.net',
     },
 };
 

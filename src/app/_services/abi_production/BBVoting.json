@@ -1,0 +1,404 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "bbo",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "bbs",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "BBOAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setBBO",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "bboReward",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "anyToken",
+        "type": "address"
+      }
+    ],
+    "name": "emergencyERC20Drain",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "storageAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setStorage",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "VotingRightsGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "VotingRightsWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "jobHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "VoteCommitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "jobHash",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "VoteRevealed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "previousOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipRenounced",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "isAgaintsPoll",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "rewardAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setBBOReward",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "requestVotingRights",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawVotingRights",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "checkBalance",
+    "outputs": [
+      {
+        "name": "tokens",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobHash",
+        "type": "bytes"
+      },
+      {
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "tokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "commitVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobHash",
+        "type": "bytes"
+      },
+      {
+        "name": "choice",
+        "type": "address"
+      },
+      {
+        "name": "salt",
+        "type": "uint256"
+      }
+    ],
+    "name": "checkHash",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobHash",
+        "type": "bytes"
+      },
+      {
+        "name": "choice",
+        "type": "address"
+      },
+      {
+        "name": "salt",
+        "type": "uint256"
+      }
+    ],
+    "name": "revealVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "claimReward",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "calcReward",
+    "outputs": [
+      {
+        "name": "numReward",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
