@@ -59,9 +59,9 @@ class DisputeDetail extends Component {
 
     getDispute = async () => {
         const { web3, match } = this.props;
-        const jobHash = match.params.disputeId;
+        const jobID = match.params.disputeId;
         this.setState({ isLoading: true });
-        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobHash);
+        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobID);
         this.checkGetRewardRight();
     };
 
@@ -576,10 +576,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -612,8 +612,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>

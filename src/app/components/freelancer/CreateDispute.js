@@ -40,10 +40,10 @@ class CreateDispute extends Component {
     }
 
     createDispute = async proofHash => {
-        const { web3, jobHash, setSttDisputeCreated } = this.props;
+        const { web3, jobID, setSttDisputeCreated } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.startPoll)(jobHash, proofHash, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.startPoll)(jobID, proofHash, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -72,12 +72,12 @@ class CreateDispute extends Component {
             },
         });
         setSttDisputeCreated(true);
-        LocalStorage.setItemJson('disputeCreated-' + defaultAccount + '-' + jobHash, { done: true });
+        LocalStorage.setItemJson('disputeCreated-' + defaultAccount + '-' + jobID, { done: true });
     };
 
     createProofHash = async () => {
         const { proof, imgs } = this.state;
-        const { jobHash, votingParams, accountInfo, web3 } = this.props;
+        const { jobHash, jobID, votingParams, accountInfo, web3 } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await abiConfig.getAllowance(web3, 'BBDispute');
 
@@ -117,6 +117,7 @@ class CreateDispute extends Component {
         });
 
         const proofData = {
+            jobID,
             jobHash,
             proof,
             imgs,
@@ -266,6 +267,7 @@ CreateDispute.propTypes = {
     closeAct: PropTypes.func.isRequired,
     checkedDispute: PropTypes.bool.isRequired,
     jobHash: PropTypes.string.isRequired,
+    jobID: PropTypes.string.isRequired,
     web3: PropTypes.any.isRequired,
     accountInfo: PropTypes.any.isRequired,
     votingParams: PropTypes.object.isRequired,

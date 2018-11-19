@@ -12,7 +12,7 @@ import Select from 'react-select';
 
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
-import abiConfig from '../../_services/abiConfig';
+import abiConfig, { fromBlock } from '../../_services/abiConfig';
 import services from '../../_services/services';
 
 import { setReload } from '../common/actions';
@@ -67,11 +67,6 @@ class YourBids extends Component {
         abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
     };
 
-    getJobFiltered = jobData => {
-        const { web3 } = this.props;
-        abiConfig.filterJobByBider(web3, jobData, this.JobCreatedInit);
-    };
-
     getBiddingStt(stts) {
         if (stts[3]) {
             return false;
@@ -91,19 +86,20 @@ class YourBids extends Component {
             return;
         }
         const jobHash = Utils.toAscii(event.args.jobHash);
+        const jobID = event.args.jobID.toString();
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const contractInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const filter = { owner: web3.eth.defaultAccount };
-        contractInstance.instance.BidCreated(
+        const bidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
+        const filter = { jobID, owner: web3.eth.defaultAccount };
+        bidInstance.instance.BidCreated(
             filter,
             {
-                fromBlock: 4369092, // should use recent number
+                fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (error, eventResult) => {
-                if (Utils.toAscii(eventResult.args.jobHash) === jobHash) {
-                    const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+                if (eventResult) {
+                    const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
                         from: jobInstance.defaultAccount,
                         gasPrice: +jobInstance.gasPrice.toString(10),
                     });
@@ -127,6 +123,7 @@ class YourBids extends Component {
                             };
                         }
                         const jobTpl = {
+                            jobID,
                             id: event.args.jobHash,
                             owner: event.args.owner,
                             ownerInfo: employer,
@@ -180,7 +177,7 @@ class YourBids extends Component {
             web3,
             'BBFreelancerBid',
             'BidCreated',
-            { indexJobHash: web3.sha3(job.jobHash), owner: web3.eth.defaultAccount },
+            { jobID: job.jobID, owner: web3.eth.defaultAccount },
             job,
             this.BidAcceptedInit
         );
@@ -188,14 +185,7 @@ class YourBids extends Component {
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(
-            web3,
-            'BBFreelancerBid',
-            'BidAccepted',
-            { indexJobHash: web3.sha3(jobData.data.jobHash) },
-            jobData.data,
-            this.JobsInit
-        );
+        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobID: jobData.data.jobID }, jobData.data, this.JobsInit);
     };
 
     JobsInit = jobData => {
@@ -303,7 +293,7 @@ class YourBids extends Component {
                         return !job.err ? (
                             <Grid key={job.id} container className="list-body-row">
                                 <Grid item xs={7} className="title">
-                                    <Link to={`jobs/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+                                    <Link to={`jobs/${job.jobID}`}>{job.title}</Link>
                                 </Grid>
                                 <Grid item xs={2}>
                                     {job.budget && (

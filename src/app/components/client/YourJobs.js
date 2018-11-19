@@ -95,10 +95,11 @@ class YourJobs extends Component {
             this.setState({ stt: { err: true, text: 'You don\'t have any jobs!' }, isLoading: false });
             return;
         }
+        const jobID = event.args.jobID.toString();
         const jobHash = Utils.toAscii(event.args.jobHash);
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -109,6 +110,7 @@ class YourJobs extends Component {
             // get detail from ipfs
             const URl = abiConfig.getIpfsLink() + jobHash;
             const jobTpl = {
+                jobID,
                 id: event.args.jobHash,
                 owner: event.args.owner,
                 jobHash: jobHash,
@@ -269,7 +271,7 @@ class YourJobs extends Component {
                             return !job.err ? (
                                 <Grid key={job.id} container className="list-body-row">
                                     <Grid item xs={7} className="title">
-                                        <Link to={`${match.url}/${Utils.toAscii(job.id)}`}>{job.title}</Link>
+                                        <Link to={`${match.url}/${job.jobID}`}>{job.title}</Link>
                                     </Grid>
                                     <Grid item xs={2}>
                                         {job.budget && (
@@ -312,7 +314,7 @@ class YourJobs extends Component {
             } else {
                 return (
                     <Grid container className="no-data">
-                        You don't have any jobs !
+                        {'You don\'t have any jobs !'}
                     </Grid>
                 );
             }
