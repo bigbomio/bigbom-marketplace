@@ -74,12 +74,12 @@ class DisputeBrowser extends Component {
         abiConfig.getAllAvailablePoll(web3, this.disputeCreatedInit);
     };
 
-    disputeCreatedInit = async eventLog => {
-        //console.log('disputeCreatedInit success: ', eventLog);
-        const event = eventLog.data;
-        const URl = abiConfig.getIpfsLink() + event.jobHash;
+    disputeCreatedInit = async disputeDataResult => {
+        //console.log('disputeCreatedInit success: ', disputeData);
+        const disputeData = disputeDataResult.data;
+        const URl = abiConfig.getIpfsLink() + disputeData.jobHash;
         let dispute = {
-            ...event,
+            ...disputeData,
             jobDispute: {},
         };
         fetch(URl)

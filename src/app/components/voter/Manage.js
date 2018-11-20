@@ -74,13 +74,13 @@ class Manage extends Component {
         abiConfig.getMyVoting(web3, this.disputeCreatedInit);
     };
 
-    setFinalStt = async jobHash => {
+    setFinalStt = async jobID => {
         const { web3 } = this.props;
         const { finalDisputes } = this.state;
         let finalDispute = {};
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const eventInstance = ctInstance.instance.DisputeFinalized(
-            { indexJobHash: web3.sha3(jobHash) },
+            { jobID },
             {
                 fromBlock: 4369092, // should use recent number
                 toBlock: 'latest',
@@ -89,11 +89,11 @@ class Manage extends Component {
                 if (err) {
                     console.log(err);
                 } else {
-                    finalDispute.jobHash = jobHash;
-                    if (jobHash === Utils.toAscii(re.args.jobHash)) {
-                        finalDisputes[jobHash] = true;
+                    finalDispute.jobID = jobID;
+                    if (jobID === Utils.toAscii(re.args.jobID)) {
+                        finalDisputes[jobID] = true;
                     } else {
-                        finalDisputes[jobHash] = false;
+                        finalDisputes[jobID] = false;
                     }
 
                     if (this.mounted) {

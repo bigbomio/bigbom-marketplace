@@ -81,7 +81,7 @@ class JobDetailBid extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                this.jobDataInit(false);
+                this.jobDataInit();
             }
             this.checkMetamaskID = setInterval(() => {
                 this.checkAccount();
@@ -216,33 +216,45 @@ class JobDetailBid extends Component {
         const { jobID } = this.state;
         let voteResult = {};
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobID, {
-            from: ctInstance.defaultAccount,
-            gasPrice: +ctInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            this.setState({
-                dialogLoading: false,
-                dialogContent: null,
-                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
-            });
-            console.log(err);
-            return;
-        }
-        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
-        voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
-        };
-        if (this.mounted) {
-            if (voteResult.clientVotes > voteResult.freelancerVotes) {
-                this.setState({ voteResult, voteWinner: 'client' });
-            } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
-                this.setState({ voteResult, voteWinner: 'freelancer' });
-            } else {
-                this.setState({ voteResult, voteWinner: 'drawn' });
+        const helperInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+        ctInstance.instance.DisputeStarted(
+            { jobID },
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            },
+            async (err, pollStartedResult) => {
+                if (!err) {
+                    const [err, result] = await Utils.callMethod(helperInstance.instance.getPollStage)(pollStartedResult.args.pollID.toString(), {
+                        from: helperInstance.defaultAccount,
+                        gasPrice: +helperInstance.gasPrice.toString(10),
+                    });
+                    if (err) {
+                        this.setState({
+                            dialogLoading: false,
+                            dialogContent: null,
+                            actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+                        });
+                        console.log(err);
+                        return;
+                    }
+                    // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+                    voteResult = {
+                        clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
+                        freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+                    };
+                    if (this.mounted) {
+                        if (voteResult.clientVotes > voteResult.freelancerVotes) {
+                            this.setState({ voteResult, voteWinner: 'client' });
+                        } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
+                            this.setState({ voteResult, voteWinner: 'freelancer' });
+                        } else {
+                            this.setState({ voteResult, voteWinner: 'drawn' });
+                        }
+                    }
+                }
             }
-        }
+        );
     };
 
     setActionBtnStt = async (action, done) => {
@@ -270,7 +282,7 @@ class JobDetailBid extends Component {
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
-                this.jobDataInit(true);
+                this.jobDataInit();
                 setReload(false);
             }
         }
@@ -295,7 +307,7 @@ class JobDetailBid extends Component {
         const { jobID } = this.state;
         this.setState({ dialogLoading: true });
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizePoll)(jobID, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizeDispute)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -331,7 +343,7 @@ class JobDetailBid extends Component {
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.updatePoll)(jobID, giveUp, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.updateDispute)(jobID, giveUp, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -662,7 +674,7 @@ class JobDetailBid extends Component {
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
         const jobID = match.params.jobId;
-        abiConfig.getEventsPollStarted(web3, jobID, this.setDisputeStt);
+        abiConfig.getEventsPollStarted(web3, jobID, 1, this.setDisputeStt);
         abiConfig.getDisputeFinalized(web3, jobID, this.setFinalizedStt);
         abiConfig.getDisputeFinalizedDisputeContract(web3, jobID, this.setFinalizedWithoutAgainstStt);
         // check client dispute response status
@@ -691,34 +703,11 @@ class JobDetailBid extends Component {
         this.getActionBtnStt('cancelBidDone');
     };
 
-    jobDataInit = async refresh => {
-        const { match, web3, jobs, setActionBtnDisabled, history } = this.props;
+    jobDataInit = async () => {
+        const { match, web3, setActionBtnDisabled, history } = this.props;
         const jobID = match.params.jobId;
         this.sttAtionInit();
         this.setState({ isLoading: true, jobID });
-        if (!refresh) {
-            if (jobs.length > 0) {
-                const jobData = jobs.filter(job => job.jobID === jobID);
-                if (jobData[0].status.started) {
-                    abiConfig.jobStarted(web3, jobData[0], this.jobStarted);
-                }
-                if (jobData[0].status.reject) {
-                    abiConfig.getReasonPaymentRejected(web3, jobData[0].jobID, this.getReasonPaymentRejected);
-                }
-                if (jobData[0].status.disputing) {
-                    this.disputeSttInit();
-                }
-                abiConfig.checkPayment(web3, jobID, this.setPaymentStt);
-                if (web3.eth.defaultAccount === jobData[0].owner) {
-                    history.push('/client/your-jobs/' + jobID);
-                }
-                if (this.mounted) {
-                    this.setState({ jobData: jobData[0], isLoading: false, isOwner: web3.eth.defaultAccount === jobData[0].owner });
-                }
-                return;
-            }
-        }
-
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
@@ -729,6 +718,9 @@ class JobDetailBid extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
+            if (web3.eth.defaultAccount === jobStatusLog[0]) {
+                history.push('/client/your-jobs/' + jobID);
+            }
             if (jobStatus.disputing) {
                 this.disputeSttInit();
                 setActionBtnDisabled(true);
@@ -1320,7 +1312,7 @@ class JobDetailBid extends Component {
                                         <i className="fas fa-angle-left" />
                                         Back
                                     </ButtonBase>
-                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
+                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
                                         <i className="fas fa-sync-alt" />
                                         Refresh
                                     </ButtonBase>

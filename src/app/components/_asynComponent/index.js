@@ -10,14 +10,25 @@ const asynComponent = importComponent => {
             };
         }
 
-        async componentDidMount() {
-            const { default: component } = await importComponent();
-            if (component) {
-                this.setState({
-                    component: component,
-                });
-            }
+        componentDidMount() {
+            this.mounted = true;
+            this.commponentInit();
         }
+
+        componentWillUnmount() {
+            this.mounted = false;
+        }
+
+        commponentInit = async () => {
+            const { default: component } = await importComponent();
+            if (this.mounted) {
+                if (component) {
+                    this.setState({
+                        component: component,
+                    });
+                }
+            }
+        };
 
         render() {
             const { component: C } = this.state;
@@ -25,7 +36,7 @@ const asynComponent = importComponent => {
             return C ? (
                 <C {...this.props} />
             ) : (
-                <div id="home" className="container-wrp">
+                <div className="container-wrp">
                     <div className="container wrapper">
                         <div className="loading">
                             <CircularProgress size={50} color="secondary" />

@@ -63,7 +63,7 @@ class ClientPostJob extends Component {
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.createJob)(
+        const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
             estimatedTime,
@@ -82,15 +82,15 @@ class ClientPostJob extends Component {
             console.log(err);
         }
         // check event logs
-        if (jobLog) {
-            abiConfig.transactionWatch(web3, jobLog, () => this.createJobDone(jobHash));
+        if (jobTx) {
+            abiConfig.transactionWatch(web3, jobTx, () => this.createJobDone(jobHash));
             // this.setState({
             //     isLoading: false,
             //     status: {
             //         title: 'Create New Job: ',
             //         err: false,
             //         text: 'Your job has been created! Please waiting for confirm from your network.',
-            //         link: abiConfig.getTXlink() + jobLog,
+            //         link: abiConfig.getTXlink() + jobTx,
             //     },
             // });
             // setTimeout(() => {
@@ -101,11 +101,14 @@ class ClientPostJob extends Component {
         }
     }
 
-    createJobDone = jobHash => {
+    createJobDone = async jobHash => {
+        //const { web3 } = this.props;
+        //const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
+        //const [, jobID] = await Utils.callMethod(ctInstance.instance.getJobID)(jobHash);
         const content = function() {
             return (
                 <span>
-                    Your job has been created! View your job <a href={`/client/your-jobs/${jobHash}`}>HERE</a>
+                    Your job has been created! View your job <a href="/client/your-jobs/">HERE</a>
                 </span>
             );
         };

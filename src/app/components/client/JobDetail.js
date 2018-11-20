@@ -69,7 +69,7 @@ class JobDetail extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                this.jobDataInit(false);
+                this.jobDataInit();
                 abiConfig.getVotingParams(web3, saveVotingParams);
             }
             this.checkMetamaskID = setInterval(() => {
@@ -95,6 +95,7 @@ class JobDetail extends Component {
         const { jobID } = this.state;
         const { web3 } = this.props;
         let clientResponseDuration = event.evidenceEndDate * 1000;
+        this.setState({ pollID: event.pollID });
         const URl = abiConfig.getIpfsLink() + event.proofHash;
         if (clientResponseDuration <= Date.now()) {
             clientResponseDuration = 0;
@@ -185,10 +186,10 @@ class JobDetail extends Component {
 
     getDisputeResult = async () => {
         const { web3 } = this.props;
-        const { jobID } = this.state;
+        const { pollID } = this.state;
         let voteResult = {};
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobID, {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.getPollResult)(pollID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -202,6 +203,7 @@ class JobDetail extends Component {
             return;
         }
         // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
+        console.log(result);
         voteResult = {
             clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
             freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
@@ -233,7 +235,7 @@ class JobDetail extends Component {
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
-                this.jobDataInit(true);
+                this.jobDataInit();
                 setReload(false);
             }
         }
@@ -258,7 +260,7 @@ class JobDetail extends Component {
         const { jobID } = this.state;
         this.setState({ dialogLoading: true });
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizePoll)(jobID, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizeDispute)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -295,7 +297,7 @@ class JobDetail extends Component {
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.updatePoll)(jobID, giveUp, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.updateDispute)(jobID, giveUp, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -333,14 +335,14 @@ class JobDetail extends Component {
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
         const jobID = match.params.jobId;
-        abiConfig.getEventsPollStarted(web3, jobID, this.setDisputeStt);
-
+        abiConfig.getEventsPollStarted(web3, jobID, 1, this.setDisputeStt);
         // check client dispute response status
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
+        console.log(jobID);
         if (!error) {
             if (re) {
                 abiConfig.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
@@ -361,31 +363,11 @@ class JobDetail extends Component {
         this.getActionBtnStt('claimDepositDone');
     };
 
-    jobDataInit = async refresh => {
-        const { match, web3, jobs, history } = this.props;
+    jobDataInit = async () => {
+        const { match, web3, history } = this.props;
         const jobID = match.params.jobId;
         this.setState({ isLoading: true, jobID });
         this.sttAtionInit();
-        if (!refresh) {
-            if (jobs.length > 0) {
-                const jobData = jobs.filter(job => job.jobID === jobID);
-                abiConfig.checkPayment(web3, jobID, this.setPaymentStt);
-                if (jobData[0].status.disputing) {
-                    this.disputeSttInit();
-                }
-                if (jobData[0].status.reject) {
-                    abiConfig.getReasonPaymentRejected(web3, jobID, this.rejectDurationInit);
-                }
-                if (jobData[0].owner !== web3.eth.defaultAccount) {
-                    history.push('/freelancer/jobs/' + jobID);
-                    return;
-                }
-                if (this.mounted) {
-                    this.setState({ jobData: jobData[0], isLoading: false });
-                    return;
-                }
-            }
-        }
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
@@ -1229,7 +1211,7 @@ class JobDetail extends Component {
                                         <i className="fas fa-angle-left" />
                                         View all Job
                                     </ButtonBase>
-                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
+                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
                                         <i className="fas fa-sync-alt" />
                                         Refresh
                                     </ButtonBase>

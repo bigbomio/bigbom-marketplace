@@ -43,7 +43,7 @@ class ResponseDispute extends Component {
         const { web3, jobID, setSttRespondedDispute } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.againstPoll)(jobID, proofHash, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.againstDispute)(jobID, proofHash, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });

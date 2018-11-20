@@ -576,10 +576,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                        ? 'Commit Vote'
-                                        : !isFinal
-                                        ? 'Reveal Vote'
-                                        : 'Dispute finalized'}
+                                            ? 'Commit Vote'
+                                            : !isFinal
+                                                ? 'Reveal Vote'
+                                                : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -612,8 +612,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                            ? 'commit-duration orange'
-                                            : 'commit-duration blue'
+                                                ? 'commit-duration orange'
+                                                : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
