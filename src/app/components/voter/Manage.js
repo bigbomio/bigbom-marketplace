@@ -15,7 +15,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
-import abiConfig from '../../_services/abiConfig';
+import abiConfig, { fromBlock } from '../../_services/abiConfig';
 
 import DisputesRendeManage from './DisputesRendeManage';
 import { saveDisputes } from './actions';
@@ -77,20 +77,18 @@ class Manage extends Component {
     setFinalStt = async jobID => {
         const { web3 } = this.props;
         const { finalDisputes } = this.state;
-        let finalDispute = {};
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const eventInstance = ctInstance.instance.DisputeFinalized(
-            { jobID },
+            {},
             {
-                fromBlock: 4369092, // should use recent number
+                fromBlock, // should use recent number
                 toBlock: 'latest',
             },
             async (err, re) => {
                 if (err) {
                     console.log(err);
                 } else {
-                    finalDispute.jobID = jobID;
-                    if (jobID === Utils.toAscii(re.args.jobID)) {
+                    if (re.args.jobID.toString() === jobID) {
                         finalDisputes[jobID] = true;
                     } else {
                         finalDisputes[jobID] = false;
@@ -117,12 +115,12 @@ class Manage extends Component {
         }
     };
 
-    disputeCreatedInit = async eventLog => {
+    disputeCreatedInit = async disputeDataResult => {
         ///console.log('disputeCreatedInit success: ', eventLog);
-        const event = eventLog.data;
-        const URl = abiConfig.getIpfsLink() + event.jobHash;
+        const disputeData = disputeDataResult.data;
+        const URl = abiConfig.getIpfsLink() + disputeData.jobHash;
         let dispute = {
-            ...event,
+            ...disputeData,
             jobDispute: {},
         };
         fetch(URl)
@@ -138,7 +136,7 @@ class Manage extends Component {
                     dispute.jobDispute.estimatedTime = result.estimatedTime;
                     dispute.jobDispute.expiredTime = result.expiredTime;
                     dispute.jobDispute.created = result.created;
-                    this.setFinalStt(event.jobHash);
+                    this.setFinalStt(disputeData.jobID);
                     this.disputeListInit(dispute);
                 },
                 error => {
@@ -153,7 +151,7 @@ class Manage extends Component {
         const { selectedIndex } = this.state;
         const { saveDisputes } = this.props;
         disputes.push(jobDispute);
-        const uqDisputes = Utils.removeDuplicates(disputes, 'id'); // fix duplicate data
+        const uqDisputes = Utils.removeDuplicates(disputes, 'pollID'); // fix duplicate data
         this.handleMenuItemSort(null, selectedIndex, disputes);
         if (this.mounted) {
             saveDisputes(uqDisputes);

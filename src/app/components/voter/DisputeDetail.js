@@ -59,10 +59,16 @@ class DisputeDetail extends Component {
 
     getDispute = async () => {
         const { web3, match } = this.props;
-        const jobID = match.params.disputeId;
-        this.setState({ isLoading: true });
+        const pollID = match.params.disputeId;
+        this.setState({ isLoading: true, pollID });
+        abiConfig.getJobIDByPollID(web3, pollID, this.getDisputeByJobID);
+    };
+
+    getDisputeByJobID = jobID => {
+        const { web3 } = this.props;
+        this.setState({ jobID });
         abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobID);
-        this.checkGetRewardRight();
+        this.checkGetRewardRight(jobID);
     };
 
     getReasonPaymentRejected = async paymentRejectReason => {
@@ -91,11 +97,11 @@ class DisputeDetail extends Component {
         }
     };
 
-    getDisputeResult = async jobHash => {
+    getDisputeResult = async pollID => {
         const { web3 } = this.props;
         let voteResult = {};
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.getPollResult)(pollID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -108,11 +114,11 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
-        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
-
+        // Returns (options[opt1, opt2, default], votes[clientVotes, freelancerVotes, default])
+        console.log(result);
         voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+            clientVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][0].toString())),
         };
         setTimeout(() => {
             this.setState({
@@ -132,12 +138,12 @@ class DisputeDetail extends Component {
     };
 
     getReward = async () => {
-        const { match, web3 } = this.props;
-        const jobHash = match.params.disputeId;
+        const { web3 } = this.props;
+        const { jobID } = this.state;
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobHash, {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -192,11 +198,10 @@ class DisputeDetail extends Component {
         this.setActionBtnDisabled(false);
     };
 
-    checkGetRewardRight = async () => {
-        const { match, web3 } = this.props;
-        const jobHash = match.params.disputeId;
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.calcReward)(jobHash, {
+    checkGetRewardRight = async jobID => {
+        const { web3 } = this.props;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.calcReward)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -216,9 +221,8 @@ class DisputeDetail extends Component {
     };
 
     viewVoteResult = () => {
-        const { match } = this.props;
-        const jobHash = match.params.disputeId;
-        this.getDisputeResult(jobHash);
+        const { pollID } = this.state;
+        this.getDisputeResult(pollID);
         this.setState({
             open: true,
             dialogLoading: true,
@@ -231,11 +235,10 @@ class DisputeDetail extends Component {
     };
 
     disputeDataInit = async disputeData => {
-        const { match, web3 } = this.props;
-        const jobHash = match.params.disputeId;
+        const { web3 } = this.props;
         this.sttAtionInit();
-        abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
-        const URl = abiConfig.getIpfsLink() + jobHash;
+        abiConfig.getReasonPaymentRejected(web3, disputeData.data.jobID, this.getReasonPaymentRejected);
+        const URl = abiConfig.getIpfsLink() + disputeData.data.jobHash;
         const dispute = {
             ...disputeData.data,
             jobDispute: {},
@@ -246,7 +249,7 @@ class DisputeDetail extends Component {
             }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
-            abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
+            abiConfig.getDisputeFinalized(web3, disputeData.data.jobID, this.setFinalizedStt);
         }
         fetch(URl)
             .then(res => res.json())
@@ -350,7 +353,7 @@ class DisputeDetail extends Component {
         const secretHashString = this.keccak256(vote.choice, Number(vote.secretPhrase));
         const token = Utils.BBOToWei(web3, vote.token);
         setVoteInputDisable(true);
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHashString, token, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.pollID, secretHashString, token, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -388,7 +391,7 @@ class DisputeDetail extends Component {
             dialogLoading: true,
         });
         const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
-            disputeData.jobHash,
+            disputeData.pollID,
             revealVote.addressChoice,
             Number(revealVote.secretHash),
             {
@@ -406,7 +409,7 @@ class DisputeDetail extends Component {
             return;
         }
         this.setActionBtnStt('revealDone', true);
-        abiConfig.transactionWatch(web3, tx, () => this.getDisputeResult(disputeData.jobHash));
+        abiConfig.transactionWatch(web3, tx, () => this.getDisputeResult(disputeData.pollID));
     };
 
     // check allowance
@@ -576,10 +579,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -612,8 +615,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>

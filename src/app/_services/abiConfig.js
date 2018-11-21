@@ -202,7 +202,7 @@ class abiConfigs {
     async approve(web3, ctName, value) {
         const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
         const ctInstance = await this.contractInstanceGenerator(web3, ctName);
-        const [errApprove, approve] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
+        const [errApprove, tx] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -210,7 +210,7 @@ class abiConfigs {
             console.log('errApprove: ', errApprove);
             return false;
         }
-        console.log('approve: ', approve);
+        console.log('approve: ', tx);
         return true;
     }
 
@@ -410,11 +410,13 @@ class abiConfigs {
                 if (err) {
                     console.log(err);
                 } else {
-                    const blockLog = await this.getBlock(web3, re.blockNumber);
-                    const result = {
-                        created: blockLog.timestamp,
-                    };
-                    callback(jobData, result);
+                    if (jobData.jobID === re.args.jobID.toString()) {
+                        const blockLog = await this.getBlock(web3, re.blockNumber);
+                        const result = {
+                            created: blockLog.timestamp,
+                        };
+                        callback(jobData, result);
+                    }
                 }
             }
         );
@@ -713,6 +715,7 @@ class abiConfigs {
                 jobID,
             };
         }
+
         ctInstance.instance.DisputeStarted(
             filter,
             {
@@ -756,13 +759,11 @@ class abiConfigs {
                                 } else {
                                     const blockLog = await this.getBlock(web3, re.blockNumber);
                                     results.data.jobID = re.args.jobID.toString();
-                                    results.data.pollID = pollID;
-                                    //results.data.id = re.args.jobHash;
+                                    results.data.pollID = re.args.pollID.toString();
                                     results.data.created = blockLog.timestamp;
                                     results.data.started = true;
-                                    //results.data.jobHash = Utils.toAscii(re.args.jobHash);
                                     results.data.client = re.args.creator;
-                                    this.getJobCreatedByJobID(web3, jobID, results, callback);
+                                    this.getJobCreatedByJobID(web3, pollStartedResult.args.jobID.toString(), results, callback);
                                 }
                             }
                         );
@@ -826,7 +827,7 @@ class abiConfigs {
                                 if (!votingResult) {
                                     console.log(err);
                                 } else {
-                                    console.log('votingResult', votingResult);
+                                    //console.log('votingResult', votingResult);
                                     ctInstance.instance.DisputeAgainsted(
                                         { jobID: pollStartedResult.args.jobID.toString() },
                                         {
@@ -838,21 +839,21 @@ class abiConfigs {
                                                 console.log(err);
                                             } else {
                                                 const blockLog = await this.getBlock(web3, re.blockNumber);
-                                                results.data.id = re.args.jobHash;
+                                                results.data.jobID = re.args.jobID.toString();
+                                                results.data.pollID = re.args.pollID.toString();
                                                 results.data.created = blockLog.timestamp;
                                                 results.data.started = true;
-                                                results.data.jobHash = Utils.toAscii(re.args.jobHash);
                                                 results.data.client = re.args.creator;
-                                                //results.data.clientProofHash = Utils.toAscii(re.args.proofHash);
                                                 results.data.isFinal = false;
                                                 results.data.rewardRight = false;
 
-                                                const [errRewardCheck, resultRewardCheck] = await Utils.callMethod(
-                                                    votingInstance.instance.calcReward
-                                                )(Utils.toAscii(re.args.jobHash), {
-                                                    from: votingInstance.defaultAccount,
-                                                    gasPrice: +votingInstance.gasPrice.toString(10),
-                                                });
+                                                const [errRewardCheck, resultRewardCheck] = await Utils.callMethod(ctInstance.instance.calcReward)(
+                                                    re.args.jobID.toString(),
+                                                    {
+                                                        from: ctInstance.defaultAccount,
+                                                        gasPrice: +ctInstance.gasPrice.toString(10),
+                                                    }
+                                                );
                                                 if (errRewardCheck) {
                                                     console.log(errRewardCheck);
                                                     return;
@@ -860,8 +861,7 @@ class abiConfigs {
                                                 if (Number(resultRewardCheck.toString()) > 0) {
                                                     results.data.rewardRight = true;
                                                 }
-
-                                                callback(results);
+                                                this.getJobCreatedByJobID(web3, pollStartedResult.args.jobID.toString(), results, callback);
                                             }
                                         }
                                     );
@@ -869,6 +869,22 @@ class abiConfigs {
                             }
                         );
                     }
+                }
+            }
+        );
+    }
+
+    async getJobIDByPollID(web3, pollID, callback) {
+        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
+        ctInstance.instance.DisputeStarted(
+            { pollID },
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            },
+            (disputeErr, dispute) => {
+                if (!disputeErr) {
+                    callback(dispute.args.jobID.toString());
                 }
             }
         );

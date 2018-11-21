@@ -46,7 +46,7 @@ class Voting extends Component {
                 choice: options.clientChoice.address,
                 secretPhrase,
                 voteNum,
-                jobHash: dispute.jobHash,
+                pollID: dispute.pollID,
             },
         ];
         if (choice === 'freelancer') {
@@ -55,7 +55,7 @@ class Voting extends Component {
                     choice: options.freelancerChoice.address,
                     secretPhrase,
                     voteNum,
-                    jobHash: dispute.jobHash,
+                    pollID: dispute.pollID,
                 },
             ];
         }
@@ -173,7 +173,7 @@ class Voting extends Component {
                     </Grid>
                     <Grid item xs={4}>
                         {!downloadDisable ? (
-                            <a href={linkDownload} download={dispute.jobHash + '.json'} target="_blank" rel="noopener noreferrer">
+                            <a href={linkDownload} download={dispute.pollID + '.json'} target="_blank" rel="noopener noreferrer">
                                 <ButtonBase className="btn btn-normal btn-blue">
                                     Download <i className="fas fa-arrow-down icon-right" />
                                 </ButtonBase>

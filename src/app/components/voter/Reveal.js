@@ -69,7 +69,7 @@ class Reveal extends Component {
     voteRender = async vote => {
         const { dispute, setActionBtnDisabled, saveRevealVote } = this.props;
         const { web3 } = this.props;
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
         let revealVote = {
             choice: '',
             voteNum: 0,
@@ -93,7 +93,7 @@ class Reveal extends Component {
         }
 
         const [errCheckHash, re] = await Utils.callMethod(ctInstance.instance.checkHash)(
-            vote.jobHash,
+            vote.pollID,
             revealVote.addressChoice,
             Number(revealVote.secretHash),
             {

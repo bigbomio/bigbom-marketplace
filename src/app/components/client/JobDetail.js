@@ -202,8 +202,6 @@ class JobDetail extends Component {
             console.log(err);
             return;
         }
-        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
-        console.log(result);
         voteResult = {
             clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
             freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
@@ -342,7 +340,6 @@ class JobDetail extends Component {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
-        console.log(jobID);
         if (!error) {
             if (re) {
                 abiConfig.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
@@ -456,10 +453,10 @@ class JobDetail extends Component {
 
     jobStarted = async (jobData, jobStarted) => {
         //console.log('jobStarted', jobData);
-        const bidAccepted = jobData.data.bid.filter(bid => bid.accepted);
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
         const jobCompleteDuration = (jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
         if (this.mounted) {
-            this.setState({ jobData: jobData.data, isLoading: false, jobCompleteDuration });
+            this.setState({ jobData: jobData, isLoading: false, jobCompleteDuration });
         }
     };
 
@@ -467,7 +464,7 @@ class JobDetail extends Component {
         //console.log('JobsInit', jobData);
         const { web3 } = this.props;
         if (jobData.data.status.started) {
-            abiConfig.jobStarted(web3, jobData, this.jobStarted);
+            abiConfig.jobStarted(web3, jobData.data, this.jobStarted);
         } else {
             if (this.mounted) {
                 this.setState({ jobData: jobData.data, isLoading: false });

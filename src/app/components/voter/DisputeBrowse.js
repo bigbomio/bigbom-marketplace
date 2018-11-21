@@ -109,7 +109,7 @@ class DisputeBrowser extends Component {
         const { selectedIndex } = this.state;
         const { saveDisputes } = this.props;
         disputes.push(jobDispute);
-        const uqDisputes = Utils.removeDuplicates(disputes, 'id'); // fix duplicate data
+        const uqDisputes = Utils.removeDuplicates(disputes, 'pollID'); // fix duplicate data
         this.handleMenuItemSort(null, selectedIndex, disputes);
         if (this.mounted) {
             saveDisputes(uqDisputes);

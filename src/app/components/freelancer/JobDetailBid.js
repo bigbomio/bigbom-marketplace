@@ -134,6 +134,7 @@ class JobDetailBid extends Component {
     setDisputeStt = async event => {
         const { jobID } = this.state;
         const { web3 } = this.props;
+        this.setState({ pollID: event.pollID });
         const clientResponseDuration = event.evidenceEndDate * 1000;
         if (event.revealEndDate <= Date.now()) {
             abiConfig.getDisputeFinalized(web3, jobID, this.setFinalizedStt);
@@ -213,48 +214,35 @@ class JobDetailBid extends Component {
 
     getDisputeResult = async () => {
         const { web3 } = this.props;
-        const { jobID } = this.state;
+        const { pollID } = this.state;
         let voteResult = {};
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const helperInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
-        ctInstance.instance.DisputeStarted(
-            { jobID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, pollStartedResult) => {
-                if (!err) {
-                    const [err, result] = await Utils.callMethod(helperInstance.instance.getPollStage)(pollStartedResult.args.pollID.toString(), {
-                        from: helperInstance.defaultAccount,
-                        gasPrice: +helperInstance.gasPrice.toString(10),
-                    });
-                    if (err) {
-                        this.setState({
-                            dialogLoading: false,
-                            dialogContent: null,
-                            actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
-                        });
-                        console.log(err);
-                        return;
-                    }
-                    // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
-                    voteResult = {
-                        clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
-                        freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
-                    };
-                    if (this.mounted) {
-                        if (voteResult.clientVotes > voteResult.freelancerVotes) {
-                            this.setState({ voteResult, voteWinner: 'client' });
-                        } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
-                            this.setState({ voteResult, voteWinner: 'freelancer' });
-                        } else {
-                            this.setState({ voteResult, voteWinner: 'drawn' });
-                        }
-                    }
-                }
+        const [err, result] = await Utils.callMethod(helperInstance.instance.getPollResult)(pollID, {
+            from: helperInstance.defaultAccount,
+            gasPrice: +helperInstance.gasPrice.toString(10),
+        });
+        if (err) {
+            this.setState({
+                dialogLoading: false,
+                dialogContent: null,
+                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+            });
+            console.log(err);
+            return;
+        }
+        voteResult = {
+            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+        };
+        if (this.mounted) {
+            if (voteResult.clientVotes > voteResult.freelancerVotes) {
+                this.setState({ voteResult, voteWinner: 'client' });
+            } else if (voteResult.clientVotes < voteResult.freelancerVotes) {
+                this.setState({ voteResult, voteWinner: 'freelancer' });
+            } else {
+                this.setState({ voteResult, voteWinner: 'drawn' });
             }
-        );
+        }
     };
 
     setActionBtnStt = async (action, done) => {
