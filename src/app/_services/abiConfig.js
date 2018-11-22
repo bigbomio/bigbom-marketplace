@@ -152,7 +152,8 @@ const ropstenAbi = {
 // };
 
 //let fromBlock = 3165089; // rinkeby
-export const fromBlock = 4369092; // ropsten
+export const fromBlock = 4439972; // ropsten
+
 
 class abiConfigs {
     getContract(type) {
