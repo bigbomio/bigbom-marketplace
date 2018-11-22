@@ -100,27 +100,26 @@ class DisputeDetail extends Component {
     getDisputeResult = async pollID => {
         const { web3 } = this.props;
         let voteResult = {};
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.getPollResult)(pollID, {
-            from: ctInstance.defaultAccount,
-            gasPrice: +ctInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            this.setState({
-                dialogLoading: false,
-                dialogContent: null,
-                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+        setTimeout(async () => {
+            const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+            const [err, result] = await Utils.callMethod(ctInstance.instance.getPollResult)(pollID, {
+                from: ctInstance.defaultAccount,
+                gasPrice: +ctInstance.gasPrice.toString(10),
             });
-            console.log(err);
-            return;
-        }
-        // Returns (options[opt1, opt2, default], votes[clientVotes, freelancerVotes, default])
-        console.log(result);
-        voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][0].toString())),
-        };
-        setTimeout(() => {
+            if (err) {
+                this.setState({
+                    dialogLoading: false,
+                    dialogContent: null,
+                    actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+                });
+                console.log(err);
+                return;
+            }
+            // Returns (options[default, opt1, opt2], votes[default,clientVotes, freelancerVotes])
+            voteResult = {
+                clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
+                freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+            };
             this.setState({
                 dialogLoading: false,
                 dialogContent: <VoteResult voteResult={voteResult} />,
@@ -130,7 +129,7 @@ class DisputeDetail extends Component {
                 },
                 actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
             });
-        }, 1000);
+        }, 1500);
     };
 
     setFinalizedStt = isFinal => {
@@ -392,7 +391,7 @@ class DisputeDetail extends Component {
         });
         const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
             disputeData.pollID,
-            revealVote.addressChoice,
+            revealVote.optionChoice,
             Number(revealVote.secretHash),
             {
                 from: ctInstance.defaultAccount,
@@ -471,11 +470,11 @@ class DisputeDetail extends Component {
         const { disputeData } = this.state;
         const options = {
             clientChoice: {
-                address: disputeData.client,
+                opt: 2,
                 name: 'Client',
             },
             freelancerChoice: {
-                address: disputeData.freelancer,
+                opt: 1,
                 name: 'Freelancer',
             },
         };
@@ -505,11 +504,10 @@ class DisputeDetail extends Component {
     };
 
     revealConfirm = () => {
-        const { disputeData } = this.state;
         this.setActionBtnDisabled(true);
         this.setState({
             open: true,
-            dialogContent: <Reveal dispute={disputeData} />,
+            dialogContent: <Reveal />,
             dialogData: {
                 actionText: 'Reveal Vote',
                 actions: this.submitReveal,
@@ -579,10 +577,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                        ? 'Commit Vote'
-                                        : !isFinal
-                                        ? 'Reveal Vote'
-                                        : 'Dispute finalized'}
+                                            ? 'Commit Vote'
+                                            : !isFinal
+                                                ? 'Reveal Vote'
+                                                : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -615,8 +613,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                            ? 'commit-duration orange'
-                                            : 'commit-duration blue'
+                                                ? 'commit-duration orange'
+                                                : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>

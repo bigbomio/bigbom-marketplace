@@ -67,7 +67,7 @@ class Reveal extends Component {
     };
 
     voteRender = async vote => {
-        const { dispute, setActionBtnDisabled, saveRevealVote } = this.props;
+        const { setActionBtnDisabled, saveRevealVote } = this.props;
         const { web3 } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
         let revealVote = {
@@ -76,17 +76,17 @@ class Reveal extends Component {
             secretHash: '',
         };
 
-        if (vote.choice === dispute.client) {
+        if (vote.choice === 2) {
             revealVote = {
                 choice: 'client',
-                addressChoice: dispute.client,
+                optionChoice: 2,
                 voteNum: vote.voteNum,
                 secretHash: vote.secretPhrase,
             };
         } else {
             revealVote = {
                 choice: 'freelancer',
-                addressChoice: dispute.freelancer,
+                optionChoice: 1,
                 voteNum: vote.voteNum,
                 secretHash: vote.secretPhrase,
             };
@@ -94,7 +94,7 @@ class Reveal extends Component {
 
         const [errCheckHash, re] = await Utils.callMethod(ctInstance.instance.checkHash)(
             vote.pollID,
-            revealVote.addressChoice,
+            revealVote.optionChoice,
             Number(revealVote.secretHash),
             {
                 from: ctInstance.defaultAccount,
@@ -186,7 +186,6 @@ class Reveal extends Component {
 
 Reveal.propTypes = {
     setActionBtnDisabled: PropTypes.func.isRequired,
-    dispute: PropTypes.object.isRequired,
     saveRevealVote: PropTypes.func.isRequired,
     viewResult: PropTypes.bool,
 };

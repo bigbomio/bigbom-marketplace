@@ -645,6 +645,7 @@ class abiConfigs {
     }
 
     async getEventsPollAgainsted(web3, jobID, callback) {
+        const helperInstance = await this.contractInstanceGenerator(web3, 'BBVotingHelper');
         const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
         ctInstance.instance.DisputeAgainsted(
             { jobID },
@@ -653,18 +654,21 @@ class abiConfigs {
                 toBlock: 'latest',
             },
             async (err, re) => {
-                console.log('getEventsPollAgainsted', re);
+                //console.log('getEventsPollAgainsted', re);
                 if (err) {
                     console.log(err);
                 } else {
+                    const pollID = re.args.pollID.toString();
+                    const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
+                    const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
                     const blockLog = await this.getBlock(web3, re.blockNumber);
                     const result = {
                         created: blockLog.timestamp,
                         responded: true,
                         jobID,
-                        //jobHash,
+                        pollID,
                         owner: re.args.creator,
-                        proofHash: Utils.toAscii(re.args.proofHash),
+                        proofHash: clientProofHash,
                     };
                     // get freelancer proofhash
                     ctInstance.instance.DisputeStarted(
@@ -674,11 +678,11 @@ class abiConfigs {
                             toBlock: 'latest',
                         },
                         (err, pollStartedResult) => {
-                            console.log(pollStartedResult);
+                            //console.log(pollStartedResult);
                             if (err) {
                                 console.log(err);
                             } else {
-                                result.freelancerProofHash = Utils.toAscii(pollStartedResult.args.proofHash);
+                                result.freelancerProofHash = freelancerProofHash;
                                 result.freelancer = pollStartedResult.args.creator;
                                 this.getTimeDurations(web3, result, callback);
                             }
@@ -818,7 +822,7 @@ class abiConfigs {
                             },
                         };
                         votingInstance.instance.VoteCommitted(
-                            { voter: web3.eth.defaultAccount, jobID: pollStartedResult.args.jobID.toString() },
+                            { voter: web3.eth.defaultAccount, pollID: pollStartedResult.args.pollID.toString() },
                             {
                                 fromBlock: fromBlock, // should use recent number
                                 toBlock: 'latest',

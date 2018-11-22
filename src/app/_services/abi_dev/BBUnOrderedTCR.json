@@ -2,6 +2,20 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "tcrHelper",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "bbo",
     "outputs": [
       {
@@ -17,20 +31,6 @@
     "constant": true,
     "inputs": [],
     "name": "bbs",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "payment",
     "outputs": [
       {
         "name": "",
@@ -153,82 +153,48 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "jobID",
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "itemHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "ItemApplied",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "itemHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "pollID",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "name": "winner",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeFinalized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "creator",
+        "name": "sender",
         "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "pollID",
-        "type": "uint256"
       }
     ],
-    "name": "DisputeStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeAgainsted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "whiteFlag",
-        "type": "bool"
-      }
-    ],
-    "name": "DisputeUpdated",
+    "name": "Challenge",
     "type": "event"
   },
   {
@@ -268,20 +234,6 @@
         "type": "address"
       }
     ],
-    "name": "setPayment",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "p",
-        "type": "address"
-      }
-    ],
     "name": "setVoting",
     "outputs": [],
     "payable": false,
@@ -303,14 +255,32 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "p",
+        "type": "address"
+      }
+    ],
+    "name": "setTCRHelper",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
       }
     ],
-    "name": "isAgaintsDispute",
+    "name": "isOwnerItem",
     "outputs": [
       {
         "name": "r",
@@ -325,65 +295,50 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "finalizeDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       },
       {
-        "name": "proofHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "startDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
+        "name": "itemHash",
+        "type": "bytes32"
       },
       {
-        "name": "againstProofHash",
-        "type": "bytes"
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "againstDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
+    "name": "depositToken",
+    "outputs": [
       {
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "name": "whiteFlag",
+        "name": "",
         "type": "bool"
       }
     ],
-    "name": "updateDispute",
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "apply",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -393,7 +348,110 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "initExit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "finalizeExit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_data",
+        "type": "bytes"
+      }
+    ],
+    "name": "challenge",
+    "outputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "updateStatus",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pollID",
         "type": "uint256"
       }
     ],
@@ -407,19 +465,107 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "name": "pollID",
         "type": "uint256"
       }
     ],
-    "name": "calcReward",
+    "name": "voterReward",
     "outputs": [
       {
         "name": "numReward",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
       },
       {
-        "name": "win",
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "canBeWhitelisted",
+    "outputs": [
+      {
+        "name": "",
         "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isWhitelisted",
+    "outputs": [
+      {
+        "name": "whitelisted",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "challengeCanBeResolved",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "name": "determineReward",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,

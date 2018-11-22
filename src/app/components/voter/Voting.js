@@ -43,7 +43,7 @@ class Voting extends Component {
         const { options, dispute } = this.props;
         let data = [
             {
-                choice: options.clientChoice.address,
+                choice: options.clientChoice.opt,
                 secretPhrase,
                 voteNum,
                 pollID: dispute.pollID,
@@ -52,7 +52,7 @@ class Voting extends Component {
         if (choice === 'freelancer') {
             data = [
                 {
-                    choice: options.freelancerChoice.address,
+                    choice: options.freelancerChoice.opt,
                     secretPhrase,
                     voteNum,
                     pollID: dispute.pollID,

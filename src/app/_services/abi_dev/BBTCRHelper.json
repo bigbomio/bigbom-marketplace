@@ -28,34 +28,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "payment",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "votingHelper",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -135,100 +107,30 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "voting",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "winner",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeFinalized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "creator",
+        "name": "owner",
         "type": "address"
       },
       {
         "indexed": true,
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       },
       {
         "indexed": true,
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeAgainsted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "creator",
+        "name": "tokenAddress",
         "type": "address"
       },
       {
         "indexed": false,
-        "name": "whiteFlag",
-        "type": "bool"
+        "name": "nameHash",
+        "type": "bytes"
       }
     ],
-    "name": "DisputeUpdated",
+    "name": "CreateListID",
     "type": "event"
   },
   {
@@ -264,11 +166,15 @@
     "constant": false,
     "inputs": [
       {
-        "name": "p",
+        "name": "nameHash",
+        "type": "bytes"
+      },
+      {
+        "name": "tokenAddress",
         "type": "address"
       }
     ],
-    "name": "setPayment",
+    "name": "createListID",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -278,25 +184,15 @@
     "constant": false,
     "inputs": [
       {
-        "name": "p",
-        "type": "address"
-      }
-    ],
-    "name": "setVoting",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
+        "name": "listID",
+        "type": "uint256"
+      },
       {
-        "name": "p",
+        "name": "tokenAddress",
         "type": "address"
       }
     ],
-    "name": "setVotingHelper",
+    "name": "updateToken",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -306,15 +202,15 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       }
     ],
-    "name": "isAgaintsDispute",
+    "name": "getToken",
     "outputs": [
       {
-        "name": "r",
-        "type": "bool"
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -325,79 +221,35 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "finalizeDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       },
       {
-        "name": "proofHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "startDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
+        "name": "applicationDuration",
         "type": "uint256"
       },
       {
-        "name": "againstProofHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "againstDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
+        "name": "commitDuration",
         "type": "uint256"
       },
       {
-        "name": "whiteFlag",
-        "type": "bool"
-      }
-    ],
-    "name": "updateDispute",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
+        "name": "revealDuration",
+        "type": "uint256"
+      },
       {
-        "name": "jobID",
+        "name": "minStake",
+        "type": "uint256"
+      },
+      {
+        "name": "initQuorum",
+        "type": "uint256"
+      },
+      {
+        "name": "exitDuration",
         "type": "uint256"
       }
     ],
-    "name": "claimReward",
+    "name": "setParams",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -407,19 +259,73 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       }
     ],
-    "name": "calcReward",
+    "name": "getListParams",
     "outputs": [
       {
-        "name": "numReward",
+        "name": "applicationDuration",
         "type": "uint256"
       },
       {
-        "name": "win",
-        "type": "bool"
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "minStake",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getStakedBalance",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getItemStage",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,

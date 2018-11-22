@@ -231,8 +231,8 @@ class JobDetailBid extends Component {
             return;
         }
         voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+            clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
         };
         if (this.mounted) {
             if (voteResult.clientVotes > voteResult.freelancerVotes) {
@@ -584,8 +584,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                        ? 'Your dispute has had result and you are losers.'
-                                        : 'Your dispute has had result, but there is not winner.'}
+                                            ? 'Your dispute has had result and you are losers.'
+                                            : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -667,7 +667,7 @@ class JobDetailBid extends Component {
         abiConfig.getDisputeFinalizedDisputeContract(web3, jobID, this.setFinalizedWithoutAgainstStt);
         // check client dispute response status
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobID, {
+        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsDispute)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -1384,8 +1384,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                        ? jobData.estimatedTime / 24 + ' Days'
-                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                            ? jobData.estimatedTime / 24 + ' Days'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1482,8 +1482,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                        ? freelancer.timeDone / 24 + ' Days'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                            ? freelancer.timeDone / 24 + ' Days'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );
