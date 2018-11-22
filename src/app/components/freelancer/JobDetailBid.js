@@ -16,6 +16,8 @@ import Popper from '../common/Popper';
 import DialogPopup from '../common/dialog';
 import VoteResult from '../voter/VoteResult';
 import CreateDispute from '../freelancer/CreateDispute';
+import Rating from '../common/Rating';
+
 import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from './actions';
 import services from '../../_services/services';
@@ -69,6 +71,7 @@ class JobDetailBid extends Component {
             paymentRejectReason: '',
             paymentDuration: 0,
             disputeCreated: false,
+            avgRating: 4.6,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -584,8 +587,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                            ? 'Your dispute has had result and you are losers.'
-                                            : 'Your dispute has had result, but there is not winner.'}
+                                        ? 'Your dispute has had result and you are losers.'
+                                        : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -1275,6 +1278,7 @@ class JobDetailBid extends Component {
             paymentDuration,
             disputeCreated,
             jobCompleteDuration,
+            avgRating,
         } = this.state;
         //console.log(jobData);
 
@@ -1384,8 +1388,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                            ? jobData.estimatedTime / 24 + ' Days'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                        ? jobData.estimatedTime / 24 + ' Days'
+                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1428,11 +1432,14 @@ class JobDetailBid extends Component {
                                         {skillShow(jobData)}
                                     </Grid>
                                     <Grid item xs={12} className="ct job-owner">
-                                        <span>Employer:</span>
-                                        <span className="avatar">
-                                            <i className="fas fa-user-circle" />
-                                        </span>
-                                        {jobData.ownerInfo && <span className="bold">{jobData.ownerInfo.fullName}</span>}
+                                        <div className="profile">
+                                            <span>Employer:</span>
+                                            <span className="avatar">
+                                                <i className="fas fa-user-circle" />
+                                            </span>
+                                            {jobData.ownerInfo && <span className="bold">{jobData.ownerInfo.fullName}</span>}
+                                        </div>
+                                        <Rating avgRating={avgRating} />
                                     </Grid>
                                 </Grid>
                                 {jobData.status.bidding && (
@@ -1482,8 +1489,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                            ? freelancer.timeDone / 24 + ' Days'
-                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                        ? freelancer.timeDone / 24 + ' Days'
+                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );
