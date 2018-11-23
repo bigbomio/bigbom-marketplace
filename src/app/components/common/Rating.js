@@ -4,15 +4,186 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import ButtonBase from '@material-ui/core/ButtonBase';
+import Grid from '@material-ui/core/Grid';
+import Fade from '@material-ui/core/Fade';
 import StarRatingComponent from 'react-star-rating-component';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+
+import Loading from './Loading';
+
+import abiConfig from '../../_services/abiConfig';
+import Utils from '../../_utils/utils';
+
+const ipfs = abiConfig.getIpfs();
 
 class Rating extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            rating: 0,
+            submitDisabled: true,
+            open: false,
+            commentPrepare: null,
+            rightOfRating: true,
+        };
     }
 
-    render() {
+    componentDidMount() {
+        this.ratingInit();
+    }
+
+    onStarClick = nextValue => {
+        if (nextValue < 1) {
+            this.setState({ submitDisabled: true });
+        } else {
+            this.setState({ submitDisabled: false, rating: nextValue });
+        }
+    };
+
+    ratingInit = async () => {
+        const { web3, jobID, ratingOwner, ratingFor } = this.props;
+        const allow = await abiConfig.checkAllowRating(web3, ratingOwner, ratingFor, jobID);
+        const ratingData = await abiConfig.getRatingData(web3, ratingFor);
+        console.log(ratingData);
+        this.setState({ rightOfRating: allow });
+    };
+
+    ratingSubmit = async () => {
+        const { jobID, ratingOwner, ratingFor } = this.props;
+        const { commentPrepare, rating } = this.state;
+        const ratingData = {
+            jobID,
+            comment: commentPrepare,
+            rating,
+            ratingOwner,
+            ratingFor,
+        };
+        this.setState({ isLoading: true });
+        if (commentPrepare) {
+            ipfs.addJSON(ratingData, (err, commentHash) => {
+                if (err) {
+                    return console.log(err);
+                }
+                this.ratingUpdate(commentHash, ratingData);
+            });
+        } else {
+            this.ratingUpdate('', ratingData); // sent review without comment hash
+        }
+    };
+
+    ratingUpdate = async (commentHash, ratingData) => {
+        const { web3 } = this.props;
+        const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBRating');
+        const [err, jobTx] = await Utils.callMethod(jobInstance.instance.rate)(
+            ratingData.ratingFor,
+            ratingData.jobID,
+            ratingData.rating,
+            commentHash,
+            {
+                from: jobInstance.defaultAccount,
+                gasPrice: +jobInstance.gasPrice.toString(10),
+            }
+        );
+        if (err) {
+            this.setState({
+                isLoading: false,
+                done: true,
+                status: { err: true, text: 'Sorry, something went wrong! Can not review now. :(' },
+            });
+            console.log(err);
+        }
+        // check event logs
+        if (jobTx) {
+            abiConfig.transactionWatch(web3, jobTx, () => this.reviewDone());
+        }
+    };
+
+    reviewDone = () => {
+        this.setState({ done: true, isLoading: false, status: { err: false, text: 'Done! Thank you for your review! :)' } });
+    };
+
+    inputOnChange = e => {
+        const val = e.target.value;
+        if (val.length > 1000) {
+            this.setState({ submitDisabled: true, commentErr: 'Please enter your comment most 1000 words' });
+            return;
+        }
+        this.setState({ commentPrepare: val, commentErr: null, submitDisabled: false });
+    };
+
+    rateOn = () => {
+        this.setState({ open: true, checked: false });
+    };
+
+    rateOff = () => {
+        this.setState({ open: false });
+        this.setState({ commentPrepare: null, commentErr: null, submitDisabled: true, rating: 0, done: false, status: { err: false, text: null } });
+    };
+
+    ratingDialogContent = () => {
+        const { commentErr, submitDisabled, rating, done, status } = this.state;
+        if (!done) {
+            return (
+                <div className="rating-form">
+                    <Grid item xs={12} className="mkp-form-row">
+                        <span className="mkp-form-row-description">Tell others what you think about this employer, your recommend and why?</span>
+                        <textarea id="comment" rows="4" className={commentErr ? 'input-err' : ''} onChange={e => this.inputOnChange(e)} />
+                        {commentErr && <span className="err">{commentErr}</span>}
+                    </Grid>
+                    <Grid item xs={12} className="mkp-form-row rate-select">
+                        <StarRatingComponent
+                            name="rate"
+                            renderStarIcon={(index, value) => {
+                                return (
+                                    <span>
+                                        <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
+                                    </span>
+                                );
+                            }}
+                            starCount={5}
+                            value={rating}
+                            onStarClick={this.onStarClick}
+                        />
+                    </Grid>
+                    <div className="rating-submit">
+                        <ButtonBase className="btn btn-normal btn-blue" disabled={submitDisabled} onClick={this.ratingSubmit}>
+                            Submit
+                        </ButtonBase>
+                        <ButtonBase className="btn btn-normal btn-default cancel btn-right" onClick={this.rateOff}>
+                            Cancel
+                        </ButtonBase>
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className="rating-form">
+                    <Grid item xs={12} className="mkp-form-row">
+                        {status.err ? (
+                            <span className="error">
+                                <i className="fas fa-exclamation-triangle" />
+                                {status.text}
+                            </span>
+                        ) : (
+                            <span className="success">
+                                <i className="fas fa-check-circle" />
+                                {status.text}
+                            </span>
+                        )}
+                    </Grid>
+                    <div className="rating-submit">
+                        <ButtonBase className="btn btn-normal btn-default cancel btn-right" onClick={this.rateOff}>
+                            Close
+                        </ButtonBase>
+                    </div>
+                </div>
+            );
+        }
+    };
+
+    ratingDetail = () => {
         const { avgRating } = this.props;
         const charts = [
             { index: 5, width: '100%', amount: 1405 },
@@ -21,9 +192,86 @@ class Rating extends Component {
             { index: 2, width: '20%', amount: 1405 },
             { index: 1, width: '10%', amount: 1405 },
         ];
+        const { rightOfRating } = this.state;
         return (
-            <div className="rating">
-                <span className="avg">{avgRating}</span>
+            <div id="rating" className="rating-detail hidden" onMouseLeave={this.viewRatingOff}>
+                <div className="fix-top" />
+                <div className="left">
+                    <div className="avg-detail">{avgRating}</div>
+                    <div className="star">
+                        <StarRatingComponent
+                            name="detail"
+                            starColor="#ffb400"
+                            emptyStarColor="#ffb400"
+                            value={avgRating}
+                            editing={false}
+                            renderStarIcon={(index, value) => {
+                                return (
+                                    <span>
+                                        <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
+                                    </span>
+                                );
+                            }}
+                            renderStarIconHalf={() => {
+                                return (
+                                    <span>
+                                        <span style={{ position: 'absolute' }}>
+                                            <i className="far fa-star" />
+                                        </span>
+                                        <span>
+                                            <i className="fas fa-star-half" />
+                                        </span>
+                                    </span>
+                                );
+                            }}
+                        />
+                    </div>
+                    <div className="total">302 Reviews</div>
+                    <ButtonBase onClick={this.rateOn} disabled={!rightOfRating}>
+                        Write a Review
+                    </ButtonBase>
+                </div>
+                <div className="right">
+                    {charts.map(chart => {
+                        return (
+                            <div className="row" title={chart.amount + ' reviews'} key={chart.index}>
+                                <div className="numRate">{chart.index}</div>
+                                <div className="chart">
+                                    <div className={'widthRate widthRate-' + chart.index} style={{ width: chart.width }} />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
+    viewRatingOn = () => {
+        const rating = document.getElementById('rating');
+        rating.classList.add('visible');
+        rating.classList.remove('hidden');
+        this.setState({ checked: true });
+    };
+
+    viewRatingOff = () => {
+        const rating = document.getElementById('rating');
+        rating.classList.add('hidden');
+        rating.classList.remove('visible');
+        this.setState({ checked: false });
+    };
+
+    render() {
+        const { avgRating } = this.props;
+        const { checked, open, isLoading } = this.state;
+        return (
+            <div className="rating" onMouseEnter={this.viewRatingOn} onMouseLeave={this.viewRatingOff}>
+                <div className="fix-hover" />
+                <Dialog open={open} onClose={this.handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+                    <DialogTitle id="alert-dialog-title">Your review</DialogTitle>
+                    <DialogContent className="rating-dialog-ct">{isLoading ? <Loading /> : this.ratingDialogContent()}</DialogContent>
+                </Dialog>
+                <span className="avg">{avgRating > 0 ? avgRating : 'N/A'}</span>
                 <StarRatingComponent
                     name="main"
                     starColor="#ffb400"
@@ -51,58 +299,7 @@ class Rating extends Component {
                     }}
                 />
                 <span className="total">302 Reviews</span>
-
-                <div className="rating-detail">
-                    <span className="close">
-                        <i className="fas fa-window-close" />
-                    </span>
-                    <div className="left">
-                        <div className="avg-detail">{avgRating}</div>
-                        <div className="star">
-                            <StarRatingComponent
-                                name="detail"
-                                starColor="#ffb400"
-                                emptyStarColor="#ffb400"
-                                value={avgRating}
-                                editing={false}
-                                renderStarIcon={(index, value) => {
-                                    return (
-                                        <span>
-                                            <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
-                                        </span>
-                                    );
-                                }}
-                                renderStarIconHalf={() => {
-                                    return (
-                                        <span>
-                                            <span style={{ position: 'absolute' }}>
-                                                <i className="far fa-star" />
-                                            </span>
-                                            <span>
-                                                <i className="fas fa-star-half" />
-                                            </span>
-                                        </span>
-                                    );
-                                }}
-                            />
-                        </div>
-                        <div className="total">302 Reviews</div>
-                        <ButtonBase>Write a Review</ButtonBase>
-                    </div>
-                    <div className="right">
-                        {charts.map(chart => {
-                            return (
-                                <div className="row" title={chart.amount + ' reviews'} key={chart.index}>
-                                    <div className="numRate">{chart.index}</div>
-                                    <div className="chart">
-                                        <div className={'widthRate widthRate-' + chart.index} style={{ width: chart.width }} />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="rating-submit" />
-                </div>
+                <Fade in={checked}>{this.ratingDetail()}</Fade>
             </div>
         );
     }
@@ -110,12 +307,18 @@ class Rating extends Component {
 
 Rating.propTypes = {
     avgRating: PropTypes.number.isRequired,
+    web3: PropTypes.object.isRequired,
+    jobID: PropTypes.any.isRequired,
+    ratingOwner: PropTypes.string.isRequired,
+    ratingFor: PropTypes.string.isRequired,
 };
 
 Rating.defaultProps = {};
 
-const mapStateToProps = () => {
-    return {};
+const mapStateToProps = state => {
+    return {
+        web3: state.homeReducer.web3,
+    };
 };
 
 const mapDispatchToProps = {};

@@ -337,6 +337,11 @@ body {
 #bigbomMarketplace .btn-blue {
   background-color: #0ca1f9;
   color: #fff; }
+  #bigbomMarketplace .btn-blue:disabled {
+    background-color: #8eaec9;
+    color: #d9e6f1; }
+    #bigbomMarketplace .btn-blue:disabled i {
+      color: #d9e6f1; }
   #bigbomMarketplace .btn-blue i {
     color: #fff; }
 
@@ -629,6 +634,12 @@ body {
 
 #bigbomMarketplace .float-left {
   float: left; }
+
+#bigbomMarketplace .visible {
+  visibility: visible; }
+
+#bigbomMarketplace .hidden {
+  visibility: hidden; }
 
 @media (max-width: 1023px) {
   .root {
@@ -1136,7 +1147,13 @@ body {
     float: left;
     align-items: center;
     margin-left: 30px;
-    position: relative; }
+    position: relative;
+    cursor: pointer; }
+    #freelancer .job-owner .rating .fix-hover {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      z-index: 100; }
     #freelancer .job-owner .rating .avg {
       font-size: 16px;
       padding: 1px 8px;
@@ -1157,17 +1174,11 @@ body {
       padding: 20px;
       box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
       border-radius: 5px; }
-      #freelancer .job-owner .rating .rating-detail .close {
-        float: right;
-        font-size: 20px;
-        margin-top: -12px;
-        margin-right: -10px;
-        margin-bottom: 10px;
-        color: #777;
-        cursor: pointer;
-        line-height: 0; }
-        #freelancer .job-owner .rating .rating-detail .close:hover {
-          color: #803535; }
+      #freelancer .job-owner .rating .rating-detail .fix-top {
+        height: 40px;
+        float: left;
+        width: 100%;
+        margin-top: -35px; }
       #freelancer .job-owner .rating .rating-detail .left {
         float: left;
         width: 30%; }
@@ -1182,7 +1193,7 @@ body {
           width: 100%;
           padding-left: 0; }
         #freelancer .job-owner .rating .rating-detail .left button {
-          padding: 10px 15px;
+          padding: 5px 10px;
           font-size: 16px;
           background: #fff;
           width: 100%;
@@ -1191,6 +1202,10 @@ body {
           margin-top: 10px;
           color: #0ca1f9;
           box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+          #freelancer .job-owner .rating .rating-detail .left button:disabled {
+            color: #879cac;
+            border-color: #d3e0e9;
+            box-shadow: none; }
       #freelancer .job-owner .rating .rating-detail .right {
         float: left;
         width: 70%; }
@@ -1214,6 +1229,42 @@ body {
                 background: #ff6600; }
               #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-1 {
                 background: #ff5100; }
+
+.rating-form {
+  float: left;
+  width: 100%; }
+  .rating-form .mkp-form-row {
+    flex-grow: 1;
+    padding-bottom: 20px !important; }
+    .rating-form .mkp-form-row .mkp-form-row-description {
+      line-height: 20px; }
+    .rating-form .mkp-form-row .error,
+    .rating-form .mkp-form-row .success {
+      font-size: 20px;
+      font-weight: bold;
+      padding: 30px;
+      width: 100%;
+      display: inline-block; }
+      .rating-form .mkp-form-row .error i,
+      .rating-form .mkp-form-row .success i {
+        margin-right: 10px; }
+    .rating-form .mkp-form-row .error i {
+      color: red; }
+    .rating-form .mkp-form-row .success i {
+      color: #40bd56; }
+  .rating-form .rating-submit .btn.cancel {
+    background: #fff; }
+  .rating-form .rate-select {
+    font-size: 25px; }
+    .rating-form .rate-select .dv-star-rating-star {
+      margin-right: 10px; }
+    .rating-form .rate-select .dv-star-rating-empty-star {
+      color: #666 !important; }
+
+.rating-dialog-ct {
+  min-width: 600px; }
+  .rating-dialog-ct .loading {
+    min-height: 200px; }
 
 #bigbomMarketplace #voter .dispute-list .job-item {
   background: #f9f9f9;

@@ -12,6 +12,7 @@ import BBVotingHelper_dev from '../_services/abi_dev/BBVotingHelper.json';
 import BBDispute_dev from '../_services/abi_dev/BBDispute.json';
 import BBVoting_dev from '../_services/abi_dev/BBVoting.json';
 import BBParams_dev from '../_services/abi_dev/BBParams.json';
+import BBRating_dev from '../_services/abi_dev/BBRating.json';
 
 import BBFreelancerJob_prod from '../_services/abi_production/BBFreelancerJob.json';
 import BBFreelancerBid_prod from '../_services/abi_production/BBFreelancerBid.json';
@@ -36,6 +37,10 @@ const ropstenAbi = {
         BBFreelancerPayment: {
             address: '0x253f112b946a72a008343d5bccd14e04288ca45c',
             abi: BBFreelancerPayment_dev,
+        },
+        BBRating: {
+            address: '0xb7786dd5e27926c9753e00dc582d1e707b147ceb',
+            abi: BBRating_dev,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
@@ -153,7 +158,6 @@ const ropstenAbi = {
 
 //let fromBlock = 3165089; // rinkeby
 export const fromBlock = 4439972; // ropsten
-
 
 class abiConfigs {
     getContract(type) {
@@ -909,6 +913,31 @@ class abiConfigs {
         const watch = setInterval(async () => {
             getReceipt();
         }, 1000);
+    }
+
+    async checkAllowRating(web3, ratingOwner, ratingFor, jobID) {
+        const ratingInstance = await this.contractInstanceGenerator(web3, 'BBRating');
+        const [, allow] = await Utils.callMethod(ratingInstance.instance.allowRating)(ratingOwner, ratingFor, jobID, {
+            from: ratingInstance.defaultAccount,
+            gasPrice: +ratingInstance.gasPrice.toString(10),
+        });
+        return allow;
+    }
+
+    async getRatingData(web3, address) {
+        const ratingInstance = await this.contractInstanceGenerator(web3, 'BBRating');
+        const ratingEvent = await ratingInstance.instance.Rating(
+            { rateToAddress: address },
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            }
+        );
+
+        await ratingEvent.get((error, logs) => {
+            console.log(logs);
+            return logs;
+        });
     }
 }
 

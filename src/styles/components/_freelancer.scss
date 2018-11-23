@@ -121,6 +121,13 @@
             align-items: center;
             margin-left: 30px;
             position: relative;
+            cursor: pointer;
+            .fix-hover {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                z-index: 100;
+            }
             .avg {
                 font-size: 16px;
                 padding: 1px 8px;
@@ -143,18 +150,11 @@
                 padding: 20px;
                 box-shadow: $normalShadow;
                 border-radius: 5px;
-                .close {
-                    float: right;
-                    font-size: 20px;
-                    margin-top: -12px;
-                    margin-right: -10px;
-                    margin-bottom: 10px;
-                    color: #777;
-                    cursor: pointer;
-                    line-height: 0;
-                    &:hover {
-                        color: rgb(128, 53, 53);
-                    }
+                .fix-top {
+                    height: 40px;
+                    float: left;
+                    width: 100%;
+                    margin-top: -35px;
                 }
                 .left {
                     float: left;
@@ -173,7 +173,7 @@
                         padding-left: 0;
                     }
                     button {
-                        padding: 10px 15px;
+                        padding: 5px 10px;
                         font-size: 16px;
                         background: #fff;
                         width: 100%;
@@ -182,6 +182,11 @@
                         margin-top: 10px;
                         color: $blue;
                         box-shadow: $thinShadow;
+                        &:disabled {
+                            color: #879cac;
+                            border-color: #d3e0e9;
+                            box-shadow: none;
+                        }
                     }
                 }
                 .right {
@@ -219,5 +224,59 @@
                 }
             }
         }
+    }
+}
+.rating-form {
+    float: left;
+    width: 100%;
+    .mkp-form-row {
+        flex-grow: 1;
+        padding-bottom: 20px !important;
+        .mkp-form-row-description {
+            line-height: 20px;
+        }
+        .error,
+        .success {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 30px;
+            width: 100%;
+            display: inline-block;
+            i {
+                margin-right: 10px;
+            }
+        }
+        .error {
+            i {
+                color: $red;
+            }
+        }
+        .success {
+            i {
+                color: $green;
+            }
+        }
+    }
+    .rating-submit {
+        .btn {
+            &.cancel {
+                background: #fff;
+            }
+        }
+    }
+    .rate-select {
+        font-size: 25px;
+        .dv-star-rating-star {
+            margin-right: 10px;
+        }
+        .dv-star-rating-empty-star {
+            color: #666 !important;
+        }
+    }
+}
+.rating-dialog-ct {
+    min-width: 600px;
+    .loading {
+        min-height: 200px;
     }
 }

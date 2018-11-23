@@ -8,7 +8,7 @@ import parmeters from '../_services/parmeters';
 
 import Utils from '../_utils/utils';
 import abiConfig from '../_services/abiConfig';
-import Loading from './Loading';
+import Loading from '../components/common/Loading';
 
 class Parameters extends Component {
     constructor(props) {

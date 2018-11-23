@@ -587,8 +587,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                        ? 'Your dispute has had result and you are losers.'
-                                        : 'Your dispute has had result, but there is not winner.'}
+                                            ? 'Your dispute has had result and you are losers.'
+                                            : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -1283,6 +1283,7 @@ class JobDetailBid extends Component {
         //console.log(jobData);
 
         const { web3 } = this.props;
+        const ratingOwner = web3.eth.defaultAccount;
         let jobTplRender;
 
         if (stt.err) {
@@ -1388,8 +1389,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                        ? jobData.estimatedTime / 24 + ' Days'
-                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                            ? jobData.estimatedTime / 24 + ' Days'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1439,7 +1440,7 @@ class JobDetailBid extends Component {
                                             </span>
                                             {jobData.ownerInfo && <span className="bold">{jobData.ownerInfo.fullName}</span>}
                                         </div>
-                                        <Rating avgRating={avgRating} />
+                                        <Rating avgRating={avgRating} jobID={jobData.jobID} ratingOwner={ratingOwner} ratingFor={jobData.owner} />
                                     </Grid>
                                 </Grid>
                                 {jobData.status.bidding && (
@@ -1489,8 +1490,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                        ? freelancer.timeDone / 24 + ' Days'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                            ? freelancer.timeDone / 24 + ' Days'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );

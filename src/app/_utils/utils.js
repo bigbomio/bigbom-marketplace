@@ -351,6 +351,33 @@ class Utils {
         const hours = Number(seconds) / 60 / 60;
         return hours;
     }
+
+    promisify = inner =>
+        new Promise((resolve, reject) =>
+            inner((err, res) => {
+                if (err) {
+                    reject(err);
+                }
+
+                resolve(res);
+            })
+        );
+
+    proxiedWeb3Handler = {
+        // override getter
+        get: (target, name) => {
+            const inner = target[name];
+            if (inner instanceof Function) {
+                // Return a function with the callback already set.
+                return (...args) => this.promisify(cb => inner(...args, cb));
+            } else if (typeof inner === 'object') {
+                // wrap inner web3 stuff
+                return new Proxy(inner, this.proxiedWeb3Handler);
+            } else {
+                return inner;
+            }
+        },
+    };
 }
 
 export default new Utils();
