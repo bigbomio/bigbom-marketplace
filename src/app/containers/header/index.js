@@ -64,7 +64,7 @@ class Header extends PureComponent {
     };
 
     getAvatarClass = () => {
-        this.setState({ avatarColor: Utils.getCookie('avatar') });
+        this.setState({ avatarColor: Utils.getCookie('avatar') ? Utils.getCookie('avatar') : 'red' });
     };
 
     login = () => {
@@ -135,7 +135,7 @@ class Header extends PureComponent {
 
     render() {
         const { routes, anchorEl, avatarColor, checked } = this.state;
-        const { setRegister, accountInfo } = this.props;
+        const { setRegister, accountInfo, isConnected } = this.props;
         let defaultWallet;
         if (accountInfo.wallets.length > 0) {
             defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
@@ -244,7 +244,7 @@ class Header extends PureComponent {
                                             </Fade>
                                         </li>
                                     </ClickAwayListener>
-                                ) : (
+                                ) : isConnected ? null : (
                                     <li>
                                         <ButtonBase
                                             variant="contained"
@@ -270,6 +270,7 @@ Header.propTypes = {
     setRegister: PropTypes.func.isRequired,
     logoutMetamask: PropTypes.func.isRequired,
     saveAccountInfo: PropTypes.func.isRequired,
+    isConnected: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = state => {

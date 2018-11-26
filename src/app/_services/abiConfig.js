@@ -933,11 +933,7 @@ class abiConfigs {
                 toBlock: 'latest',
             }
         );
-
-        await ratingEvent.get((error, logs) => {
-            console.log(logs);
-            return logs;
-        });
+        return await Utils.WaitAllContractEventGet(ratingEvent);
     }
 }
 

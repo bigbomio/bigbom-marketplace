@@ -6,6 +6,7 @@ import clientReducer from '../components/client/reducer';
 import commonReducer from '../components/common/reducer';
 import freelancerReducer from '../components/freelancer/reducer';
 import voterReducer from '../components/voter/reducer';
+import RatingReducer from './RatingReducer';
 
 const rootReducer = combineReducers({
     router: routerReducer,
@@ -14,6 +15,7 @@ const rootReducer = combineReducers({
     commonReducer,
     freelancerReducer,
     voterReducer,
+    RatingReducer,
 });
 
 export default rootReducer;

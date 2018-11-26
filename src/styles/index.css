@@ -1220,15 +1220,20 @@ body {
               height: 100%;
               background: #999; }
               #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-5 {
-                background: #ffb400; }
+                background: #ffb400;
+                border-left: 1px solid #ffb400; }
               #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-4 {
-                background: #ff9900; }
+                background: #ff9900;
+                border-left: 1px solid #ff9900; }
               #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-3 {
-                background: #ff7b00; }
+                background: #ff7b00;
+                border-left: 1px solid #ff7b00; }
               #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-2 {
-                background: #ff6600; }
+                background: #ff6600;
+                border-left: 1px solid #ff6600; }
               #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-1 {
-                background: #ff5100; }
+                background: #ff5100;
+                border-left: 1px solid #ff5100; }
 
 .rating-form {
   float: left;

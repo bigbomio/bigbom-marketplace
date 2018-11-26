@@ -326,6 +326,12 @@ class Utils {
         return a / ((a + b) / 100);
     }
 
+    findPerWidth(value, object) {
+        const arr = Object.values(object);
+        const max = Math.max(...arr);
+        return (value / max) * 100 + '%';
+    }
+
     copyStringToClipboard(str) {
         var el = document.createElement('textarea');
         el.value = str;
@@ -352,31 +358,23 @@ class Utils {
         return hours;
     }
 
-    promisify = inner =>
-        new Promise((resolve, reject) =>
-            inner((err, res) => {
-                if (err) {
-                    reject(err);
+    // convert web3 0.2x function event to promise
+    WaitAllContractEventGet = function(myevent) {
+        return new Promise(function(resolve, reject) {
+            myevent.get(function(error, logs) {
+                if (error !== null) {
+                    reject(error);
                 }
+                resolve(logs);
+            });
+        });
+    };
 
-                resolve(res);
-            })
-        );
-
-    proxiedWeb3Handler = {
-        // override getter
-        get: (target, name) => {
-            const inner = target[name];
-            if (inner instanceof Function) {
-                // Return a function with the callback already set.
-                return (...args) => this.promisify(cb => inner(...args, cb));
-            } else if (typeof inner === 'object') {
-                // wrap inner web3 stuff
-                return new Proxy(inner, this.proxiedWeb3Handler);
-            } else {
-                return inner;
-            }
-        },
+    // filter object by max value of key
+    filterObjectArrayByMax = (arr, key) => {
+        return arr.reduce(function(l, e) {
+            return e[key] > l[key] ? e : l;
+        });
     };
 }
 

@@ -15,6 +15,7 @@ import Loading from './Loading';
 
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
+import { getRatingLogs } from '../../actions/commonActions';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -43,10 +44,9 @@ class Rating extends Component {
     };
 
     ratingInit = async () => {
-        const { web3, jobID, ratingOwner, ratingFor } = this.props;
+        const { web3, jobID, ratingOwner, ratingFor, getRatingLogs } = this.props;
         const allow = await abiConfig.checkAllowRating(web3, ratingOwner, ratingFor, jobID);
-        const ratingData = await abiConfig.getRatingData(web3, ratingFor);
-        console.log(ratingData);
+        getRatingLogs({ web3, address: ratingFor });
         this.setState({ rightOfRating: allow });
     };
 
@@ -101,7 +101,9 @@ class Rating extends Component {
     };
 
     reviewDone = () => {
-        this.setState({ done: true, isLoading: false, status: { err: false, text: 'Done! Thank you for your review! :)' } });
+        setTimeout(() => {
+            this.setState({ done: true, isLoading: false, status: { err: false, text: 'Done! Thank you for your review! :)' } });
+        }, 2000);
     };
 
     inputOnChange = e => {
@@ -184,26 +186,36 @@ class Rating extends Component {
     };
 
     ratingDetail = () => {
-        const { avgRating } = this.props;
-        const charts = [
-            { index: 5, width: '100%', amount: 1405 },
-            { index: 4, width: '80%', amount: 1405 },
-            { index: 3, width: '30%', amount: 1405 },
-            { index: 2, width: '20%', amount: 1405 },
-            { index: 1, width: '10%', amount: 1405 },
+        const { ratingDatas } = this.props;
+        let charts = [
+            { index: 5, width: '0%', count: 0 },
+            { index: 4, width: '0%', count: 0 },
+            { index: 3, width: '0%', count: 0 },
+            { index: 2, width: '0%', count: 0 },
+            { index: 1, width: '0%', count: 0 },
         ];
+        if (ratingDatas.ratingRanks) {
+            charts = [
+                { index: 5, width: Utils.findPerWidth(ratingDatas.ratingRanks['5'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['5'] },
+                { index: 4, width: Utils.findPerWidth(ratingDatas.ratingRanks['4'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['4'] },
+                { index: 3, width: Utils.findPerWidth(ratingDatas.ratingRanks['3'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['3'] },
+                { index: 2, width: Utils.findPerWidth(ratingDatas.ratingRanks['2'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['2'] },
+                { index: 1, width: Utils.findPerWidth(ratingDatas.ratingRanks['1'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['1'] },
+            ];
+        }
+
         const { rightOfRating } = this.state;
         return (
             <div id="rating" className="rating-detail hidden" onMouseLeave={this.viewRatingOff}>
                 <div className="fix-top" />
                 <div className="left">
-                    <div className="avg-detail">{avgRating}</div>
+                    <div className="avg-detail">{ratingDatas.avgRating}</div>
                     <div className="star">
                         <StarRatingComponent
                             name="detail"
                             starColor="#ffb400"
                             emptyStarColor="#ffb400"
-                            value={avgRating}
+                            value={Number(ratingDatas.avgRating)}
                             editing={false}
                             renderStarIcon={(index, value) => {
                                 return (
@@ -226,7 +238,10 @@ class Rating extends Component {
                             }}
                         />
                     </div>
-                    <div className="total">302 Reviews</div>
+                    <div className="total">
+                        {ratingDatas.totalRating}
+                        {ratingDatas.totalRating > 1 ? ' Reviews' : ' Review'}
+                    </div>
                     <ButtonBase onClick={this.rateOn} disabled={!rightOfRating}>
                         Write a Review
                     </ButtonBase>
@@ -234,7 +249,7 @@ class Rating extends Component {
                 <div className="right">
                     {charts.map(chart => {
                         return (
-                            <div className="row" title={chart.amount + ' reviews'} key={chart.index}>
+                            <div className="row" title={chart.count} key={chart.index}>
                                 <div className="numRate">{chart.index}</div>
                                 <div className="chart">
                                     <div className={'widthRate widthRate-' + chart.index} style={{ width: chart.width }} />
@@ -262,8 +277,9 @@ class Rating extends Component {
     };
 
     render() {
-        const { avgRating } = this.props;
+        const { ratingDatas } = this.props;
         const { checked, open, isLoading } = this.state;
+        console.log(ratingDatas);
         return (
             <div className="rating" onMouseEnter={this.viewRatingOn} onMouseLeave={this.viewRatingOff}>
                 <div className="fix-hover" />
@@ -271,12 +287,12 @@ class Rating extends Component {
                     <DialogTitle id="alert-dialog-title">Your review</DialogTitle>
                     <DialogContent className="rating-dialog-ct">{isLoading ? <Loading /> : this.ratingDialogContent()}</DialogContent>
                 </Dialog>
-                <span className="avg">{avgRating > 0 ? avgRating : 'N/A'}</span>
+                <span className="avg">{ratingDatas.avgRating}</span>
                 <StarRatingComponent
                     name="main"
                     starColor="#ffb400"
                     emptyStarColor="#ffb400"
-                    value={avgRating}
+                    value={Number(ratingDatas.avgRating)}
                     editing={false}
                     renderStarIcon={(index, value) => {
                         return (
@@ -298,7 +314,10 @@ class Rating extends Component {
                         );
                     }}
                 />
-                <span className="total">302 Reviews</span>
+                <span className="total">
+                    {ratingDatas.totalRating}
+                    {ratingDatas.totalRating > 1 ? ' Reviews' : ' Review'}
+                </span>
                 <Fade in={checked}>{this.ratingDetail()}</Fade>
             </div>
         );
@@ -306,22 +325,28 @@ class Rating extends Component {
 }
 
 Rating.propTypes = {
-    avgRating: PropTypes.number.isRequired,
+    getRatingLogs: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
     jobID: PropTypes.any.isRequired,
     ratingOwner: PropTypes.string.isRequired,
     ratingFor: PropTypes.string.isRequired,
+    ratingDatas: PropTypes.object,
 };
 
-Rating.defaultProps = {};
+Rating.defaultProps = {
+    ratingDatas: {},
+};
 
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
+        ratingDatas: state.RatingReducer.ratingDatas,
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    getRatingLogs,
+};
 
 export default withRouter(
     connect(
