@@ -59,10 +59,16 @@ class DisputeDetail extends Component {
 
     getDispute = async () => {
         const { web3, match } = this.props;
-        const jobHash = match.params.disputeId;
-        this.setState({ isLoading: true });
-        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobHash);
-        this.checkGetRewardRight();
+        const pollID = match.params.disputeId;
+        this.setState({ isLoading: true, pollID });
+        abiConfig.getJobIDByPollID(web3, pollID, this.getDisputeByJobID);
+    };
+
+    getDisputeByJobID = jobID => {
+        const { web3 } = this.props;
+        this.setState({ jobID });
+        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobID);
+        this.checkGetRewardRight(jobID);
     };
 
     getReasonPaymentRejected = async paymentRejectReason => {
@@ -91,30 +97,29 @@ class DisputeDetail extends Component {
         }
     };
 
-    getDisputeResult = async jobHash => {
+    getDisputeResult = async pollID => {
         const { web3 } = this.props;
         let voteResult = {};
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
-            from: ctInstance.defaultAccount,
-            gasPrice: +ctInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            this.setState({
-                dialogLoading: false,
-                dialogContent: null,
-                actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+        setTimeout(async () => {
+            const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+            const [err, result] = await Utils.callMethod(ctInstance.instance.getPollResult)(pollID, {
+                from: ctInstance.defaultAccount,
+                gasPrice: +ctInstance.gasPrice.toString(10),
             });
-            console.log(err);
-            return;
-        }
-        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
-
-        voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
-        };
-        setTimeout(() => {
+            if (err) {
+                this.setState({
+                    dialogLoading: false,
+                    dialogContent: null,
+                    actStt: { title: 'Error: ', err: true, text: 'Something went wrong! Can not view result! :(', link: '' },
+                });
+                console.log(err);
+                return;
+            }
+            // Returns (options[default, opt1, opt2], votes[default,clientVotes, freelancerVotes])
+            voteResult = {
+                clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
+                freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+            };
             this.setState({
                 dialogLoading: false,
                 dialogContent: <VoteResult voteResult={voteResult} />,
@@ -124,7 +129,7 @@ class DisputeDetail extends Component {
                 },
                 actStt: { title: 'Vote result: ', err: false, text: null, link: '' },
             });
-        }, 1000);
+        }, 1500);
     };
 
     setFinalizedStt = isFinal => {
@@ -132,12 +137,12 @@ class DisputeDetail extends Component {
     };
 
     getReward = async () => {
-        const { match, web3 } = this.props;
-        const jobHash = match.params.disputeId;
+        const { web3 } = this.props;
+        const { jobID } = this.state;
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobHash, {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -192,11 +197,10 @@ class DisputeDetail extends Component {
         this.setActionBtnDisabled(false);
     };
 
-    checkGetRewardRight = async () => {
-        const { match, web3 } = this.props;
-        const jobHash = match.params.disputeId;
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.calcReward)(jobHash, {
+    checkGetRewardRight = async jobID => {
+        const { web3 } = this.props;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.calcReward)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -216,9 +220,8 @@ class DisputeDetail extends Component {
     };
 
     viewVoteResult = () => {
-        const { match } = this.props;
-        const jobHash = match.params.disputeId;
-        this.getDisputeResult(jobHash);
+        const { pollID } = this.state;
+        this.getDisputeResult(pollID);
         this.setState({
             open: true,
             dialogLoading: true,
@@ -231,11 +234,10 @@ class DisputeDetail extends Component {
     };
 
     disputeDataInit = async disputeData => {
-        const { match, web3 } = this.props;
-        const jobHash = match.params.disputeId;
+        const { web3 } = this.props;
         this.sttAtionInit();
-        abiConfig.getReasonPaymentRejected(web3, jobHash, this.getReasonPaymentRejected);
-        const URl = abiConfig.getIpfsLink() + jobHash;
+        abiConfig.getReasonPaymentRejected(web3, disputeData.data.jobID, this.getReasonPaymentRejected);
+        const URl = abiConfig.getIpfsLink() + disputeData.data.jobHash;
         const dispute = {
             ...disputeData.data,
             jobDispute: {},
@@ -246,7 +248,7 @@ class DisputeDetail extends Component {
             }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
-            abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
+            abiConfig.getDisputeFinalized(web3, disputeData.data.jobID, this.setFinalizedStt);
         }
         fetch(URl)
             .then(res => res.json())
@@ -350,7 +352,7 @@ class DisputeDetail extends Component {
         const secretHashString = this.keccak256(vote.choice, Number(vote.secretPhrase));
         const token = Utils.BBOToWei(web3, vote.token);
         setVoteInputDisable(true);
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.jobHash, secretHashString, token, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.pollID, secretHashString, token, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -388,8 +390,8 @@ class DisputeDetail extends Component {
             dialogLoading: true,
         });
         const [err, tx] = await Utils.callMethod(ctInstance.instance.revealVote)(
-            disputeData.jobHash,
-            revealVote.addressChoice,
+            disputeData.pollID,
+            revealVote.optionChoice,
             Number(revealVote.secretHash),
             {
                 from: ctInstance.defaultAccount,
@@ -406,7 +408,7 @@ class DisputeDetail extends Component {
             return;
         }
         this.setActionBtnStt('revealDone', true);
-        abiConfig.transactionWatch(web3, tx, () => this.getDisputeResult(disputeData.jobHash));
+        abiConfig.transactionWatch(web3, tx, () => this.getDisputeResult(disputeData.pollID));
     };
 
     // check allowance
@@ -468,11 +470,11 @@ class DisputeDetail extends Component {
         const { disputeData } = this.state;
         const options = {
             clientChoice: {
-                address: disputeData.client,
+                opt: 2,
                 name: 'Client',
             },
             freelancerChoice: {
-                address: disputeData.freelancer,
+                opt: 1,
                 name: 'Freelancer',
             },
         };
@@ -502,11 +504,10 @@ class DisputeDetail extends Component {
     };
 
     revealConfirm = () => {
-        const { disputeData } = this.state;
         this.setActionBtnDisabled(true);
         this.setState({
             open: true,
-            dialogContent: <Reveal dispute={disputeData} />,
+            dialogContent: <Reveal />,
             dialogData: {
                 actionText: 'Reveal Vote',
                 actions: this.submitReveal,

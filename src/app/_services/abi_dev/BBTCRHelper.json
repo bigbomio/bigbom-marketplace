@@ -1,0 +1,335 @@
+[
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "bbo",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "bbs",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "BBOAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setBBO",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "anyToken",
+        "type": "address"
+      }
+    ],
+    "name": "emergencyERC20Drain",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "storageAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setStorage",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "tokenAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "nameHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "CreateListID",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "previousOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipRenounced",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "nameHash",
+        "type": "bytes"
+      },
+      {
+        "name": "tokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "createListID",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "tokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "updateToken",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getToken",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "applicationDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "minStake",
+        "type": "uint256"
+      },
+      {
+        "name": "initQuorum",
+        "type": "uint256"
+      },
+      {
+        "name": "exitDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "setParams",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getListParams",
+    "outputs": [
+      {
+        "name": "applicationDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "minStake",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getStakedBalance",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getItemStage",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

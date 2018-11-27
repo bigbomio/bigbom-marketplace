@@ -41,7 +41,7 @@ class DisputesRendeManage extends Component {
                 {disputes.length > 0 &&
                     disputes.map((dispute, i) => {
                         return (
-                            <Link to={'disputes/' + dispute.jobHash} key={i} className="job-item">
+                            <Link to={'disputes/' + dispute.jobID} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={6} className="title">
@@ -51,7 +51,7 @@ class DisputesRendeManage extends Component {
                                         <Grid item xs={3} className="status">
                                             {dispute.commitEndDate > Date.now() ? (
                                                 <span>{dispute.evidenceEndDate > Date.now() ? 'Evidence' : 'Commit vote'}</span>
-                                            ) : finalDisputes[dispute.jobHash] ? (
+                                            ) : finalDisputes[dispute.jobID] ? (
                                                 <span>Finalized</span>
                                             ) : (
                                                 <span>Reveal vote</span>
@@ -71,7 +71,7 @@ class DisputesRendeManage extends Component {
                                                 className={
                                                     dispute.revealEndDate > Date.now()
                                                         ? 'commit-duration orange'
-                                                        : !finalDisputes[dispute.jobHash]
+                                                        : !finalDisputes[dispute.jobID]
                                                             ? 'commit-duration gray'
                                                             : 'commit-duration blue'
                                                 }

@@ -326,6 +326,15 @@ class Utils {
         return a / ((a + b) / 100);
     }
 
+    findPerWidth(value, object) {
+        const arr = Object.values(object);
+        const max = Math.max(...arr);
+        if (max > 0) {
+            return (value / max) * 100 + '%';
+        }
+        return '0%';
+    }
+
     copyStringToClipboard(str) {
         var el = document.createElement('textarea');
         el.value = str;
@@ -351,6 +360,25 @@ class Utils {
         const hours = Number(seconds) / 60 / 60;
         return hours;
     }
+
+    // convert web3 0.2x function event to promise
+    WaitAllContractEventGet = function(myevent) {
+        return new Promise(function(resolve, reject) {
+            myevent.get(function(error, logs) {
+                if (error !== null) {
+                    reject(error);
+                }
+                resolve(logs);
+            });
+        });
+    };
+
+    // filter object by max value of key
+    filterObjectArrayByMax = (arr, key) => {
+        return arr.reduce(function(l, e) {
+            return e[key] > l[key] ? e : l;
+        });
+    };
 }
 
 export default new Utils();

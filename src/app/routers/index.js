@@ -6,7 +6,6 @@ import Eth from 'ethjs';
 import { connect } from 'react-redux';
 import { isMobile } from 'react-device-detect';
 import asyncComponent from '../components/_asynComponent';
-import ScrollToTop from './scroll-to-top';
 import Header from '../containers/header';
 import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
@@ -199,21 +198,19 @@ class Routers extends PureComponent {
         } else {
             return (
                 <Router history={history}>
-                    <ScrollToTop>
-                        <div className="main-container">
-                            <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
-                                <meta name="description" content="Bigbom Marketplace" />
-                            </Helmet>
-                            <Header history={history} />
-                            <Switch>
-                                <Route exact path="/" component={Home} />
-                                <Route path="/withraw" component={WithrawToken} />
-                                {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
-                                <Route component={NotFound} />
-                            </Switch>
-                            <Footer />
-                        </div>
-                    </ScrollToTop>
+                    <div className="main-container">
+                        <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
+                            <meta name="description" content="Bigbom Marketplace" />
+                        </Helmet>
+                        <Header history={history} />
+                        <Switch>
+                            <Route exact path="/" component={Home} />
+                            <Route path="/withraw" component={WithrawToken} />
+                            {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
+                            <Route component={NotFound} />
+                        </Switch>
+                        <Footer />
+                    </div>
                 </Router>
             );
         }

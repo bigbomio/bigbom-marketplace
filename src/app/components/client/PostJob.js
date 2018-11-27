@@ -63,7 +63,7 @@ class ClientPostJob extends Component {
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
-        const [err, jobLog] = await Utils.callMethod(jobInstance.instance.createJob)(
+        const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
             estimatedTime,
@@ -82,44 +82,32 @@ class ClientPostJob extends Component {
             console.log(err);
         }
         // check event logs
-        if (jobLog) {
-            abiConfig.transactionWatch(web3, jobLog, () => this.createJobDone(jobHash));
-            // this.setState({
-            //     isLoading: false,
-            //     status: {
-            //         title: 'Create New Job: ',
-            //         err: false,
-            //         text: 'Your job has been created! Please waiting for confirm from your network.',
-            //         link: abiConfig.getTXlink() + jobLog,
-            //     },
-            // });
-            // setTimeout(() => {
-            //     if (this.mounted) {
-            //         this.handleClose();
-            //     }
-            // }, 10000);
+        if (jobTx) {
+            abiConfig.transactionWatch(web3, jobTx, () => this.createJobDone(jobHash));
         }
     }
 
-    createJobDone = jobHash => {
+    createJobDone = async jobHash => {
+        const { web3, history } = this.props;
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const content = function() {
-            return (
-                <span>
-                    Your job has been created! View your job <a href={`/client/your-jobs/${jobHash}`}>HERE</a>
-                </span>
-            );
+            return <span>Your job has been created!</span>;
         };
-        setTimeout(() => {
-            this.setState({
-                isLoading: false,
-                status: {
-                    title: 'Create New Job: ',
-                    err: false,
-                    text: content(),
-                    link: null,
-                },
-            });
-        }, 1000);
+        this.setState({
+            isLoading: false,
+            status: {
+                title: 'Create New Job: ',
+                err: false,
+                text: content(),
+                link: null,
+            },
+        });
+        setTimeout(async () => {
+            const [, jobID] = await Utils.callMethod(ctInstance.instance.getJobID)(jobHash);
+            if (jobID) {
+                history.push('/client/your-jobs/' + jobID.toString());
+            }
+        }, 2000);
     };
 
     creatJob = () => {

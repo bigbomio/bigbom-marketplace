@@ -40,10 +40,10 @@ class ResponseDispute extends Component {
     }
 
     responseDispute = async proofHash => {
-        const { web3, jobHash, setSttRespondedDispute } = this.props;
+        const { web3, jobID, setSttRespondedDispute } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.againstPoll)(jobHash, proofHash, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.againstDispute)(jobID, proofHash, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -72,12 +72,12 @@ class ResponseDispute extends Component {
             },
         });
         setSttRespondedDispute(true);
-        LocalStorage.setItemJson('sttRespondedDispute-' + defaultAccount + '-' + jobHash, { done: true });
+        LocalStorage.setItemJson('sttRespondedDispute-' + defaultAccount + '-' + jobID, { done: true });
     };
 
     createProofHash = async () => {
         const { proof, imgs } = this.state;
-        const { jobHash, votingParams, accountInfo, web3 } = this.props;
+        const { jobHash, jobID, votingParams, accountInfo, web3 } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await abiConfig.getAllowance(web3, 'BBDispute');
         /// check balance
@@ -116,6 +116,7 @@ class ResponseDispute extends Component {
         });
 
         const proofData = {
+            jobID,
             jobHash,
             proof,
             imgs,
@@ -265,6 +266,7 @@ ResponseDispute.propTypes = {
     closeAct: PropTypes.func.isRequired,
     checkedDispute: PropTypes.bool.isRequired,
     jobHash: PropTypes.string.isRequired,
+    jobID: PropTypes.string.isRequired,
     web3: PropTypes.any.isRequired,
     accountInfo: PropTypes.any.isRequired,
     votingParams: PropTypes.object.isRequired,

@@ -6,7 +6,8 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
-import abiConfig from '../../_services/abiConfig';
+import abiConfig, { fromBlock } from '../../_services/abiConfig';
+import services from '../../_services/services';
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 
@@ -14,9 +15,11 @@ import Reasons from '../client/Reasons';
 import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from '../freelancer/actions';
 import Popper from '../common/Popper';
+import Rating from '../common/Rating';
 import ResponseDispute from './ResponseDispute';
 import VoteResult from '../voter/VoteResult';
 import LocalStorage from '../../_utils/localStorage';
+import { getRatingLogs } from '../../actions/commonActions';
 
 const skillShow = jobSkills => {
     return (
@@ -69,7 +72,7 @@ class JobDetail extends Component {
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
-                this.jobDataInit(false);
+                this.jobDataInit();
                 abiConfig.getVotingParams(web3, saveVotingParams);
             }
             this.checkMetamaskID = setInterval(() => {
@@ -92,15 +95,16 @@ class JobDetail extends Component {
     }
 
     setDisputeStt = async event => {
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         const { web3 } = this.props;
         let clientResponseDuration = event.evidenceEndDate * 1000;
+        this.setState({ pollID: event.pollID });
         const URl = abiConfig.getIpfsLink() + event.proofHash;
         if (clientResponseDuration <= Date.now()) {
             clientResponseDuration = 0;
         }
         if (event.revealEndDate <= Date.now()) {
-            abiConfig.getDisputeFinalized(web3, jobHash, this.setFinalizedStt);
+            abiConfig.getDisputeFinalized(web3, jobID, this.setFinalizedStt);
             this.getDisputeResult();
         }
         fetch(URl)
@@ -166,16 +170,16 @@ class JobDetail extends Component {
     setActionBtnStt = async (action, done) => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
-        const jobHash = match.params.jobId;
+        const jobID = match.params.jobId;
         this.setState({ [action]: done });
-        LocalStorage.setItemJson(action + '-' + defaultAccount + '-' + jobHash, { done });
+        LocalStorage.setItemJson(action + '-' + defaultAccount + '-' + jobID, { done });
     };
 
     getActionBtnStt = async action => {
         const { match, web3 } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
-        const jobHash = await match.params.jobId;
-        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount + '-' + jobHash);
+        const jobID = await match.params.jobId;
+        const actionStt = LocalStorage.getItemJson(action + '-' + defaultAccount + '-' + jobID);
         if (actionStt) {
             this.setState({ [action]: actionStt.done });
         } else {
@@ -185,10 +189,10 @@ class JobDetail extends Component {
 
     getDisputeResult = async () => {
         const { web3 } = this.props;
-        const { jobHash } = this.state;
+        const { pollID } = this.state;
         let voteResult = {};
-        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, result] = await Utils.callMethod(ctInstance.instance.getPoll)(jobHash, {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+        const [err, result] = await Utils.callMethod(ctInstance.instance.getPollResult)(pollID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -201,10 +205,9 @@ class JobDetail extends Component {
             console.log(err);
             return;
         }
-        // Returns (jobOwnerVotes, freelancerVotes, jobOwner, freelancer, pID)
         voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[0].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1].toString())),
+            clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
+            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
         };
         if (this.mounted) {
             if (voteResult.clientVotes > voteResult.freelancerVotes) {
@@ -233,7 +236,7 @@ class JobDetail extends Component {
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
-                this.jobDataInit(true);
+                this.jobDataInit();
                 setReload(false);
             }
         }
@@ -255,10 +258,10 @@ class JobDetail extends Component {
 
     finalizeDispute = async () => {
         const { web3 } = this.props;
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         this.setState({ dialogLoading: true });
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizePoll)(jobHash, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.finalizeDispute)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -291,11 +294,11 @@ class JobDetail extends Component {
 
     updateDispute = async giveUp => {
         const { web3 } = this.props;
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.updatePoll)(jobHash, giveUp, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.updateDispute)(jobID, giveUp, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -332,18 +335,17 @@ class JobDetail extends Component {
 
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
-        const jobHash = match.params.jobId;
-        abiConfig.getEventsPollStarted(web3, jobHash, this.setDisputeStt);
-
+        const jobID = match.params.jobId;
+        abiConfig.getEventsPollStarted(web3, jobID, 1, this.setDisputeStt);
         // check client dispute response status
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsPoll)(jobHash, {
+        const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsDispute)(jobID, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
         if (!error) {
             if (re) {
-                abiConfig.getEventsPollAgainsted(web3, jobHash, this.setRespondedisputeStt);
+                abiConfig.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
             } else {
                 if (this.mounted) {
                     this.setState({ freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } } });
@@ -361,136 +363,139 @@ class JobDetail extends Component {
         this.getActionBtnStt('claimDepositDone');
     };
 
-    jobDataInit = async refresh => {
-        const { match, web3, jobs, history } = this.props;
-        const jobHash = match.params.jobId;
-        this.setState({ isLoading: true, jobHash });
+    jobDataInit = async () => {
+        const { match, web3, history } = this.props;
+        const jobID = match.params.jobId;
+        this.setState({ isLoading: true, jobID });
         this.sttAtionInit();
-        if (!refresh) {
-            if (jobs.length > 0) {
-                const jobData = jobs.filter(job => job.jobHash === jobHash);
-                if (jobData[0].status.disputing) {
-                    this.disputeSttInit();
-                }
-                if (jobData[0].status.reject) {
-                    abiConfig.getReasonPaymentRejected(web3, jobHash, this.rejectDurationInit);
-                }
-                if (jobData[0].owner !== web3.eth.defaultAccount) {
-                    history.push('/freelancer/jobs/' + jobHash);
-                    return;
-                }
-                if (this.mounted) {
-                    this.setState({ jobData: jobData[0], isLoading: false });
-                    return;
-                }
-            }
-        }
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
+
         if (err) {
             console.log(err);
             return;
         } else {
             if (jobStatusLog[0] !== web3.eth.defaultAccount) {
-                history.push('/freelancer/jobs/' + jobHash);
+                history.push('/freelancer/jobs/' + jobID);
                 return;
             }
             const jobStatus = await Utils.getStatus(jobStatusLog);
             if (jobStatus.disputing) {
                 this.disputeSttInit();
             } else if (jobStatus.reject) {
-                abiConfig.getReasonPaymentRejected(web3, jobHash, this.rejectDurationInit);
+                abiConfig.getReasonPaymentRejected(web3, jobID, this.rejectDurationInit);
             }
-            // get detail from ipfs
-            const URl = abiConfig.getIpfsLink() + jobHash;
-            const jobTpl = {
-                id: jobHash,
-                owner: jobStatusLog[0],
-                jobHash: jobHash,
-                status: jobStatus,
-                bid: [],
+            const employerInfo = await services.getUserByWallet(jobStatusLog[0]);
+            let employer = {
+                fullName: jobStatusLog[0],
+                walletAddress: jobStatusLog[0],
             };
-            fetch(URl)
-                .then(res => res.json())
-                .then(
-                    result => {
-                        jobTpl.title = result.title;
-                        jobTpl.skills = result.skills;
-                        jobTpl.description = result.description;
-                        jobTpl.currency = result.currency;
-                        jobTpl.budget = result.budget;
-                        jobTpl.category = result.category;
-                        jobTpl.estimatedTime = result.estimatedTime;
-                        jobTpl.expiredTime = result.expiredTime;
-                        jobTpl.created = result.created;
-                        this.BidCreatedInit(jobTpl);
-                    },
-                    error => {
-                        console.log(error);
-                        this.setState({
-                            stt: { title: 'Error: ', err: true, text: 'Can not fetch data from server' },
-                            isLoading: false,
-                            jobData: null,
-                        });
-                        return;
+            if (employerInfo !== undefined) {
+                employer = {
+                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                    walletAddress: jobStatusLog[0],
+                };
+            }
+            jobInstance.instance.JobCreated(
+                { jobID },
+                {
+                    fromBlock: fromBlock, // should use recent number
+                    toBlock: 'latest',
+                },
+                async (JobCreatedErr, JobCreated) => {
+                    if (JobCreatedErr) {
+                        console.log(JobCreatedErr);
+                    } else {
+                        // get detail from ipfs
+                        const jobHash = Utils.toAscii(JobCreated.args.jobHash);
+                        const URl = abiConfig.getIpfsLink() + jobHash;
+                        const jobTpl = {
+                            jobID,
+                            id: jobHash,
+                            owner: jobStatusLog[0],
+                            ownerInfo: employer,
+                            jobHash: jobHash,
+                            status: jobStatus,
+                            bid: [],
+                        };
+                        fetch(URl)
+                            .then(res => res.json())
+                            .then(
+                                result => {
+                                    jobTpl.title = result.title;
+                                    jobTpl.skills = result.skills;
+                                    jobTpl.description = result.description;
+                                    jobTpl.currency = result.currency;
+                                    jobTpl.budget = result.budget;
+                                    jobTpl.category = result.category;
+                                    jobTpl.estimatedTime = result.estimatedTime;
+                                    jobTpl.expiredTime = result.expiredTime;
+                                    jobTpl.created = result.created;
+                                    this.BidCreatedInit(jobTpl);
+                                },
+                                error => {
+                                    console.log(error);
+                                    this.setState({
+                                        stt: { title: 'Error: ', err: true, text: 'Can not fetch data from server' },
+                                        isLoading: false,
+                                        jobData: null,
+                                    });
+                                    return;
+                                }
+                            );
                     }
-                );
+                }
+            );
         }
     };
 
     BidCreatedInit = async job => {
+        //console.log('BidCreatedInit', job);
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { indexJobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
-        abiConfig.checkPayment(web3, job.jobHash, this.setPaymentStt);
+        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job, this.BidAcceptedInit);
+        abiConfig.checkPayment(web3, job.jobID, this.setPaymentStt);
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(
-            web3,
-            'BBFreelancerBid',
-            'BidAccepted',
-            { indexJobHash: web3.sha3(jobData.data.jobHash) },
-            jobData.data,
-            this.JobsInit
-        );
+        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.jobID }, jobData.data, this.JobsInit);
     };
 
     jobStarted = async (jobData, jobStarted) => {
-        const bidAccepted = jobData.data.bid.filter(bid => bid.accepted);
+        //console.log('jobStarted', jobData);
+        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
         const jobCompleteDuration = (jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
         if (this.mounted) {
-            this.setState({ jobData: jobData.data, isLoading: false, jobCompleteDuration });
+            this.setState({ jobData: jobData, isLoading: false, jobCompleteDuration });
         }
     };
 
     JobsInit = jobData => {
-        const { web3 } = this.props;
+        //console.log('JobsInit', jobData);
+        const { web3, getRatingLogs } = this.props;
         if (jobData.data.status.started) {
-            abiConfig.jobStarted(web3, jobData, this.jobStarted);
+            abiConfig.jobStarted(web3, jobData.data, this.jobStarted);
         } else {
             if (this.mounted) {
                 this.setState({ jobData: jobData.data, isLoading: false });
             }
         }
+        let listAddress = [jobData.data.owner];
+        for (let freelancer of jobData.data.bid) {
+            listAddress.push(freelancer.address);
+        }
+        getRatingLogs({ web3, listAddress });
     };
 
     acceptBid = async () => {
-        const { jobHash, bidAddress } = this.state;
+        const { jobID, bidAddress } = this.state;
         const { web3 } = this.props;
         const BidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [errAccept, tx] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobHash, bidAddress, {
+        const [errAccept, tx] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobID, bidAddress, {
             from: BidInstance.defaultAccount,
             gasPrice: +BidInstance.gasPrice.toString(10),
         });
@@ -576,12 +581,12 @@ class JobDetail extends Component {
     };
 
     cancelJob = async () => {
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         const { web3 } = this.props;
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [cancelErr, tx] = await Utils.callMethod(jobInstance.instance.cancelJob)(jobHash, {
+        const [cancelErr, tx] = await Utils.callMethod(jobInstance.instance.cancelJob)(jobID, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -611,12 +616,12 @@ class JobDetail extends Component {
     };
 
     payment = async () => {
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         const { web3 } = this.props;
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.acceptPayment)(jobHash, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.acceptPayment)(jobID, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -647,12 +652,12 @@ class JobDetail extends Component {
     };
 
     claimDeposit = async () => {
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         const { web3 } = this.props;
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobHash, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.claimePayment)(jobID, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -683,12 +688,12 @@ class JobDetail extends Component {
     };
 
     rejectPayment = async () => {
-        const { jobHash } = this.state;
+        const { jobID } = this.state;
         const { web3, reason } = this.props;
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true, dialogContent: null });
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const [err, tx] = await Utils.callMethod(jobInstance.instance.rejectPayment)(jobHash, reason, {
+        const [err, tx] = await Utils.callMethod(jobInstance.instance.rejectPayment)(jobID, reason, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -1203,6 +1208,7 @@ class JobDetail extends Component {
         } = this.state;
         const { web3 } = this.props;
         let jobTplRender;
+        const ratingOwner = web3.eth.defaultAccount;
         if (stt.err) {
             jobTplRender = () => (
                 <Grid container className="single-body">
@@ -1222,7 +1228,7 @@ class JobDetail extends Component {
                                         <i className="fas fa-angle-left" />
                                         View all Job
                                     </ButtonBase>
-                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={() => this.jobDataInit(true)}>
+                                    <ButtonBase className="btn btn-normal btn-green btn-back" onClick={this.jobDataInit}>
                                         <i className="fas fa-sync-alt" />
                                         Refresh
                                     </ButtonBase>
@@ -1241,6 +1247,7 @@ class JobDetail extends Component {
                                         checkedDispute={checkedDispute}
                                         closeAct={this.handleResponseDispute}
                                         jobHash={jobData.jobHash}
+                                        jobID={jobData.jobID}
                                         web3={web3}
                                     />
                                 )}
@@ -1308,19 +1315,32 @@ class JobDetail extends Component {
                                         {jobData.description}
                                         {skillShow(jobData.skills)}
                                     </Grid>
+                                    <Grid item xs={12} className="ct job-owner">
+                                        <div className="profile">
+                                            <span>Your infomation:</span>
+                                            <span className="avatar">
+                                                <i className="fas fa-user-circle" />
+                                            </span>
+                                            {jobData.ownerInfo && <span className="bold">{jobData.ownerInfo.fullName}</span>}
+                                        </div>
+                                        <Rating jobID={jobData.jobID} ratingOwner={ratingOwner} ratingFor={jobData.owner} />
+                                    </Grid>
                                 </Grid>
 
                                 <Grid container className="freelancer-bidding">
                                     <h2>Current Bids</h2>
                                     <Grid container className="list-container">
                                         <Grid container className="list-header">
-                                            <Grid item xs={6}>
-                                                Bid Address
+                                            <Grid item xs={4}>
+                                                Freelancer
+                                            </Grid>
+                                            <Grid item xs={3}>
+                                                Reputation
                                             </Grid>
                                             <Grid item xs={2}>
                                                 Bid Amount
                                             </Grid>
-                                            <Grid item xs={2}>
+                                            <Grid item xs={1}>
                                                 Time
                                             </Grid>
                                             <Grid item xs={2}>
@@ -1332,7 +1352,7 @@ class JobDetail extends Component {
                                                 {jobData.bid.map(freelancer => {
                                                     return (
                                                         <Grid key={freelancer.address} container className="list-body-row">
-                                                            <Grid item xs={6} className={freelancer.accepted ? 'title bold' : 'title'}>
+                                                            <Grid item xs={4} className={freelancer.accepted ? 'title bold' : 'title'}>
                                                                 <span className="avatar">
                                                                     <i className="fas fa-user-circle" />
                                                                 </span>
@@ -1358,13 +1378,20 @@ class JobDetail extends Component {
                                                                     </span>
                                                                 )}
                                                             </Grid>
+                                                            <Grid item xs={3} className="Reputation">
+                                                                <Rating
+                                                                    jobID={jobData.jobID}
+                                                                    ratingOwner={ratingOwner}
+                                                                    ratingFor={freelancer.address}
+                                                                />
+                                                            </Grid>
                                                             <Grid item xs={2}>
                                                                 <span className="bold">{Utils.currencyFormat(freelancer.award) + ' '}</span>
                                                                 &nbsp;
                                                                 {jobData.currency.label}
                                                             </Grid>
 
-                                                            <Grid item xs={2}>
+                                                            <Grid item xs={1}>
                                                                 {freelancer.timeDone <= 24
                                                                     ? freelancer.timeDone + ' H'
                                                                     : Number.isInteger(freelancer.timeDone / 24)
@@ -1451,13 +1478,13 @@ JobDetail.propTypes = {
     history: PropTypes.object.isRequired,
     web3: PropTypes.object.isRequired,
     isConnected: PropTypes.bool.isRequired,
-    jobs: PropTypes.any.isRequired,
     accountInfo: PropTypes.any.isRequired,
     reason: PropTypes.number.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     reload: PropTypes.bool.isRequired,
     setReload: PropTypes.func.isRequired,
+    getRatingLogs: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -1476,6 +1503,7 @@ const mapDispatchToProps = {
     setActionBtnDisabled,
     saveVotingParams,
     setReload,
+    getRatingLogs,
 };
 
 export default connect(

@@ -43,19 +43,19 @@ class Voting extends Component {
         const { options, dispute } = this.props;
         let data = [
             {
-                choice: options.clientChoice.address,
+                choice: options.clientChoice.opt,
                 secretPhrase,
                 voteNum,
-                jobHash: dispute.jobHash,
+                pollID: dispute.pollID,
             },
         ];
         if (choice === 'freelancer') {
             data = [
                 {
-                    choice: options.freelancerChoice.address,
+                    choice: options.freelancerChoice.opt,
                     secretPhrase,
                     voteNum,
-                    jobHash: dispute.jobHash,
+                    pollID: dispute.pollID,
                 },
             ];
         }
@@ -173,7 +173,7 @@ class Voting extends Component {
                     </Grid>
                     <Grid item xs={4}>
                         {!downloadDisable ? (
-                            <a href={linkDownload} download={dispute.jobHash + '.json'} target="_blank" rel="noopener noreferrer">
+                            <a href={linkDownload} download={dispute.pollID + '.json'} target="_blank" rel="noopener noreferrer">
                                 <ButtonBase className="btn btn-normal btn-blue">
                                     Download <i className="fas fa-arrow-down icon-right" />
                                 </ButtonBase>

@@ -248,6 +248,13 @@ $orange: #f99a0c;
     .btn-blue {
         background-color: $blue;
         color: #fff;
+        &:disabled {
+            background-color: rgb(142, 174, 201);
+            color: rgb(217, 230, 241);
+            i {
+                color: rgb(217, 230, 241);
+            }
+        }
         i {
             color: #fff;
         }
@@ -340,7 +347,7 @@ $orange: #f99a0c;
             font-size: 14px;
             .list-body-row {
                 border-bottom: 1px dotted #ddd;
-                div {
+                > div {
                     border-right: 1px solid #ccc;
                     padding: 15px;
                     align-items: center;
@@ -367,6 +374,14 @@ $orange: #f99a0c;
                     }
                     &.status {
                         text-transform: capitalize;
+                    }
+                }
+                .rating {
+                    padding: 0px;
+                    margin-left: 0;
+                    .avg,
+                    .total {
+                        font-size: 14px;
                     }
                 }
             }
@@ -594,6 +609,49 @@ $orange: #f99a0c;
     }
     .float-left {
         float: left;
+    }
+    .visible {
+        visibility: visible;
+    }
+    .hidden {
+        visibility: hidden;
+    }
+}
+
+.component-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 20px;
+    .loading-text {
+        padding-left: 10px;
+    }
+}
+
+.blink-text {
+    animation: blinker 1s linear infinite;
+}
+
+.job-owner {
+    padding: 20px 0;
+    border-top: 1px solid #ccc;
+    margin-top: 30px !important;
+    display: flex;
+    .avatar {
+        margin: 0 5px 0 10px;
+        font-size: 20px;
+        color: $blue;
+    }
+    .profile {
+        display: flex;
+        float: left;
+        align-items: center;
+    }
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
     }
 }
 

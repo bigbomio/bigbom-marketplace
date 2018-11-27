@@ -82,9 +82,10 @@ class JobBrowser extends Component {
             return;
         }
         const jobHash = Utils.toAscii(event.args.jobHash);
+        const jobID = event.args.jobID.toString();
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobHash, {
+        const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
             from: jobInstance.defaultAccount,
             gasPrice: +jobInstance.gasPrice.toString(10),
         });
@@ -92,7 +93,6 @@ class JobBrowser extends Component {
             return console.log(err);
         } else {
             const jobStatus = Utils.getStatus(jobStatusLog);
-
             if (jobStatus.bidding) {
                 // get detail from ipfs
                 const URl = abiConfig.getIpfsLink() + jobHash;
@@ -110,6 +110,7 @@ class JobBrowser extends Component {
                     };
                 }
                 const jobTpl = {
+                    jobID,
                     id: event.args.jobHash,
                     owner: event.args.owner,
                     ownerInfo: employer,
@@ -147,27 +148,13 @@ class JobBrowser extends Component {
     BidCreatedInit = job => {
         //console.log('BidCreatedInit success: ', job);
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(
-            web3,
-            'BBFreelancerBid',
-            'BidCreated',
-            { indexJobHash: web3.sha3(job.jobHash) },
-            job,
-            this.BidAcceptedInit
-        );
+        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job, this.BidAcceptedInit);
     };
 
     BidAcceptedInit = jobData => {
         //console.log('BidAcceptedInit success: ', jobData);
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(
-            web3,
-            'BBFreelancerBid',
-            'BidAccepted',
-            { indexJobHash: web3.sha3(jobData.data.jobHash) },
-            jobData.data,
-            this.JobsInit
-        );
+        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.jobID }, jobData.data, this.JobsInit);
     };
 
     JobsInit = jobData => {
