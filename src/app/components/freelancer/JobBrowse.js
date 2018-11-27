@@ -154,7 +154,7 @@ class JobBrowser extends Component {
     BidAcceptedInit = jobData => {
         //console.log('BidAcceptedInit success: ', jobData);
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobID: jobData.jobID }, jobData.data, this.JobsInit);
+        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.jobID }, jobData.data, this.JobsInit);
     };
 
     JobsInit = jobData => {

@@ -22,6 +22,7 @@ import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from './actions';
 import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
+import { getRatingLogs } from '../../actions/commonActions';
 
 let myAddress;
 
@@ -586,8 +587,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                        ? 'Your dispute has had result and you are losers.'
-                                        : 'Your dispute has had result, but there is not winner.'}
+                                            ? 'Your dispute has had result and you are losers.'
+                                            : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -791,7 +792,7 @@ class JobDetailBid extends Component {
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
         const { jobID } = this.state;
-        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobID }, jobData.data, this.JobsInit);
+        abiConfig.getPastEventsBidAccepted(web3, { jobID }, jobData.data, this.JobsInit);
         abiConfig.checkPayment(web3, jobID, this.setPaymentStt);
     };
 
@@ -813,7 +814,7 @@ class JobDetailBid extends Component {
     };
 
     JobsInit = jobData => {
-        const { web3, history } = this.props;
+        const { web3, history, getRatingLogs } = this.props;
         if (jobData.data.status.started) {
             abiConfig.jobStarted(web3, jobData.data, this.jobStarted);
         } else {
@@ -828,6 +829,11 @@ class JobDetailBid extends Component {
                 });
             }
         }
+        let listAddress = [jobData.data.owner];
+        for (let freelancer of jobData.data.bid) {
+            listAddress.push(freelancer.address);
+        }
+        getRatingLogs({ web3, listAddress });
     };
 
     bidSwitched = open => {
@@ -1387,8 +1393,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                        ? jobData.estimatedTime / 24 + ' Days'
-                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                            ? jobData.estimatedTime / 24 + ' Days'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1446,8 +1452,11 @@ class JobDetailBid extends Component {
                                         <h2>Current Bids</h2>
                                         <Grid container className="list-container">
                                             <Grid container className="list-header">
-                                                <Grid item xs={8}>
-                                                    Bid Address
+                                                <Grid item xs={5}>
+                                                    Freelancer
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                    Reputation
                                                 </Grid>
                                                 <Grid item xs={2}>
                                                     Bid Amount
@@ -1461,7 +1470,7 @@ class JobDetailBid extends Component {
                                                     {jobData.bid.map(freelancer => {
                                                         return (
                                                             <Grid key={freelancer.address} container className="list-body-row">
-                                                                <Grid item xs={8} className="title">
+                                                                <Grid item xs={5} className="title">
                                                                     <span className="avatar">
                                                                         <i className="fas fa-user-circle" />
                                                                     </span>
@@ -1475,13 +1484,13 @@ class JobDetailBid extends Component {
                                                                             </span>
                                                                         </span>
                                                                     )}
-                                                                    <span>
-                                                                        <Rating
-                                                                            jobID={jobData.jobID}
-                                                                            ratingOwner={ratingOwner}
-                                                                            ratingFor={freelancer.address}
-                                                                        />
-                                                                    </span>
+                                                                </Grid>
+                                                                <Grid item xs={3} className="Reputation">
+                                                                    <Rating
+                                                                        jobID={jobData.jobID}
+                                                                        ratingOwner={ratingOwner}
+                                                                        ratingFor={freelancer.address}
+                                                                    />
                                                                 </Grid>
                                                                 <Grid item xs={2}>
                                                                     <span className="bold">
@@ -1490,13 +1499,12 @@ class JobDetailBid extends Component {
                                                                     </span>
                                                                     {jobData.currency.label}
                                                                 </Grid>
-
                                                                 <Grid item xs={2}>
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                        ? freelancer.timeDone / 24 + ' Days'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                            ? freelancer.timeDone / 24 + ' Days'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );
@@ -1568,10 +1576,10 @@ class JobDetailBid extends Component {
 
 JobDetailBid.propTypes = {
     web3: PropTypes.object.isRequired,
+    getRatingLogs: PropTypes.func.isRequired,
     isConnected: PropTypes.bool.isRequired,
     match: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
-    jobs: PropTypes.any.isRequired,
     setActionBtnDisabled: PropTypes.func.isRequired,
     saveVotingParams: PropTypes.func.isRequired,
     reload: PropTypes.bool.isRequired,
@@ -1592,6 +1600,7 @@ const mapDispatchToProps = {
     setActionBtnDisabled,
     saveVotingParams,
     setReload,
+    getRatingLogs,
 };
 
 export default connect(

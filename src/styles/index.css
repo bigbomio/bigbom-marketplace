@@ -424,26 +424,32 @@ body {
     font-size: 14px; }
     #bigbomMarketplace .list-container .list-body .list-body-row {
       border-bottom: 1px dotted #ddd; }
-      #bigbomMarketplace .list-container .list-body .list-body-row div {
+      #bigbomMarketplace .list-container .list-body .list-body-row > div {
         border-right: 1px solid #ccc;
         padding: 15px;
         align-items: center;
         display: flex; }
-        #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar {
+        #bigbomMarketplace .list-container .list-body .list-body-row > div.title .avatar {
           margin-right: 5px; }
-          #bigbomMarketplace .list-container .list-body .list-body-row div.title .avatar i {
+          #bigbomMarketplace .list-container .list-body .list-body-row > div.title .avatar i {
             font-size: 20px; }
-        #bigbomMarketplace .list-container .list-body .list-body-row div.title a {
+        #bigbomMarketplace .list-container .list-body .list-body-row > div.title a {
           font-weight: bold;
           font-size: 16px;
           line-height: 1.5;
           color: #353535; }
-          #bigbomMarketplace .list-container .list-body .list-body-row div.title a:hover {
+          #bigbomMarketplace .list-container .list-body .list-body-row > div.title a:hover {
             color: #3f89b9; }
-        #bigbomMarketplace .list-container .list-body .list-body-row div.title .err {
+        #bigbomMarketplace .list-container .list-body .list-body-row > div.title .err {
           color: red; }
-        #bigbomMarketplace .list-container .list-body .list-body-row div.status {
+        #bigbomMarketplace .list-container .list-body .list-body-row > div.status {
           text-transform: capitalize; }
+      #bigbomMarketplace .list-container .list-body .list-body-row .rating {
+        padding: 0px;
+        margin-left: 0; }
+        #bigbomMarketplace .list-container .list-body .list-body-row .rating .avg,
+        #bigbomMarketplace .list-container .list-body .list-body-row .rating .total {
+          font-size: 14px; }
 
 #bigbomMarketplace .list-filter {
   border: 1px solid #ccc;
@@ -640,6 +646,35 @@ body {
 
 #bigbomMarketplace .hidden {
   visibility: hidden; }
+
+.component-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 20px; }
+  .component-loading .loading-text {
+    padding-left: 10px; }
+
+.blink-text {
+  animation: blinker 1s linear infinite; }
+
+.job-owner {
+  padding: 20px 0;
+  border-top: 1px solid #ccc;
+  margin-top: 30px !important;
+  display: flex; }
+  .job-owner .avatar {
+    margin: 0 5px 0 10px;
+    font-size: 20px;
+    color: #0ca1f9; }
+  .job-owner .profile {
+    display: flex;
+    float: left;
+    align-items: center; }
+
+@keyframes blinker {
+  50% {
+    opacity: 0; } }
 
 @media (max-width: 1023px) {
   .root {
@@ -1128,148 +1163,6 @@ body {
   padding: 20px;
   margin-bottom: 30px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
-
-#freelancer .job-owner {
-  padding: 20px 0;
-  border-top: 1px solid #ccc;
-  margin-top: 30px;
-  display: flex; }
-  #freelancer .job-owner .avatar {
-    margin: 0 5px 0 10px;
-    font-size: 20px;
-    color: #0ca1f9; }
-  #freelancer .job-owner .profile {
-    display: flex;
-    float: left;
-    align-items: center; }
-  #freelancer .job-owner .rating {
-    display: flex;
-    float: left;
-    align-items: center;
-    margin-left: 30px;
-    position: relative;
-    cursor: pointer; }
-    #freelancer .job-owner .rating .fix-hover {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      z-index: 100; }
-    #freelancer .job-owner .rating .avg {
-      font-size: 16px;
-      padding: 1px 8px;
-      margin-right: 5px;
-      background: orange;
-      color: #fff;
-      font-weight: bold;
-      border-radius: 5px; }
-    #freelancer .job-owner .rating .total {
-      color: #666;
-      font-size: 16px;
-      padding-left: 10px; }
-    #freelancer .job-owner .rating .rating-detail {
-      position: absolute;
-      width: 600px;
-      top: 40px;
-      background: #f9f9f9;
-      padding: 20px;
-      box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
-      border-radius: 5px; }
-      #freelancer .job-owner .rating .rating-detail .fix-top {
-        height: 40px;
-        float: left;
-        width: 100%;
-        margin-top: -35px; }
-      #freelancer .job-owner .rating .rating-detail .left {
-        float: left;
-        width: 30%; }
-        #freelancer .job-owner .rating .rating-detail .left .avg-detail {
-          font-size: 50px;
-          text-align: center; }
-        #freelancer .job-owner .rating .rating-detail .left .star {
-          width: 100%;
-          text-align: center; }
-        #freelancer .job-owner .rating .rating-detail .left .total {
-          text-align: center;
-          width: 100%;
-          padding-left: 0; }
-        #freelancer .job-owner .rating .rating-detail .left button {
-          padding: 5px 10px;
-          font-size: 16px;
-          background: #fff;
-          width: 100%;
-          border: 1px solid #0ca1f9;
-          border-radius: 5px;
-          margin-top: 10px;
-          color: #0ca1f9;
-          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
-          #freelancer .job-owner .rating .rating-detail .left button:disabled {
-            color: #879cac;
-            border-color: #d3e0e9;
-            box-shadow: none; }
-      #freelancer .job-owner .rating .rating-detail .right {
-        float: left;
-        width: 70%; }
-        #freelancer .job-owner .rating .rating-detail .right .row {
-          display: flex;
-          margin-bottom: 10px; }
-          #freelancer .job-owner .rating .rating-detail .right .row .numRate {
-            padding: 0 10px; }
-          #freelancer .job-owner .rating .rating-detail .right .row .chart {
-            width: 100%; }
-            #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate {
-              height: 100%;
-              background: #999; }
-              #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-5 {
-                background: #ffb400;
-                border-left: 1px solid #ffb400; }
-              #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-4 {
-                background: #ff9900;
-                border-left: 1px solid #ff9900; }
-              #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-3 {
-                background: #ff7b00;
-                border-left: 1px solid #ff7b00; }
-              #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-2 {
-                background: #ff6600;
-                border-left: 1px solid #ff6600; }
-              #freelancer .job-owner .rating .rating-detail .right .row .chart .widthRate.widthRate-1 {
-                background: #ff5100;
-                border-left: 1px solid #ff5100; }
-
-.rating-form {
-  float: left;
-  width: 100%; }
-  .rating-form .mkp-form-row {
-    flex-grow: 1;
-    padding-bottom: 20px !important; }
-    .rating-form .mkp-form-row .mkp-form-row-description {
-      line-height: 20px; }
-    .rating-form .mkp-form-row .error,
-    .rating-form .mkp-form-row .success {
-      font-size: 20px;
-      font-weight: bold;
-      padding: 30px;
-      width: 100%;
-      display: inline-block; }
-      .rating-form .mkp-form-row .error i,
-      .rating-form .mkp-form-row .success i {
-        margin-right: 10px; }
-    .rating-form .mkp-form-row .error i {
-      color: red; }
-    .rating-form .mkp-form-row .success i {
-      color: #40bd56; }
-  .rating-form .rating-submit .btn.cancel {
-    background: #fff; }
-  .rating-form .rate-select {
-    font-size: 25px; }
-    .rating-form .rate-select .dv-star-rating-star {
-      margin-right: 10px; }
-    .rating-form .rate-select .dv-star-rating-empty-star {
-      color: #666 !important; }
-
-.rating-dialog-ct {
-  min-width: 600px; }
-  .rating-dialog-ct .loading {
-    min-height: 200px; }
 
 #bigbomMarketplace #voter .dispute-list .job-item {
   background: #f9f9f9;
@@ -1992,3 +1885,141 @@ a {
       font-size: 20px; }
     .withraw-token .withraw-form input {
       width: 100%; }
+
+.rating {
+  display: flex;
+  float: left;
+  align-items: center;
+  margin-left: 30px;
+  position: relative;
+  line-height: 1;
+  cursor: pointer; }
+  .rating .fix-hover {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 100; }
+  .rating .avg {
+    font-size: 16px;
+    padding: 5px 8px;
+    margin-right: 5px;
+    background: orange;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 5px; }
+  .rating .total {
+    color: #666;
+    font-size: 14px;
+    padding-left: 10px;
+    padding-top: 0; }
+  .rating .rating-detail {
+    position: absolute;
+    width: 500px;
+    bottom: 40px;
+    background: #f9f9f9;
+    padding: 20px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    z-index: 10; }
+    .rating .rating-detail .fix-top {
+      height: 40px;
+      float: left;
+      width: 100%;
+      margin-bottom: -35px; }
+    .rating .rating-detail .left {
+      float: left;
+      width: 40%; }
+      .rating .rating-detail .left .avg-detail {
+        font-size: 50px;
+        text-align: center; }
+      .rating .rating-detail .left .star {
+        width: 100%;
+        text-align: center;
+        padding-top: 10px; }
+      .rating .rating-detail .left .total {
+        text-align: center;
+        width: 100%;
+        padding-left: 0;
+        padding-top: 5px; }
+      .rating .rating-detail .left button {
+        padding: 5px 10px;
+        font-size: 14px;
+        background: #fff;
+        width: 100%;
+        border: 1px solid #0ca1f9;
+        border-radius: 5px;
+        margin-top: 10px;
+        color: #0ca1f9;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); }
+        .rating .rating-detail .left button:disabled {
+          color: #879cac;
+          border-color: #d3e0e9;
+          box-shadow: none; }
+    .rating .rating-detail .right {
+      float: left;
+      width: 60%; }
+      .rating .rating-detail .right .row {
+        display: flex;
+        margin-bottom: 10px; }
+        .rating .rating-detail .right .row:last-child {
+          margin-bottom: 0; }
+        .rating .rating-detail .right .row .numRate {
+          padding: 0 10px;
+          font-size: 16px;
+          line-height: 1.2; }
+        .rating .rating-detail .right .row .chart {
+          width: 100%; }
+          .rating .rating-detail .right .row .chart .widthRate {
+            height: 100%;
+            background: #999; }
+            .rating .rating-detail .right .row .chart .widthRate.widthRate-5 {
+              background: #ffb400;
+              border-left: 1px solid #ffb400; }
+            .rating .rating-detail .right .row .chart .widthRate.widthRate-4 {
+              background: #ff9900;
+              border-left: 1px solid #ff9900; }
+            .rating .rating-detail .right .row .chart .widthRate.widthRate-3 {
+              background: #ff7b00;
+              border-left: 1px solid #ff7b00; }
+            .rating .rating-detail .right .row .chart .widthRate.widthRate-2 {
+              background: #ff6600;
+              border-left: 1px solid #ff6600; }
+            .rating .rating-detail .right .row .chart .widthRate.widthRate-1 {
+              background: #ff5100;
+              border-left: 1px solid #ff5100; }
+
+.rating-form {
+  float: left;
+  width: 100%; }
+  .rating-form .mkp-form-row {
+    flex-grow: 1;
+    padding-bottom: 20px !important; }
+    .rating-form .mkp-form-row .mkp-form-row-description {
+      line-height: 20px; }
+    .rating-form .mkp-form-row .error,
+    .rating-form .mkp-form-row .success {
+      font-size: 20px;
+      font-weight: bold;
+      padding: 30px;
+      width: 100%;
+      display: inline-block; }
+      .rating-form .mkp-form-row .error i,
+      .rating-form .mkp-form-row .success i {
+        margin-right: 10px; }
+    .rating-form .mkp-form-row .error i {
+      color: red; }
+    .rating-form .mkp-form-row .success i {
+      color: #40bd56; }
+  .rating-form .rating-submit .btn.cancel {
+    background: #fff; }
+  .rating-form .rate-select {
+    font-size: 25px; }
+    .rating-form .rate-select .dv-star-rating-star {
+      margin-right: 10px; }
+    .rating-form .rate-select .dv-star-rating-empty-star {
+      color: #666 !important; }
+
+.rating-dialog-ct {
+  min-width: 600px; }
+  .rating-dialog-ct .loading {
+    min-height: 200px; }

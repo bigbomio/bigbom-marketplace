@@ -185,7 +185,7 @@ class YourBids extends Component {
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(web3, 'BBFreelancerBid', 'BidAccepted', { jobID: jobData.data.jobID }, jobData.data, this.JobsInit);
+        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data, this.JobsInit);
     };
 
     JobsInit = jobData => {

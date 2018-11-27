@@ -12,10 +12,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 import Loading from './Loading';
+import ComponentLoading from './componentLoading';
 
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
-import { getRatingLogs } from '../../actions/commonActions';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -44,17 +44,17 @@ class Rating extends Component {
     };
 
     ratingInit = async () => {
-        const { web3, jobID, ratingOwner, ratingFor, getRatingLogs } = this.props;
+        const { web3, jobID, ratingOwner, ratingFor } = this.props;
+        const ratingID = Utils.makeIdString(7);
         const allow = await abiConfig.checkAllowRating(web3, ratingOwner, ratingFor, jobID);
-        getRatingLogs({ web3, address: ratingFor });
-        this.setState({ rightOfRating: allow });
+        this.setState({ rightOfRating: allow, ratingID });
     };
 
     ratingSubmit = async () => {
         const { jobID, ratingOwner, ratingFor } = this.props;
         const { commentPrepare, rating } = this.state;
         const ratingData = {
-            jobID,
+            jobID: jobID,
             comment: commentPrepare,
             rating,
             ratingOwner,
@@ -186,7 +186,8 @@ class Rating extends Component {
     };
 
     ratingDetail = () => {
-        const { ratingDatas } = this.props;
+        const { ratingDatas, ratingFor } = this.props;
+        const ratingInfo = ratingDatas.filter(rate => rate.address === ratingFor);
         let charts = [
             { index: 5, width: '0%', count: 0 },
             { index: 4, width: '0%', count: 0 },
@@ -194,147 +195,177 @@ class Rating extends Component {
             { index: 2, width: '0%', count: 0 },
             { index: 1, width: '0%', count: 0 },
         ];
-        if (ratingDatas.ratingRanks) {
+        if (ratingInfo[0].ratingRanks) {
             charts = [
-                { index: 5, width: Utils.findPerWidth(ratingDatas.ratingRanks['5'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['5'] },
-                { index: 4, width: Utils.findPerWidth(ratingDatas.ratingRanks['4'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['4'] },
-                { index: 3, width: Utils.findPerWidth(ratingDatas.ratingRanks['3'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['3'] },
-                { index: 2, width: Utils.findPerWidth(ratingDatas.ratingRanks['2'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['2'] },
-                { index: 1, width: Utils.findPerWidth(ratingDatas.ratingRanks['1'], ratingDatas.ratingRanks), count: ratingDatas.ratingRanks['1'] },
+                {
+                    index: 5,
+                    width: Utils.findPerWidth(ratingInfo[0].ratingRanks['5'], ratingInfo[0].ratingRanks),
+                    count: ratingInfo[0].ratingRanks['5'],
+                },
+                {
+                    index: 4,
+                    width: Utils.findPerWidth(ratingInfo[0].ratingRanks['4'], ratingInfo[0].ratingRanks),
+                    count: ratingInfo[0].ratingRanks['4'],
+                },
+                {
+                    index: 3,
+                    width: Utils.findPerWidth(ratingInfo[0].ratingRanks['3'], ratingInfo[0].ratingRanks),
+                    count: ratingInfo[0].ratingRanks['3'],
+                },
+                {
+                    index: 2,
+                    width: Utils.findPerWidth(ratingInfo[0].ratingRanks['2'], ratingInfo[0].ratingRanks),
+                    count: ratingInfo[0].ratingRanks['2'],
+                },
+                {
+                    index: 1,
+                    width: Utils.findPerWidth(ratingInfo[0].ratingRanks['1'], ratingInfo[0].ratingRanks),
+                    count: ratingInfo[0].ratingRanks['1'],
+                },
             ];
         }
 
-        const { rightOfRating } = this.state;
-        return (
-            <div id="rating" className="rating-detail hidden" onMouseLeave={this.viewRatingOff}>
-                <div className="fix-top" />
-                <div className="left">
-                    <div className="avg-detail">{ratingDatas.avgRating}</div>
-                    <div className="star">
-                        <StarRatingComponent
-                            name="detail"
-                            starColor="#ffb400"
-                            emptyStarColor="#ffb400"
-                            value={Number(ratingDatas.avgRating)}
-                            editing={false}
-                            renderStarIcon={(index, value) => {
-                                return (
-                                    <span>
-                                        <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
-                                    </span>
-                                );
-                            }}
-                            renderStarIconHalf={() => {
-                                return (
-                                    <span>
-                                        <span style={{ position: 'absolute' }}>
-                                            <i className="far fa-star" />
-                                        </span>
+        const { rightOfRating, ratingID } = this.state;
+
+        if (ratingInfo.length > 0) {
+            return (
+                <div id={ratingID} className="rating-detail hidden" onMouseLeave={this.viewRatingOff}>
+                    <div className="left">
+                        <div className="avg-detail">{ratingInfo[0].avgRating}</div>
+                        <div className="star">
+                            <StarRatingComponent
+                                name="detail"
+                                starColor="#ffb400"
+                                emptyStarColor="#ffb400"
+                                value={Number(ratingInfo[0].avgRating)}
+                                editing={false}
+                                renderStarIcon={(index, value) => {
+                                    return (
                                         <span>
-                                            <i className="fas fa-star-half" />
+                                            <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
                                         </span>
-                                    </span>
-                                );
-                            }}
-                        />
+                                    );
+                                }}
+                                renderStarIconHalf={() => {
+                                    return (
+                                        <span>
+                                            <span style={{ position: 'absolute' }}>
+                                                <i className="far fa-star" />
+                                            </span>
+                                            <span>
+                                                <i className="fas fa-star-half" />
+                                            </span>
+                                        </span>
+                                    );
+                                }}
+                            />
+                        </div>
+                        <div className="total">
+                            {ratingInfo[0].totalRating}
+                            {ratingInfo[0].totalRating > 1 ? ' Reviews' : ' Review'}
+                        </div>
+                        <ButtonBase onClick={this.rateOn} disabled={!rightOfRating}>
+                            Write a Review
+                        </ButtonBase>
                     </div>
-                    <div className="total">
-                        {ratingDatas.totalRating}
-                        {ratingDatas.totalRating > 1 ? ' Reviews' : ' Review'}
-                    </div>
-                    <ButtonBase onClick={this.rateOn} disabled={!rightOfRating}>
-                        Write a Review
-                    </ButtonBase>
-                </div>
-                <div className="right">
-                    {charts.map(chart => {
-                        return (
-                            <div className="row" title={chart.count} key={chart.index}>
-                                <div className="numRate">{chart.index}</div>
-                                <div className="chart">
-                                    <div className={'widthRate widthRate-' + chart.index} style={{ width: chart.width }} />
+                    <div className="right">
+                        {charts.map(chart => {
+                            return (
+                                <div className="row" title={chart.count} key={chart.index}>
+                                    <div className="numRate">{chart.index}</div>
+                                    <div className="chart">
+                                        <div className={'widthRate widthRate-' + chart.index} style={{ width: chart.width }} />
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
+                    <div className="fix-top" />
                 </div>
-            </div>
-        );
+            );
+        } else {
+            return <ComponentLoading />;
+        }
     };
 
     viewRatingOn = () => {
-        const rating = document.getElementById('rating');
+        const { ratingID } = this.state;
+        const rating = document.getElementById(ratingID);
         rating.classList.add('visible');
         rating.classList.remove('hidden');
         this.setState({ checked: true });
     };
 
     viewRatingOff = () => {
-        const rating = document.getElementById('rating');
+        const { ratingID } = this.state;
+        const rating = document.getElementById(ratingID);
         rating.classList.add('hidden');
         rating.classList.remove('visible');
         this.setState({ checked: false });
     };
 
     render() {
-        const { ratingDatas } = this.props;
+        const { ratingDatas, ratingFor } = this.props;
+        const ratingInfo = ratingDatas.filter(rate => rate.address === ratingFor);
         const { checked, open, isLoading } = this.state;
-        console.log(ratingDatas);
-        return (
-            <div className="rating" onMouseEnter={this.viewRatingOn} onMouseLeave={this.viewRatingOff}>
-                <div className="fix-hover" />
-                <Dialog open={open} onClose={this.handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
-                    <DialogTitle id="alert-dialog-title">Your review</DialogTitle>
-                    <DialogContent className="rating-dialog-ct">{isLoading ? <Loading /> : this.ratingDialogContent()}</DialogContent>
-                </Dialog>
-                <span className="avg">{ratingDatas.avgRating}</span>
-                <StarRatingComponent
-                    name="main"
-                    starColor="#ffb400"
-                    emptyStarColor="#ffb400"
-                    value={Number(ratingDatas.avgRating)}
-                    editing={false}
-                    renderStarIcon={(index, value) => {
-                        return (
-                            <span>
-                                <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
-                            </span>
-                        );
-                    }}
-                    renderStarIconHalf={() => {
-                        return (
-                            <span>
-                                <span style={{ position: 'absolute' }}>
-                                    <i className="far fa-star" />
-                                </span>
+        if (ratingInfo.length > 0) {
+            return (
+                <div className="rating" onMouseEnter={this.viewRatingOn} onMouseLeave={this.viewRatingOff}>
+                    <div className="fix-hover" />
+                    <Dialog open={open} onClose={this.handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+                        <DialogTitle id="alert-dialog-title">Your review</DialogTitle>
+                        <DialogContent className="rating-dialog-ct">{isLoading ? <Loading /> : this.ratingDialogContent()}</DialogContent>
+                    </Dialog>
+                    <span className="avg">{ratingInfo[0].avgRating}</span>
+                    <StarRatingComponent
+                        name="main"
+                        starColor="#ffb400"
+                        emptyStarColor="#ffb400"
+                        value={Number(ratingInfo[0].avgRating)}
+                        editing={false}
+                        renderStarIcon={(index, value) => {
+                            return (
                                 <span>
-                                    <i className="fas fa-star-half" />
+                                    <i className={index <= value ? 'fas fa-star' : 'far fa-star'} />
                                 </span>
-                            </span>
-                        );
-                    }}
-                />
-                <span className="total">
-                    {ratingDatas.totalRating}
-                    {ratingDatas.totalRating > 1 ? ' Reviews' : ' Review'}
-                </span>
-                <Fade in={checked}>{this.ratingDetail()}</Fade>
-            </div>
-        );
+                            );
+                        }}
+                        renderStarIconHalf={() => {
+                            return (
+                                <span>
+                                    <span style={{ position: 'absolute' }}>
+                                        <i className="far fa-star" />
+                                    </span>
+                                    <span>
+                                        <i className="fas fa-star-half" />
+                                    </span>
+                                </span>
+                            );
+                        }}
+                    />
+                    <span className="total">
+                        {ratingInfo[0].totalRating}
+                        {ratingInfo[0].totalRating > 1 ? ' Reviews' : ' Review'}
+                    </span>
+                    <Fade in={checked}>{this.ratingDetail()}</Fade>
+                </div>
+            );
+        } else {
+            return <ComponentLoading />;
+        }
     }
 }
 
 Rating.propTypes = {
-    getRatingLogs: PropTypes.func.isRequired,
     web3: PropTypes.object.isRequired,
-    jobID: PropTypes.any.isRequired,
+    jobID: PropTypes.string.isRequired,
     ratingOwner: PropTypes.string.isRequired,
     ratingFor: PropTypes.string.isRequired,
-    ratingDatas: PropTypes.object,
+    ratingDatas: PropTypes.array,
 };
 
 Rating.defaultProps = {
-    ratingDatas: {},
+    ratingDatas: [],
 };
 
 const mapStateToProps = state => {
@@ -344,9 +375,7 @@ const mapStateToProps = state => {
     };
 };
 
-const mapDispatchToProps = {
-    getRatingLogs,
-};
+const mapDispatchToProps = {};
 
 export default withRouter(
     connect(

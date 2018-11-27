@@ -1,6 +1,7 @@
 import IPFS from 'ipfs-mini';
 import Utils from '../_utils/utils';
 import services from '../_services/services';
+import contractApis from '../_services/contractApis';
 
 //import web3v1 from './web3'; // web3 v1
 
@@ -427,38 +428,32 @@ class abiConfigs {
         );
     }
 
-    async getPastEventsBidAccepted(web3, type, event, filter, jobData, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, type);
+    async getPastEventsBidAccepted(web3, filter, jobData, callback) {
+        const payload = {
+            web3,
+            jobID: filter.jobID,
+        };
+        const bidAccepted = await contractApis.getBidAccepted(payload);
         let results = {
             data: {},
         };
-        const events = contractInstance.instance[event](filter, {
-            fromBlock: fromBlock, // should use recent number
-            toBlock: 'latest',
-        });
-        events.get(function(error, events) {
-            if (error) {
-                console.log(error);
-                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                callback(results);
-            }
-            // console.log('event bid accepted  -------', events);
-            for (let e of events) {
-                if (jobData.bid.length > 0) {
-                    for (let bid of jobData.bid) {
-                        if (bid.address === e.args.freelancer) {
-                            bid.accepted = true;
-                            bid.acceptedBlockNumber = e.blockNumber;
-                        }
+        const bidAcceptedFiltered = bidAccepted.filter(bid => bid.args.jobID.toString() === jobData.jobID);
+
+        if (jobData.bid.length > 0) {
+            if (bidAcceptedFiltered.length > 0) {
+                for (let bid of jobData.bid) {
+                    if (bid.address === bidAcceptedFiltered[0].args.freelancer) {
+                        bid.accepted = true;
+                        bid.acceptedBlockNumber = bidAcceptedFiltered.blockNumber;
                     }
-                } else {
-                    jobData.status.expired = Number(jobData.expired) <= Math.floor(Date.now() / 1000) ? true : false;
                 }
             }
-            results.data = jobData;
-            results.status = { err: false, text: 'get events log success!' };
-            callback(results);
-        });
+        } else {
+            jobData.status.expired = Number(jobData.expired) <= Math.floor(Date.now() / 1000) ? true : false;
+        }
+        results.data = jobData;
+        results.status = { err: false, text: 'get events log success!' };
+        callback(results);
     }
 
     async getPastSingleEvent(web3, type, event, filter, callback) {
@@ -922,18 +917,6 @@ class abiConfigs {
             gasPrice: +ratingInstance.gasPrice.toString(10),
         });
         return allow;
-    }
-
-    async getRatingData(web3, address) {
-        const ratingInstance = await this.contractInstanceGenerator(web3, 'BBRating');
-        const ratingEvent = await ratingInstance.instance.Rating(
-            { rateToAddress: address },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            }
-        );
-        return await Utils.WaitAllContractEventGet(ratingEvent);
     }
 }
 

@@ -329,7 +329,10 @@ class Utils {
     findPerWidth(value, object) {
         const arr = Object.values(object);
         const max = Math.max(...arr);
-        return (value / max) * 100 + '%';
+        if (max > 0) {
+            return (value / max) * 100 + '%';
+        }
+        return '0%';
     }
 
     copyStringToClipboard(str) {
