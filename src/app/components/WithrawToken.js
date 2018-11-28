@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
 import DialogPopup from '../components/common/dialog';
-import { setActionBtnDisabled } from '../components/common/actions';
+import { setActionBtnDisabled } from '../actions/commonActions';
 import Utils from '../_utils/utils';
 import abiConfig from '../_services/abiConfig';
 
@@ -243,7 +243,7 @@ const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        reload: state.commonReducer.reload,
+        reload: state.CommonReducer.reload,
     };
 };
 

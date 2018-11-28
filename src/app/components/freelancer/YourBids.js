@@ -15,8 +15,8 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
 import services from '../../_services/services';
 
-import { setReload } from '../common/actions';
-import { saveJobs } from '../client/actions';
+import { setReload } from '../../actions/commonActions';
+import { saveJobs } from '../../actions/clientActions';
 
 const categories = settingsApi.getCategories();
 
@@ -504,7 +504,7 @@ YourBids.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        reload: state.commonReducer.reload,
+        reload: state.CommonReducer.reload,
         isConnected: state.homeReducer.isConnected,
     };
 };

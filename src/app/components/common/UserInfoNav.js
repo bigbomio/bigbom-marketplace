@@ -41,7 +41,7 @@ const mapStateToProps = state => {
     return {
         isConnected: state.homeReducer.isConnected,
         web3: state.homeReducer.web3,
-        yourNetwork: state.commonReducer.yourNetwork,
+        yourNetwork: state.CommonReducer.yourNetwork,
         defaultAccount: state.homeReducer.defaultAccount,
     };
 };

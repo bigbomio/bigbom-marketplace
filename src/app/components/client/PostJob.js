@@ -677,7 +677,7 @@ ClientPostJob.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        accountInfo: state.commonReducer.accountInfo,
+        accountInfo: state.CommonReducer.accountInfo,
     };
 };
 

@@ -12,14 +12,13 @@ import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 
 import Reasons from '../client/Reasons';
-import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from '../freelancer/actions';
 import Popper from '../common/Popper';
 import Rating from '../common/Rating';
 import ResponseDispute from './ResponseDispute';
 import VoteResult from '../voter/VoteResult';
 import LocalStorage from '../../_utils/localStorage';
-import { getRatingLogs } from '../../actions/commonActions';
+import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
 
 const skillShow = jobSkills => {
     return (
@@ -1490,12 +1489,12 @@ const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        jobs: state.clientReducer.jobs,
-        reason: state.clientReducer.reason,
-        reload: state.commonReducer.reload,
-        actionBtnDisabled: state.commonReducer.actionBtnDisabled,
-        accountInfo: state.commonReducer.accountInfo,
-        sttRespondedDispute: state.clientReducer.sttRespondedDispute,
+        jobs: state.ClientReducer.jobs,
+        reason: state.ClientReducer.reason,
+        reload: state.CommonReducer.reload,
+        actionBtnDisabled: state.CommonReducer.actionBtnDisabled,
+        accountInfo: state.CommonReducer.accountInfo,
+        sttRespondedDispute: state.ClientReducer.sttRespondedDispute,
     };
 };
 

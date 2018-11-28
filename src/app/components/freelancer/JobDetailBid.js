@@ -18,11 +18,10 @@ import VoteResult from '../voter/VoteResult';
 import CreateDispute from '../freelancer/CreateDispute';
 import Rating from '../common/Rating';
 
-import { setActionBtnDisabled, setReload } from '../common/actions';
 import { saveVotingParams } from './actions';
 import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
-import { getRatingLogs } from '../../actions/commonActions';
+import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
 
 let myAddress;
 
@@ -587,8 +586,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                            ? 'Your dispute has had result and you are losers.'
-                                            : 'Your dispute has had result, but there is not winner.'}
+                                        ? 'Your dispute has had result and you are losers.'
+                                        : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -1393,8 +1392,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                            ? jobData.estimatedTime / 24 + ' Days'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                        ? jobData.estimatedTime / 24 + ' Days'
+                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1503,8 +1502,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                            ? freelancer.timeDone / 24 + ' Days'
-                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                        ? freelancer.timeDone / 24 + ' Days'
+                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );
@@ -1588,10 +1587,10 @@ JobDetailBid.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        reload: state.commonReducer.reload,
+        reload: state.CommonReducer.reload,
         isConnected: state.homeReducer.isConnected,
-        jobs: state.clientReducer.jobs,
-        setActionBtnDisabled: state.commonReducer.setActionBtnDisabled,
+        jobs: state.ClientReducer.jobs,
+        setActionBtnDisabled: state.CommonReducer.setActionBtnDisabled,
         disputeCreated: state.freelancerReducer.disputeCreated,
     };
 };

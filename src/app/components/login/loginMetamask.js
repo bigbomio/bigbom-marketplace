@@ -19,7 +19,7 @@ import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 
 import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
-import { saveAccountInfo, setRegister } from '../common/actions';
+import { saveAccountInfo, setRegister } from '../../actions/commonActions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
@@ -474,7 +474,7 @@ const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        register: state.commonReducer.register,
+        register: state.CommonReducer.register,
     };
 };
 

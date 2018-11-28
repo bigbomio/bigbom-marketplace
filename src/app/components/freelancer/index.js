@@ -11,7 +11,7 @@ import NotFound from '../NotFound';
 import Parameters from '../Parameters';
 import UserInfoNav from '../../components/common/UserInfoNav';
 
-import { setView } from '../common/actions';
+import { setView } from '../../actions/commonActions';
 
 const styles = theme => ({
     lightTooltip: {

@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import * as nameActList from './consts';
+import * as types from '../constants/actionTypes';
 
 const data = {
     balances: {
@@ -24,9 +24,9 @@ const data = {
 
 const initData = cloneDeep(data);
 
-const commonReducer = (state = initData, action) => {
+const CommonReducer = (state = initData, action) => {
     switch (action.type) {
-        case nameActList.SET_VIEW: {
+        case types.SET_VIEW: {
             let view = cloneDeep(state.view);
             switch (action.view) {
                 case 'client':
@@ -46,7 +46,7 @@ const commonReducer = (state = initData, action) => {
                 view,
             };
         }
-        case nameActList.SET_ACTION_BTN_DISABLED: {
+        case types.SET_ACTION_BTN_DISABLED: {
             let actionBtnDisabled = cloneDeep(state.actionBtnDisabled);
             actionBtnDisabled = action.actionBtnDisabled;
             return {
@@ -54,7 +54,7 @@ const commonReducer = (state = initData, action) => {
                 actionBtnDisabled,
             };
         }
-        case nameActList.SET_YOUR_NETWORK: {
+        case types.SET_YOUR_NETWORK: {
             let yourNetwork = cloneDeep(state.yourNetwork);
             yourNetwork = action.yourNetwork;
             return {
@@ -62,7 +62,7 @@ const commonReducer = (state = initData, action) => {
                 yourNetwork,
             };
         }
-        case nameActList.SET_RELOAD: {
+        case types.SET_RELOAD: {
             let reload = cloneDeep(state.reload);
             reload = action.reload;
             return {
@@ -70,7 +70,7 @@ const commonReducer = (state = initData, action) => {
                 reload,
             };
         }
-        case nameActList.SAVE_ACCOUNT_INFO: {
+        case types.SAVE_ACCOUNT_INFO: {
             let accountInfo = cloneDeep(state.accountInfo);
             accountInfo = action.accountInfo;
             return {
@@ -78,7 +78,7 @@ const commonReducer = (state = initData, action) => {
                 accountInfo,
             };
         }
-        case nameActList.SET_REGISTER: {
+        case types.SET_REGISTER: {
             let register = cloneDeep(state.register);
             register = action.register;
             return {
@@ -91,4 +91,4 @@ const commonReducer = (state = initData, action) => {
     }
 };
 
-export default commonReducer;
+export default CommonReducer;

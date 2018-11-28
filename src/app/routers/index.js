@@ -16,7 +16,7 @@ import abiConfig from '../_services/abiConfig';
 import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../components/common/actions';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../actions/commonActions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../components/home/actions';
 
 const Home = asyncComponent(() => import('../components/home'));
@@ -241,7 +241,7 @@ const mapStateToProps = state => {
         isConnected: state.homeReducer.isConnected,
         defaultAccount: state.homeReducer.defaultAccount,
         checkAccount: state.homeReducer.checkAccount,
-        accountInfo: state.commonReducer.accountInfo,
+        accountInfo: state.CommonReducer.accountInfo,
     };
 };
 

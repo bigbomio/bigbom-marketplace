@@ -1,3 +1,17 @@
+// Client
+export const SAVE_JOBS = 'SAVE_JOBS';
+export const SET_REASON = 'SET_REASON';
+export const SET_STT_RESPONDED_DISPUTE = 'SET_STT_RESPONDED_DISPUTE';
+
+// Rating
 export const GET_RATING_LOGS = 'GET_RATING_LOGS';
 export const GET_RATING_LOGS_SUCCESS = 'GET_RATING_LOGS_SUCCESS';
 export const GET_RATING_LOGS_ERROR = 'GET_RATING_LOGS_ERROR';
+
+// Common
+export const SET_VIEW = 'SET_VIEW';
+export const SET_ACTION_BTN_DISABLED = 'SET_ACTION_BTN_DISABLED';
+export const SET_YOUR_NETWORK = 'SET_YOUR_NETWORK';
+export const SET_RELOAD = 'SET_RELOAD';
+export const SAVE_ACCOUNT_INFO = 'SAVE_ACCOUNT_INFO';
+export const SET_REGISTER = 'SET_REGISTER';

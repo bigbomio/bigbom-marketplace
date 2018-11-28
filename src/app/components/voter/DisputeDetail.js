@@ -8,7 +8,7 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
-import { setActionBtnDisabled, setReload } from '../common/actions';
+import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
 import LocalStorage from '../../_utils/localStorage';
@@ -577,10 +577,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -613,8 +613,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
@@ -801,10 +801,10 @@ DisputeDetail.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        reload: state.commonReducer.reload,
+        reload: state.CommonReducer.reload,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
-        accountInfo: state.commonReducer.accountInfo,
+        accountInfo: state.CommonReducer.accountInfo,
         vote: state.voterReducer.vote,
         revealVote: state.voterReducer.revealVote,
     };

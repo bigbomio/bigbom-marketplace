@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 
-import { setReload } from '../../components/common/actions';
+import { setReload } from '../../actions/commonActions';
 
 let countdown;
 

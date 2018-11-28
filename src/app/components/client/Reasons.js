@@ -9,8 +9,8 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 
-import { setReason } from './actions';
-import { setActionBtnDisabled } from '../common/actions';
+import { setReason } from '../../actions/clientActions';
+import { setActionBtnDisabled } from '../../actions/commonActions';
 import reasons from '../../_services/reasons';
 
 class Reasons extends Component {

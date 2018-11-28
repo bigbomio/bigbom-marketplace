@@ -10,7 +10,7 @@ import Popper from '../common/Popper';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 
-import { setActionBtnDisabled } from '../common/actions';
+import { setActionBtnDisabled } from '../../actions/commonActions';
 import { saveRevealVote } from './actions';
 
 import VoteResult from './VoteResult';

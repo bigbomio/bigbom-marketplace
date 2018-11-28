@@ -105,7 +105,7 @@ DialogPopup.defaultProps = {
 
 const mapStateToProps = state => {
     return {
-        actionBtnDisabled: state.commonReducer.actionBtnDisabled,
+        actionBtnDisabled: state.CommonReducer.actionBtnDisabled,
     };
 };
 

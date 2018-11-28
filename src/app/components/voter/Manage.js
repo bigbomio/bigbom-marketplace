@@ -19,7 +19,7 @@ import abiConfig, { fromBlock } from '../../_services/abiConfig';
 
 import DisputesRendeManage from './DisputesRendeManage';
 import { saveDisputes } from './actions';
-import { setReload } from '../common/actions';
+import { setReload } from '../../actions/commonActions';
 
 let disputes = [];
 const options = ['Latest', 'Oldest'];
@@ -320,7 +320,7 @@ const mapStateToProps = state => {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
         disputes: state.voterReducer.disputes,
-        reload: state.commonReducer.reload,
+        reload: state.CommonReducer.reload,
     };
 };
 

@@ -19,7 +19,7 @@ import abiConfig from '../../_services/abiConfig';
 import services from '../../_services/services';
 
 import JobsRender from './JobsRender';
-import { saveJobs } from '../client/actions';
+import { saveJobs } from '../../actions/clientActions';
 
 let jobs = [];
 
@@ -355,7 +355,7 @@ const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
         isConnected: state.homeReducer.isConnected,
-        jobs: state.clientReducer.jobs,
+        jobs: state.ClientReducer.jobs,
     };
 };
 

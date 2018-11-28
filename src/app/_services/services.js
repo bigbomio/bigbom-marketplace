@@ -2,7 +2,7 @@ import axios from 'axios';
 import LocalStorage from '../_utils/localStorage';
 import { store } from '../stores';
 import * as listTypes from '../components/home/consts';
-import * as listTypesCommon from '../components/common/consts';
+import * as listTypesCommon from '../constants/actionTypes';
 
 const env = process.env.REACT_APP_ENV;
 

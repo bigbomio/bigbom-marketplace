@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import * as nameActList from './consts';
+import * as types from '../constants/actionTypes';
 
 const data = {
     jobs: [],
@@ -10,9 +10,9 @@ const data = {
 
 const initData = cloneDeep(data);
 
-const clientReducer = (state = initData, action) => {
+const ClientReducer = (state = initData, action) => {
     switch (action.type) {
-        case nameActList.SAVE_JOBS: {
+        case types.SAVE_JOBS: {
             let jobs = cloneDeep(state.jobs);
             jobs = action.jobs;
             return {
@@ -20,7 +20,7 @@ const clientReducer = (state = initData, action) => {
                 jobs,
             };
         }
-        case nameActList.SET_REASON: {
+        case types.SET_REASON: {
             let reason = cloneDeep(state.reason);
             reason = action.reason;
             return {
@@ -29,7 +29,7 @@ const clientReducer = (state = initData, action) => {
                 actionBtnDisabled: false,
             };
         }
-        case nameActList.SET_STT_RESPONDED_DISPUTE: {
+        case types.SET_STT_RESPONDED_DISPUTE: {
             let sttRespondedDispute = cloneDeep(state.sttRespondedDispute);
             sttRespondedDispute = action.sttRespondedDispute;
             return {
@@ -43,4 +43,4 @@ const clientReducer = (state = initData, action) => {
     }
 };
 
-export default clientReducer;
+export default ClientReducer;

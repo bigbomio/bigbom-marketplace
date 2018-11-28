@@ -14,8 +14,8 @@ import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
-import { saveJobs } from './actions';
-import { setReload } from '../common/actions';
+import { saveJobs } from '../../actions/clientActions';
+import { setReload } from '../../actions/commonActions';
 
 const categories = settingsApi.getCategories();
 
@@ -92,7 +92,7 @@ class YourJobs extends Component {
         const { web3 } = this.props;
         const event = eventLog.data;
         if (!eventLog.data) {
-            this.setState({ stt: { err: true, text: 'You don\'t have any jobs!' }, isLoading: false });
+            this.setState({ stt: { err: true, text: "You don't have any jobs!" }, isLoading: false });
             return;
         }
         const jobID = event.args.jobID.toString();
@@ -300,7 +300,7 @@ class YourJobs extends Component {
             } else {
                 return (
                     <Grid container className="no-data">
-                        {'You don\'t have any jobs !'}
+                        {"You don't have any jobs !"}
                     </Grid>
                 );
             }
@@ -470,7 +470,7 @@ YourJobs.propTypes = {
 const mapStateToProps = state => {
     return {
         web3: state.homeReducer.web3,
-        reload: state.commonReducer.reload,
+        reload: state.CommonReducer.reload,
         isConnected: state.homeReducer.isConnected,
     };
 };
