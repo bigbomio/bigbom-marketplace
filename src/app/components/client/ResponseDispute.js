@@ -275,9 +275,9 @@ ResponseDispute.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
         accountInfo: state.CommonReducer.accountInfo,
-        votingParams: state.freelancerReducer.votingParams,
+        votingParams: state.FreelancerReducer.votingParams,
     };
 };
 

@@ -19,7 +19,7 @@ import Voting from './Voting';
 import Reveal from './Reveal';
 import VoteResult from './VoteResult';
 
-import { setVoteInputDisable } from './actions';
+import { setVoteInputDisable } from '../../actions/voterActions';
 
 class DisputeDetail extends Component {
     constructor(props) {
@@ -577,10 +577,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                        ? 'Commit Vote'
-                                        : !isFinal
-                                        ? 'Reveal Vote'
-                                        : 'Dispute finalized'}
+                                            ? 'Commit Vote'
+                                            : !isFinal
+                                                ? 'Reveal Vote'
+                                                : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -613,8 +613,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                            ? 'commit-duration orange'
-                                            : 'commit-duration blue'
+                                                ? 'commit-duration orange'
+                                                : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
@@ -800,13 +800,13 @@ DisputeDetail.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
         reload: state.CommonReducer.reload,
-        isConnected: state.homeReducer.isConnected,
-        disputes: state.voterReducer.disputes,
+        isConnected: state.HomeReducer.isConnected,
+        disputes: state.VoterReducer.disputes,
         accountInfo: state.CommonReducer.accountInfo,
-        vote: state.voterReducer.vote,
-        revealVote: state.voterReducer.revealVote,
+        vote: state.VoterReducer.vote,
+        revealVote: state.VoterReducer.revealVote,
     };
 };
 

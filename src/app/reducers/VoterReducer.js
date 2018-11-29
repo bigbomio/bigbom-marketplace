@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import * as nameActList from './consts';
+import * as types from '../constants/actionTypes';
 
 const data = {
     disputes: [],
@@ -11,9 +11,9 @@ const data = {
 
 const initData = cloneDeep(data);
 
-const voterReducer = (state = initData, action) => {
+const VoterReducer = (state = initData, action) => {
     switch (action.type) {
-        case nameActList.SAVE_DISPUTES: {
+        case types.SAVE_DISPUTES: {
             let disputes = cloneDeep(state.disputes);
             disputes = action.disputes;
             return {
@@ -21,7 +21,7 @@ const voterReducer = (state = initData, action) => {
                 disputes,
             };
         }
-        case nameActList.SAVE_VOTE: {
+        case types.SAVE_VOTE: {
             let vote = cloneDeep(state.vote);
             vote = action.vote;
             return {
@@ -29,7 +29,7 @@ const voterReducer = (state = initData, action) => {
                 vote,
             };
         }
-        case nameActList.SET_VOTE_INPUT_DISABLE: {
+        case types.SET_VOTE_INPUT_DISABLE: {
             let voteInputDisable = cloneDeep(state.voteInputDisable);
             voteInputDisable = action.voteInputDisable;
             return {
@@ -37,7 +37,7 @@ const voterReducer = (state = initData, action) => {
                 voteInputDisable,
             };
         }
-        case nameActList.SAVE_REVEAL_VOTE: {
+        case types.SAVE_REVEAL_VOTE: {
             let revealVote = cloneDeep(state.revealVote);
             revealVote = action.revealVote;
             return {
@@ -50,4 +50,4 @@ const voterReducer = (state = initData, action) => {
     }
 };
 
-export default voterReducer;
+export default VoterReducer;

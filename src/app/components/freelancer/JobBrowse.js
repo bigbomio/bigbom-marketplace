@@ -353,8 +353,8 @@ JobBrowser.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        isConnected: state.homeReducer.isConnected,
+        web3: state.HomeReducer.web3,
+        isConnected: state.HomeReducer.isConnected,
         jobs: state.ClientReducer.jobs,
     };
 };

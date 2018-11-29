@@ -12,7 +12,7 @@ import Popper from '../common/Popper';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 import { setActionBtnDisabled } from '../../actions/commonActions';
-import { saveVote, setVoteInputDisable } from './actions';
+import { saveVote, setVoteInputDisable } from '../../actions/voterActions';
 
 class Voting extends Component {
     constructor(props) {
@@ -212,8 +212,8 @@ Voting.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        voteInputDisable: state.voterReducer.voteInputDisable,
+        web3: state.HomeReducer.web3,
+        voteInputDisable: state.VoterReducer.voteInputDisable,
     };
 };
 

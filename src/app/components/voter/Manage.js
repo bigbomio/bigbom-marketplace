@@ -18,7 +18,7 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
 
 import DisputesRendeManage from './DisputesRendeManage';
-import { saveDisputes } from './actions';
+import { saveDisputes } from '../../actions/voterActions';
 import { setReload } from '../../actions/commonActions';
 
 let disputes = [];
@@ -317,9 +317,9 @@ Manage.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        isConnected: state.homeReducer.isConnected,
-        disputes: state.voterReducer.disputes,
+        web3: state.HomeReducer.web3,
+        isConnected: state.HomeReducer.isConnected,
+        disputes: state.VoterReducer.disputes,
         reload: state.CommonReducer.reload,
     };
 };

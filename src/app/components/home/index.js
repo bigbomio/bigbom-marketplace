@@ -202,7 +202,7 @@ Home.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        isConnected: state.homeReducer.isConnected,
+        isConnected: state.HomeReducer.isConnected,
         accountInfo: state.CommonReducer.accountInfo,
         register: state.CommonReducer.register,
     };

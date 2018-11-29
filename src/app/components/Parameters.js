@@ -139,7 +139,7 @@ Parameters.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
     };
 };
 

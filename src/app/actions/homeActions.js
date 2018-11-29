@@ -1,41 +1,41 @@
-import * as listTypes from './consts';
+import * as types from '../constants/actionTypes';
 
 export const loginMetamask = () => {
     return {
-        type: listTypes.LOGIN_METAMASK,
+        type: types.LOGIN_METAMASK,
     };
 };
 
 export const logoutMetamask = () => {
     return {
-        type: listTypes.LOGOUT_METAMASK,
+        type: types.LOGOUT_METAMASK,
     };
 };
 
 export const setNetwork = network => {
     return {
-        type: listTypes.SET_NETWORK,
+        type: types.SET_NETWORK,
         network,
     };
 };
 
 export const setAccount = defaultAccount => {
     return {
-        type: listTypes.SET_ACCOUNT,
+        type: types.SET_ACCOUNT,
         defaultAccount,
     };
 };
 
 export const setWeb3 = web3 => {
     return {
-        type: listTypes.SET_WEB3,
+        type: types.SET_WEB3,
         web3,
     };
 };
 
 export const setCheckAcount = checkAccount => {
     return {
-        type: listTypes.SET_CHECK_ACCOUNT,
+        type: types.SET_CHECK_ACCOUNT,
         checkAccount,
     };
 };

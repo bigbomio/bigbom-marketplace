@@ -20,8 +20,8 @@ import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
-import { saveVotingParams } from '../freelancer/actions';
-import { saveDisputes } from '../voter/actions';
+import { saveVotingParams } from '../../actions/freelancerActions';
+import { saveDisputes } from '../../actions/voterActions';
 
 let disputes = [];
 let disputesSource = [];
@@ -289,10 +289,10 @@ DisputeBrowser.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        isConnected: state.homeReducer.isConnected,
-        disputes: state.voterReducer.disputes,
-        votingParams: state.freelancerReducer.votingParams,
+        web3: state.HomeReducer.web3,
+        isConnected: state.HomeReducer.isConnected,
+        disputes: state.VoterReducer.disputes,
+        votingParams: state.FreelancerReducer.votingParams,
     };
 };
 

@@ -503,9 +503,9 @@ YourBids.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
         reload: state.CommonReducer.reload,
-        isConnected: state.homeReducer.isConnected,
+        isConnected: state.HomeReducer.isConnected,
     };
 };
 

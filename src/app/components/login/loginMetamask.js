@@ -18,7 +18,7 @@ import abiConfig from '../../_services/abiConfig';
 import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 
-import { loginMetamask, setWeb3, setCheckAcount } from '../home/actions';
+import { loginMetamask, setWeb3, setCheckAcount } from '../../actions/homeActions';
 import { saveAccountInfo, setRegister } from '../../actions/commonActions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
@@ -472,8 +472,8 @@ LoginMetamask.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        isConnected: state.homeReducer.isConnected,
+        web3: state.HomeReducer.web3,
+        isConnected: state.HomeReducer.isConnected,
         register: state.CommonReducer.register,
     };
 };

@@ -91,7 +91,7 @@ ClientCatagories.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        isConnected: state.homeReducer.isConnected,
+        isConnected: state.HomeReducer.isConnected,
     };
 };
 

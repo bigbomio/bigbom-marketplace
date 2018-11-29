@@ -1,8 +1,7 @@
 import axios from 'axios';
 import LocalStorage from '../_utils/localStorage';
 import { store } from '../stores';
-import * as listTypes from '../components/home/consts';
-import * as listTypesCommon from '../constants/actionTypes';
+import * as types from '../constants/actionTypes';
 
 const env = process.env.REACT_APP_ENV;
 
@@ -75,10 +74,10 @@ function getTokenSaved() {
     } else {
         // logout account
         store.dispatch({
-            type: listTypes.LOGOUT_METAMASK,
+            type: types.LOGOUT_METAMASK,
         });
         store.dispatch({
-            type: listTypesCommon.SAVE_ACCOUNT_INFO,
+            type: types.SAVE_ACCOUNT_INFO,
             accountInfo,
         });
         LocalStorage.removeItem('userToken');

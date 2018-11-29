@@ -15,3 +15,21 @@ export const SET_YOUR_NETWORK = 'SET_YOUR_NETWORK';
 export const SET_RELOAD = 'SET_RELOAD';
 export const SAVE_ACCOUNT_INFO = 'SAVE_ACCOUNT_INFO';
 export const SET_REGISTER = 'SET_REGISTER';
+
+// freenlacer
+export const SAVE_VOTING_PARAMS = 'SAVE_VOTING_PARAMS';
+export const SET_STT_DISPUTE_CREATED = 'SET_STT_DISPUTE_CREATED';
+
+// home
+export const LOGIN_METAMASK = 'LOGIN_METAMASK';
+export const LOGOUT_METAMASK = 'LOGOUT_METAMASK';
+export const SET_WEB3 = 'SET_WEB3';
+export const SET_ACCOUNT = 'SET_ACCOUNT';
+export const SET_NETWORK = 'SET_NETWORK';
+export const SET_CHECK_ACCOUNT = 'SET_CHECK_ACCOUNT';
+
+// dispute
+export const SAVE_DISPUTES = 'SAVE_DISPUTES';
+export const SAVE_VOTE = 'SAVE_VOTE';
+export const SET_VOTE_INPUT_DISABLE = 'SAVE_VOTE_INPUT_DISABLE';
+export const SAVE_REVEAL_VOTE = 'SAVE_REVEAL_VOTE';

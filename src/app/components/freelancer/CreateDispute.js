@@ -9,7 +9,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
-import { setSttDisputeCreated } from './actions';
+import { setSttDisputeCreated } from '../../actions/freelancerActions';
 import LocalStorage from '../../_utils/localStorage';
 
 const ipfs = abiConfig.getIpfs();
@@ -276,9 +276,9 @@ CreateDispute.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
         accountInfo: state.CommonReducer.accountInfo,
-        votingParams: state.freelancerReducer.votingParams,
+        votingParams: state.FreelancerReducer.votingParams,
     };
 };
 
