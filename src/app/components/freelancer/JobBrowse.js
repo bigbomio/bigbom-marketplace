@@ -20,6 +20,7 @@ import services from '../../_services/services';
 
 import JobsRender from './JobsRender';
 import { saveJobs } from '../../actions/clientActions';
+import contractApis from '../../_services/contractApis';
 
 let jobs = [];
 
@@ -59,7 +60,7 @@ class JobBrowser extends Component {
         this.mounted = false;
     }
 
-    getJobs = () => {
+    getJobs = async () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         jobs = [];
@@ -70,19 +71,23 @@ class JobBrowser extends Component {
                 return;
             }
         }, 20000);
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
+        const events = await contractApis.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {});
+        if (events.length > 0) {
+            for (let event of events) {
+                this.JobCreatedInit(event);
+            }
+        }
     };
 
     JobCreatedInit = async eventLog => {
         //console.log('getPastSingleEvent success: ', eventLog);
         const { web3 } = this.props;
-        const event = eventLog.data;
-        if (!eventLog.data) {
+        if (!eventLog) {
             this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
             return;
         }
-        const jobHash = Utils.toAscii(event.args.jobHash);
-        const jobID = event.args.jobID.toString();
+        const jobHash = Utils.toAscii(eventLog.args.jobHash);
+        const jobID = eventLog.args.jobID.toString();
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const [err, jobStatusLog] = await Utils.callMethod(jobInstance.instance.getJob)(jobID, {
@@ -96,30 +101,30 @@ class JobBrowser extends Component {
             if (jobStatus.bidding) {
                 // get detail from ipfs
                 const URl = abiConfig.getIpfsLink() + jobHash;
-                const employerInfo = await services.getUserByWallet(event.args.owner);
+                const employerInfo = await services.getUserByWallet(eventLog.args.owner);
                 let employer = {
-                    fullName: event.args.owner,
-                    walletAddress: event.args.owner,
+                    fullName: eventLog.args.owner,
+                    walletAddress: eventLog.args.owner,
                     email: '',
                 };
                 if (employerInfo !== undefined) {
                     employer = {
                         fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
-                        walletAddress: event.args.owner,
+                        walletAddress: eventLog.args.owner,
                         email: employerInfo.userInfo.email,
                     };
                 }
                 const jobTpl = {
                     jobID,
-                    id: event.args.jobHash,
-                    owner: event.args.owner,
+                    id: eventLog.args.jobHash,
+                    owner: eventLog.args.owner,
                     ownerInfo: employer,
                     jobHash: jobHash,
-                    category: Utils.toAscii(event.args.category),
-                    expired: event.args.expired.toString(),
+                    category: Utils.toAscii(eventLog.args.category),
+                    expired: eventLog.args.expired.toString(),
                     status: jobStatus,
                     bid: [],
-                    jobBlockNumber: event.blockNumber,
+                    jobBlockNumber: eventLog.blockNumber,
                 };
                 fetch(URl)
                     .then(res => res.json())
@@ -145,16 +150,18 @@ class JobBrowser extends Component {
         }
     };
 
-    BidCreatedInit = job => {
+    BidCreatedInit = async job => {
         //console.log('BidCreatedInit success: ', job);
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job, this.BidAcceptedInit);
+        const jobsMergedBid = await contractApis.mergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
+        this.BidAcceptedInit(jobsMergedBid);
     };
 
-    BidAcceptedInit = jobData => {
+    BidAcceptedInit = async jobData => {
         //console.log('BidAcceptedInit success: ', jobData);
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.jobID }, jobData.data, this.JobsInit);
+        const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data);
+        this.JobsInit(bidAcceptedData);
     };
 
     JobsInit = jobData => {

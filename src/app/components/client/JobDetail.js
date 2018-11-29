@@ -19,6 +19,7 @@ import ResponseDispute from './ResponseDispute';
 import VoteResult from '../voter/VoteResult';
 import LocalStorage from '../../_utils/localStorage';
 import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
+import contractApis from '../../_services/contractApis';
 
 const skillShow = jobSkills => {
     return (
@@ -65,14 +66,15 @@ class JobDetail extends Component {
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const { isConnected, web3, saveVotingParams } = this.props;
         const { isLoading } = this.state;
         if (isConnected) {
             if (!isLoading) {
                 this.mounted = true;
                 this.jobDataInit();
-                abiConfig.getVotingParams(web3, saveVotingParams);
+                const votingParams = await contractApis.getVotingParams(web3);
+                saveVotingParams(votingParams);
             }
             this.checkMetamaskID = setInterval(() => {
                 this.checkAccount();
@@ -103,7 +105,8 @@ class JobDetail extends Component {
             clientResponseDuration = 0;
         }
         if (event.revealEndDate <= Date.now()) {
-            abiConfig.getDisputeFinalized(web3, jobID, this.setFinalizedStt);
+            const disputeFinalized = await contractApis.getDisputeFinalized(web3, jobID);
+            this.setFinalizedStt(disputeFinalized);
             this.getDisputeResult();
         }
         fetch(URl)
@@ -455,29 +458,33 @@ class JobDetail extends Component {
     BidCreatedInit = async job => {
         //console.log('BidCreatedInit', job);
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job, this.BidAcceptedInit);
-        abiConfig.checkPayment(web3, job.jobID, this.setPaymentStt);
+        const jobsMergedBid = await contractApis.mergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
+        this.BidAcceptedInit(jobsMergedBid);
+        const paymentInfo = await contractApis.checkPayment(web3, job.jobID);
+        this.setPaymentStt(paymentInfo);
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.jobID }, jobData.data, this.JobsInit);
+        const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data);
+        this.JobsInit(bidAcceptedData);
     };
 
-    jobStarted = async (jobData, jobStarted) => {
+    jobStarted = async jobStartedData => {
         //console.log('jobStarted', jobData);
-        const bidAccepted = jobData.bid.filter(bid => bid.accepted);
-        const jobCompleteDuration = (jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
+        const bidAccepted = jobStartedData.jobData.bid.filter(bid => bid.accepted);
+        const jobCompleteDuration = (jobStartedData.jobStarted.created + Number(bidAccepted[0].timeDone) * 60 * 60) * 1000;
         if (this.mounted) {
-            this.setState({ jobData: jobData, isLoading: false, jobCompleteDuration });
+            this.setState({ jobData: jobStartedData.jobData, isLoading: false, jobCompleteDuration });
         }
     };
 
-    JobsInit = jobData => {
+    JobsInit = async jobData => {
         //console.log('JobsInit', jobData);
         const { web3, getRatingLogs } = this.props;
         if (jobData.data.status.started) {
-            abiConfig.jobStarted(web3, jobData.data, this.jobStarted);
+            const jobStartedData = await contractApis.jobStarted(web3, jobData.data);
+            this.jobStarted(jobStartedData);
         } else {
             if (this.mounted) {
                 this.setState({ jobData: jobData.data, isLoading: false });
@@ -529,7 +536,7 @@ class JobDetail extends Component {
         const { bidValue } = this.state;
         const { web3, accountInfo } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
-        const allowance = await abiConfig.getAllowance(web3, 'BBFreelancerBid');
+        const allowance = await contractApis.getAllowance(web3, 'BBFreelancerBid');
         if (Number(defaultWallet[0].balances.ETH) <= 0) {
             this.setActionBtnDisabled(true);
             this.setState({
@@ -562,16 +569,16 @@ class JobDetail extends Component {
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
         if (Number(allowance.toString(10)) === 0) {
-            const apprv = await abiConfig.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
+            const apprv = await contractApis.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
             if (apprv) {
                 await this.acceptBid();
             }
         } else if (Number(allowance.toString(10)) > Number(bidValue)) {
             await this.acceptBid();
         } else {
-            const apprv = await abiConfig.approve(web3, 'BBFreelancerBid', 0);
+            const apprv = await contractApis.approve(web3, 'BBFreelancerBid', 0);
             if (apprv) {
-                const apprv2 = await abiConfig.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
+                const apprv2 = await contractApis.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
                 if (apprv2) {
                     await this.acceptBid();
                 }
@@ -1123,8 +1130,8 @@ class JobDetail extends Component {
                             {voteWinner === 'client'
                                 ? 'Your dispute has had result and you are winner.'
                                 : voteWinner === 'freelancer'
-                                    ? 'Your dispute has had result and you are losers.'
-                                    : 'Your dispute has had result, but there is not winner.'}
+                                ? 'Your dispute has had result and you are losers.'
+                                : 'Your dispute has had result, but there is not winner.'}
                             <i
                                 className="fas fa-info-circle icon-popper-note"
                                 aria-owns={isPopperOpen ? 'mouse-over-drawn' : null}
@@ -1273,8 +1280,8 @@ class JobDetail extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                            ? jobData.estimatedTime / 24 + ' Days'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                        ? jobData.estimatedTime / 24 + ' Days'
+                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1394,8 +1401,8 @@ class JobDetail extends Component {
                                                                 {freelancer.timeDone <= 24
                                                                     ? freelancer.timeDone + ' H'
                                                                     : Number.isInteger(freelancer.timeDone / 24)
-                                                                        ? freelancer.timeDone / 24 + ' Days'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                    ? freelancer.timeDone / 24 + ' Days'
+                                                                    : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                             </Grid>
                                                             <Grid item xs={2} className="action">
                                                                 {this.bidActions(freelancer)}

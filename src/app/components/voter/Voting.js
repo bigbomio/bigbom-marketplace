@@ -10,9 +10,9 @@ import { ButtonBase } from '@material-ui/core';
 import Popper from '../common/Popper';
 
 import Utils from '../../_utils/utils';
-import abiConfig from '../../_services/abiConfig';
 import { setActionBtnDisabled } from '../../actions/commonActions';
 import { saveVote, setVoteInputDisable } from '../../actions/voterActions';
+import contractApis from '../../_services/contractApis';
 
 class Voting extends Component {
     constructor(props) {
@@ -26,10 +26,11 @@ class Voting extends Component {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         const { web3 } = this.props;
         this.mounted = true;
-        abiConfig.getVotingParams(web3, this.saveVotingParams);
+        const votingParams = await contractApis.getVotingParams(web3);
+        this.saveVotingParams(votingParams);
         this.getSecretPhrase();
     }
 

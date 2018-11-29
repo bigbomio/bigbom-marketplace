@@ -12,6 +12,7 @@ import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
 import LocalStorage from '../../_utils/localStorage';
+import contractApis from '../../_services/contractApis';
 
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
@@ -248,7 +249,8 @@ class DisputeDetail extends Component {
             }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
-            abiConfig.getDisputeFinalized(web3, disputeData.data.jobID, this.setFinalizedStt);
+            const disputeFinalized = await contractApis.getDisputeFinalized(web3, disputeData.data.jobID);
+            this.setFinalizedStt(disputeFinalized);
         }
         fetch(URl)
             .then(res => res.json())
@@ -417,7 +419,7 @@ class DisputeDetail extends Component {
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
-        const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
+        const allowance = await contractApis.getAllowance(web3, 'BBVoting');
 
         /// check balance
         if (defaultWallet[0].balances.ETH <= 0) {
@@ -449,16 +451,16 @@ class DisputeDetail extends Component {
         }
 
         if (Number(allowance.toString(10)) === 0) {
-            const apprv = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
+            const apprv = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
             if (apprv) {
                 await this.finalVoting();
             }
         } else if (Number(allowance.toString(10)) > Utils.BBOToWei(web3, vote.token)) {
             await this.finalVoting();
         } else {
-            const apprv = await abiConfig.approve(web3, 'BBVoting', 0);
+            const apprv = await contractApis.approve(web3, 'BBVoting', 0);
             if (apprv) {
-                const apprv2 = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
+                const apprv2 = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
                 if (apprv2) {
                     await this.finalVoting();
                 }
@@ -577,10 +579,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -613,8 +615,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
