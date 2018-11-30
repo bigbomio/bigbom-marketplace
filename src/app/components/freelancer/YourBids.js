@@ -71,6 +71,13 @@ class YourBids extends Component {
                 this.JobCreatedInit(event);
             }
         }
+        // time out 20s
+        setTimeout(() => {
+            if (jobs.length <= 0) {
+                this.setState({ isLoading: false });
+                return;
+            }
+        }, 15000);
     };
 
     getBiddingStt(stts) {

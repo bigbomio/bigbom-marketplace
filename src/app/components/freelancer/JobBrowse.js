@@ -70,7 +70,7 @@ class JobBrowser extends Component {
                 this.setState({ stt: { err: true, text: 'Have no any job to show!' }, isLoading: false });
                 return;
             }
-        }, 20000);
+        }, 15000);
         const events = await contractApis.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {});
         if (events.length > 0) {
             for (let event of events) {

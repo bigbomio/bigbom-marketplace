@@ -69,6 +69,9 @@ class YourJobs extends Component {
             for (let event of events) {
                 this.JobCreatedInit(event);
             }
+        } else {
+            this.setState({ isLoading: false });
+            return;
         }
     };
 
