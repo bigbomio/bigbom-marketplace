@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Fade from '@material-ui/core/Fade';
 
 import Utils from '../../_utils/utils';
@@ -23,6 +22,7 @@ import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
 import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
+import Loading from '../common/Loading';
 
 let myAddress;
 
@@ -129,7 +129,7 @@ class JobDetailBid extends Component {
     }
 
     getReasonPaymentRejected = async paymentRejectReason => {
-        const reason = api.getReason(Number(paymentRejectReason.reason)).text;
+        const reason = await api.getReason(Number(paymentRejectReason.reason)).text;
         if (this.mounted) {
             this.setState({ paymentRejectReason: reason });
         }
@@ -141,8 +141,10 @@ class JobDetailBid extends Component {
         this.setState({ pollID: event.pollID });
         const clientResponseDuration = event.evidenceEndDate * 1000;
         if (event.revealEndDate <= Date.now()) {
-            const disputeFinalized = await contractApis.getDisputeFinalized(web3, jobID);
-            this.setFinalizedStt(disputeFinalized);
+            const isFinal = await contractApis.getDisputeFinalized(web3, jobID);
+            if (this.mounted) {
+                this.setState({ isFinal });
+            }
             this.getDisputeResult();
         }
         if (clientResponseDuration > Date.now()) {
@@ -199,24 +201,6 @@ class JobDetailBid extends Component {
             );
     };
 
-    setPaymentStt = paymentStt => {
-        if (this.mounted) {
-            this.setState({ ...paymentStt });
-        }
-    };
-
-    setFinalizedStt = isFinal => {
-        if (this.mounted) {
-            this.setState({ isFinal });
-        }
-    };
-
-    setFinalizedWithoutAgainstStt = isFinalWithoutAgainst => {
-        if (this.mounted) {
-            this.setState({ isFinalWithoutAgainst });
-        }
-    };
-
     getDisputeResult = async () => {
         const { web3 } = this.props;
         const { pollID } = this.state;
@@ -234,6 +218,11 @@ class JobDetailBid extends Component {
             });
             console.log(err);
             return;
+        } else {
+            // dispute not response from client
+            if (result[1].length < 3) {
+                return;
+            }
         }
         voteResult = {
             clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
@@ -667,10 +656,13 @@ class JobDetailBid extends Component {
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
         const jobID = match.params.jobId;
-        abiConfig.getEventsPollStarted(web3, jobID, 1, this.setDisputeStt);
-        const disputeFinalized = await contractApis.getDisputeFinalized(web3, jobID);
-        this.setFinalizedStt(disputeFinalized);
-        abiConfig.getDisputeFinalizedDisputeContract(web3, jobID, this.setFinalizedWithoutAgainstStt);
+        const pollStarted = await contractApis.getEventsPollStarted(web3, jobID, 1);
+        this.setDisputeStt(pollStarted);
+        const isFinal = await contractApis.getDisputeFinalized(web3, jobID);
+        const isFinalWithoutAgainst = await contractApis.getDisputeFinalizedDisputeContract(web3, jobID);
+        if (this.mounted) {
+            this.setState({ isFinalWithoutAgainst, isFinal });
+        }
         // check client dispute response status
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const [error, re] = await Utils.callMethod(ctInstance.instance.isAgaintsDispute)(jobID, {
@@ -679,7 +671,7 @@ class JobDetailBid extends Component {
         });
         if (!error) {
             if (re) {
-                abiConfig.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
+                contractApis.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
             } else {
                 if (this.mounted) {
                     this.setState({ clientRespondedDispute: { responded: false, commitDuration: 0 } });
@@ -721,6 +713,15 @@ class JobDetailBid extends Component {
             } else {
                 setActionBtnDisabled(false);
             }
+
+            if (jobStatus.reject) {
+                const reason = await contractApis.getReasonPaymentRejected(web3, jobID);
+                const rejectPaymentDuration = Number(reason.created) * 1000;
+                if (this.mounted) {
+                    this.setState({ rejectPaymentDuration });
+                }
+            }
+
             const employerInfo = await services.getUserByWallet(jobStatusLog[0]);
             let employer = {
                 fullName: jobStatusLog[0],
@@ -787,7 +788,8 @@ class JobDetailBid extends Component {
     BidCreatedInit = async job => {
         const { web3 } = this.props;
         if (job.status.reject) {
-            abiConfig.getReasonPaymentRejected(web3, job.jobID, this.getReasonPaymentRejected);
+            const reason = await contractApis.getReasonPaymentRejected(web3, job.jobID);
+            this.getReasonPaymentRejected(reason);
         }
         const jobsMergedBid = await contractApis.mergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
         this.BidAcceptedInit(jobsMergedBid);
@@ -798,8 +800,10 @@ class JobDetailBid extends Component {
         const { jobID } = this.state;
         const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID }, jobData.data);
         this.JobsInit(bidAcceptedData);
-        const paymentInfo = await contractApis.checkPayment(web3, jobID);
-        this.setPaymentStt(paymentInfo);
+        const paymentStt = await contractApis.checkPayment(web3, jobID);
+        if (this.mounted) {
+            this.setState({ ...paymentStt });
+        }
     };
 
     jobStarted = async jobStartedData => {
@@ -1290,6 +1294,7 @@ class JobDetailBid extends Component {
             paymentDuration,
             disputeCreated,
             jobCompleteDuration,
+            rejectPaymentDuration,
         } = this.state;
         //console.log(jobData);
 
@@ -1323,7 +1328,6 @@ class JobDetailBid extends Component {
                                     {this.actions()}
                                 </div>
                                 {this.disputeActions()}
-
                                 {/* Bid stage */}
                                 <Fade in={checkedBid}>
                                     <Grid container elevation={4} className={checkedBid ? 'bid-form show-block' : 'bid-form hide'}>
@@ -1426,6 +1430,10 @@ class JobDetailBid extends Component {
                                                     (!jobData.status.disputing && (
                                                         <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
                                                     )))}
+
+                                            {jobData.status.reject && rejectPaymentDuration && (
+                                                <Countdown reload name="Respone duration" expiredTime={rejectPaymentDuration} />
+                                            )}
                                         </Grid>
                                     </Grid>
                                     <Grid item xs={2}>
@@ -1532,9 +1540,7 @@ class JobDetailBid extends Component {
             } else {
                 jobTplRender = () => (
                     <Grid container className="single-body">
-                        <Grid container>
-                            <h2> Sorry. Job does not exist </h2>
-                        </Grid>
+                        <Grid container />
                     </Grid>
                 );
             }
@@ -1567,10 +1573,7 @@ class JobDetailBid extends Component {
                                 jobTplRender()
                             ) : (
                                 <Grid container className="single-body">
-                                    <div className="loading">
-                                        <CircularProgress size={50} color="secondary" />
-                                        <span>Loading...</span>
-                                    </div>
+                                    <Loading />
                                 </Grid>
                             )}
                         </div>

@@ -22,6 +22,7 @@ import abiConfig from '../../_services/abiConfig';
 
 import { saveVotingParams } from '../../actions/freelancerActions';
 import { saveDisputes } from '../../actions/voterActions';
+import contractApis from '../../_services/contractApis';
 
 let disputes = [];
 let disputesSource = [];
@@ -58,20 +59,19 @@ class DisputeBrowser extends Component {
         this.mounted = false;
     }
 
-    getDisputes = () => {
+    getDisputes = async () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         disputes = [];
-
-        // time out 20s
-        setTimeout(() => {
-            if (disputes.length <= 0) {
-                this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
-                return;
+        const disputeDatas = await contractApis.getAllAvailablePoll(web3);
+        if (disputeDatas.length > 0) {
+            for (let dpData of disputeDatas) {
+                this.disputeCreatedInit(dpData);
             }
-        }, 20000);
-
-        abiConfig.getAllAvailablePoll(web3, this.disputeCreatedInit);
+        } else {
+            this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
+            return;
+        }
     };
 
     disputeCreatedInit = async disputeDataResult => {

@@ -22,6 +22,7 @@ class JobsRender extends Component {
 
     render() {
         const { Jobs } = this.state;
+
         return (
             <Grid container className="job-item-list">
                 {Jobs.length > 0 &&

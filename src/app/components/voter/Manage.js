@@ -20,6 +20,7 @@ import abiConfig, { fromBlock } from '../../_services/abiConfig';
 import DisputesRendeManage from './DisputesRendeManage';
 import { saveDisputes } from '../../actions/voterActions';
 import { setReload } from '../../actions/commonActions';
+import contractApis from '../../_services/contractApis';
 
 let disputes = [];
 const options = ['Latest', 'Oldest'];
@@ -60,18 +61,19 @@ class Manage extends Component {
         clearTimeout(this.loadDataTimeout);
     }
 
-    getDisputes = () => {
+    getDisputes = async () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         disputes = [];
-        // time out 20s
-        this.loadDataTimeout = setTimeout(() => {
-            if (disputes.length <= 0) {
-                this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
-                return;
+        const disputeDatas = await contractApis.getMyVoting(web3);
+        if (disputeDatas.length > 0) {
+            for (let dpData of disputeDatas) {
+                this.disputeCreatedInit(dpData);
             }
-        }, 20000);
-        abiConfig.getMyVoting(web3, this.disputeCreatedInit);
+        } else {
+            this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
+            return;
+        }
     };
 
     setFinalStt = async jobID => {
@@ -108,7 +110,6 @@ class Manage extends Component {
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
-                clearTimeout(this.loadDataTimeout);
                 this.getDisputes();
                 setReload(false);
             }

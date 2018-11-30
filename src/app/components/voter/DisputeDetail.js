@@ -5,7 +5,6 @@ import leftPad from 'left-pad';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
@@ -19,6 +18,7 @@ import DialogPopup from '../common/dialog';
 import Voting from './Voting';
 import Reveal from './Reveal';
 import VoteResult from './VoteResult';
+import Loading from '../common/Loading';
 
 import { setVoteInputDisable } from '../../actions/voterActions';
 
@@ -62,20 +62,20 @@ class DisputeDetail extends Component {
         const { web3, match } = this.props;
         const pollID = match.params.disputeId;
         this.setState({ isLoading: true, pollID });
-        abiConfig.getJobIDByPollID(web3, pollID, this.getDisputeByJobID);
+        const jobID = await contractApis.getJobIDByPollID(web3, pollID);
+        this.getDisputeByJobID(jobID);
     };
 
-    getDisputeByJobID = jobID => {
+    getDisputeByJobID = async jobID => {
         const { web3 } = this.props;
         this.setState({ jobID });
-        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobID);
-        this.checkGetRewardRight(jobID);
-    };
-
-    getReasonPaymentRejected = async paymentRejectReason => {
-        if (this.mounted) {
-            this.setState({ paymentRejectReason });
+        const disputeDatas = await contractApis.getAllAvailablePoll(web3, jobID);
+        if (disputeDatas.length > 0) {
+            for (let dpData of disputeDatas) {
+                this.disputeDataInit(dpData);
+            }
         }
+        this.checkGetRewardRight(jobID);
     };
 
     setActionBtnStt = async (action, done) => {
@@ -237,7 +237,10 @@ class DisputeDetail extends Component {
     disputeDataInit = async disputeData => {
         const { web3 } = this.props;
         this.sttAtionInit();
-        abiConfig.getReasonPaymentRejected(web3, disputeData.data.jobID, this.getReasonPaymentRejected);
+        const reason = await contractApis.getReasonPaymentRejected(web3, disputeData.data.jobID);
+        if (this.mounted) {
+            this.setState({ paymentRejectReason: reason });
+        }
         const URl = abiConfig.getIpfsLink() + disputeData.data.jobHash;
         const dispute = {
             ...disputeData.data,
@@ -310,20 +313,15 @@ class DisputeDetail extends Component {
             .then(
                 result => {
                     dispute.freelancerProof = result;
-                    this.disputeListInit(dispute);
+                    if (this.mounted) {
+                        this.setState({ isLoading: false, disputeData: dispute });
+                    }
                 },
                 error => {
                     console.log(error);
                     dispute.err = 'Can not fetch data from server';
                 }
             );
-    };
-
-    disputeListInit = jobDispute => {
-        //console.log('disputeListInit success: ', jobDispute);
-        if (this.mounted) {
-            this.setState({ isLoading: false, disputeData: jobDispute });
-        }
     };
 
     keccak256(...args) {
@@ -773,10 +771,7 @@ class DisputeDetail extends Component {
                                 disputeTplRender()
                             ) : (
                                 <Grid container className="single-body">
-                                    <div className="loading">
-                                        <CircularProgress size={50} color="secondary" />
-                                        <span>Loading...</span>
-                                    </div>
+                                    <Loading />
                                 </Grid>
                             )}
                         </div>
