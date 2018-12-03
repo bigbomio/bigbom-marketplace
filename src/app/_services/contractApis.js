@@ -451,55 +451,43 @@ const getReasonPaymentRejected = async (web3, jobID) => {
     }
 };
 
-const getEventsPollAgainsted = async (web3, jobID, callback) => {
+const getEventsPollAgainsted = async (web3, jobID) => {
     try {
         const helperInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        ctInstance.instance.DisputeAgainsted(
+
+        const DisputeAgainstedEvent = await ctInstance.instance.DisputeAgainsted(
             { jobID },
             {
                 fromBlock: fromBlock, // should use recent number
                 toBlock: 'latest',
-            },
-            async (err, re) => {
-                //console.log('getEventsPollAgainsted', re);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const pollID = re.args.pollID.toString();
-                    const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
-                    const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
-                    const blockLog = await getBlock(web3, re.blockNumber);
-                    const result = {
-                        created: blockLog.timestamp,
-                        responded: true,
-                        jobID,
-                        pollID,
-                        owner: re.args.creator,
-                        proofHash: Utils.toAscii(clientProofHash),
-                    };
-                    // get freelancer proofhash
-                    ctInstance.instance.DisputeStarted(
-                        { jobID },
-                        {
-                            fromBlock: fromBlock, // should use recent number
-                            toBlock: 'latest',
-                        },
-                        async (err, pollStartedResult) => {
-                            //console.log(pollStartedResult);
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                result.freelancerProofHash = Utils.toAscii(freelancerProofHash);
-                                result.freelancer = pollStartedResult.args.creator;
-                                const timeDurations = await getTimeDurations(web3, result);
-                                callback(timeDurations);
-                            }
-                        }
-                    );
-                }
             }
         );
+        const DisputeAgainstedlogs = await Utils.WaitAllContractEventGet(DisputeAgainstedEvent);
+        const pollID = DisputeAgainstedlogs[0].args.pollID.toString();
+        const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
+        const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
+        const blockLog = await getBlock(web3, DisputeAgainstedlogs[0].blockNumber);
+        const result = {
+            created: blockLog.timestamp,
+            responded: true,
+            jobID,
+            pollID,
+            owner: DisputeAgainstedlogs[0].args.creator,
+            proofHash: Utils.toAscii(clientProofHash),
+        };
+        const disputeStartedEvent = await ctInstance.instance.DisputeStarted(
+            { pollID },
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            }
+        );
+        const disputeStartedlogs = await Utils.WaitAllContractEventGet(disputeStartedEvent);
+        result.freelancerProofHash = Utils.toAscii(freelancerProofHash);
+        result.freelancer = disputeStartedlogs[0].args.creator;
+        const timeDurations = await getTimeDurations(web3, result);
+        return timeDurations;
     } catch (e) {
         console.log(e);
     }
@@ -536,7 +524,7 @@ const getAllAvailablePoll = async (web3, jobID) => {
                 jobID,
             };
         }
-        // get dispute againsted
+        // get dispute againsted by client
         const disputeAgaistedEvent = await ctInstance.instance.DisputeAgainsted(filter, {
             fromBlock: fromBlock, // should use recent number
             toBlock: 'latest',
@@ -666,7 +654,7 @@ const getMyVoting = async web3 => {
                             console.log(errRewardCheck);
                             return;
                         }
-                        if (Number(resultRewardCheck.toString()) > 0) {
+                        if (Number(resultRewardCheck[0].toString()) > 0) {
                             results.data.rewardRight = true;
                         }
                     }

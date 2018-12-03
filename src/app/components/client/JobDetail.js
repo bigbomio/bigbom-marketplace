@@ -20,6 +20,7 @@ import LocalStorage from '../../_utils/localStorage';
 import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 import Loading from '../common/Loading';
+import ComponentLoading from '../common/ComponentLoading';
 
 const skillShow = jobSkills => {
     return (
@@ -62,6 +63,7 @@ class JobDetail extends Component {
             checkedDispute: false,
             paymentDuration: 0,
             sttRespondedDispute: false,
+            getDisputeDataDone: true,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -76,9 +78,6 @@ class JobDetail extends Component {
                 const votingParams = await contractApis.getVotingParams(web3);
                 saveVotingParams(votingParams);
             }
-            this.checkMetamaskID = setInterval(() => {
-                this.checkAccount();
-            }, 1000);
         }
     }
 
@@ -155,11 +154,12 @@ class JobDetail extends Component {
                         started: true,
                         freelancerProof: { imgs: [], text: '' },
                     },
+                    getDisputeDataDone: true,
                 });
             }
         } else {
             if (this.mounted) {
-                this.setState({ freelancerDispute: { responded: event.responded, commitDuration: 0 } });
+                this.setState({ freelancerDispute: { responded: event.responded, commitDuration: 0 }, getDisputeDataDone: true });
             }
         }
         this.setActionBtnDisabled(false);
@@ -338,13 +338,18 @@ class JobDetail extends Component {
         });
         if (!error) {
             if (re) {
-                contractApis.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
+                const disputeDutations = await contractApis.getEventsPollAgainsted(web3, jobID);
+                this.setRespondedisputeStt(disputeDutations);
+                return;
             } else {
                 if (this.mounted) {
-                    this.setState({ freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' } } });
+                    this.setState({
+                        freelancerDispute: { responded: false, commitDuration: 0, freelancerProof: { imgs: [], text: '' }, getDisputeDataDone: true },
+                    });
                 }
             }
         }
+        this.setState({ getDisputeDataDone: true });
     };
 
     sttAtionInit = () => {
@@ -378,6 +383,7 @@ class JobDetail extends Component {
             }
             const jobStatus = await Utils.getStatus(jobStatusLog);
             if (jobStatus.disputing) {
+                this.setState({ getDisputeDataDone: false });
                 this.disputeSttInit();
             } else if (jobStatus.reject) {
                 const reason = await contractApis.getReasonPaymentRejected(web3, jobID);
@@ -492,6 +498,9 @@ class JobDetail extends Component {
             listAddress.push(freelancer.address);
         }
         getRatingLogs({ web3, listAddress });
+        this.checkMetamaskID = setInterval(() => {
+            this.checkAccount();
+        }, 1000);
     };
 
     acceptBid = async () => {
@@ -1018,9 +1027,12 @@ class JobDetail extends Component {
             isFinal,
             updateDisputeDone,
             sttRespondedDispute,
+            getDisputeDataDone,
         } = this.state;
         const isPopperOpen = Boolean(anchorEl);
-
+        if (!getDisputeDataDone) {
+            return <ComponentLoading />;
+        }
         if (!freelancerDispute.responded) {
             if (disputeStt.clientResponseDuration > 0) {
                 return (

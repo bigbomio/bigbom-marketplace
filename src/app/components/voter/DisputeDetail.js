@@ -143,7 +143,7 @@ class DisputeDetail extends Component {
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobID, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(Number(jobID), {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -209,9 +209,10 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
-        if (Number(result.toString()) > 0) {
+        console.log(result[0].toString());
+        if (Number(result[0].toString()) > 0) {
             if (this.mounted) {
-                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result.toString())) });
+                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result[0].toString())) });
             }
         } else {
             if (this.mounted) {

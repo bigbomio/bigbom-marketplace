@@ -23,6 +23,7 @@ import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
 import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import Loading from '../common/Loading';
+import ComponentLoading from '../common/ComponentLoading';
 
 let myAddress;
 
@@ -72,6 +73,7 @@ class JobDetailBid extends Component {
             paymentRejectReason: '',
             paymentDuration: 0,
             disputeCreated: false,
+            getDisputeDataDone: true,
         };
         this.setActionBtnDisabled = this.props.setActionBtnDisabled;
     }
@@ -87,9 +89,6 @@ class JobDetailBid extends Component {
                 this.mounted = true;
                 this.jobDataInit();
             }
-            this.checkMetamaskID = setInterval(() => {
-                this.checkAccount();
-            }, 1000);
         }
     }
 
@@ -183,6 +182,7 @@ class JobDetailBid extends Component {
                                 commitDuration,
                                 clientProof,
                             },
+                            getDisputeDataDone: true,
                         });
                     }
                 },
@@ -195,6 +195,7 @@ class JobDetailBid extends Component {
                                 commitDuration,
                                 clientProof: { imgs: [], text: 'Client’s evidence not found!' },
                             },
+                            getDisputeDataDone: true,
                         });
                     }
                 }
@@ -477,9 +478,17 @@ class JobDetailBid extends Component {
             isFinalWithoutAgainst,
             updateDisputeDone,
             disputeCreated,
+            getDisputeDataDone,
         } = this.state;
         const isPopperOpen = Boolean(anchorEl);
         const mybidAccepted = jobData.bid.filter(bid => bid.accepted && bid.address === web3.eth.defaultAccount);
+        if (!getDisputeDataDone) {
+            return (
+                <div className="dispute-actions">
+                    <ComponentLoading />
+                </div>
+            );
+        }
         if (mybidAccepted.length > 0) {
             if (!clientRespondedDispute.responded) {
                 if (jobData.status.reject) {
@@ -671,13 +680,16 @@ class JobDetailBid extends Component {
         });
         if (!error) {
             if (re) {
-                contractApis.getEventsPollAgainsted(web3, jobID, this.setRespondedisputeStt);
+                const disputeDutations = await contractApis.getEventsPollAgainsted(web3, jobID);
+                this.setRespondedisputeStt(disputeDutations);
+                return;
             } else {
                 if (this.mounted) {
-                    this.setState({ clientRespondedDispute: { responded: false, commitDuration: 0 } });
+                    this.setState({ clientRespondedDispute: { responded: false, commitDuration: 0 }, getDisputeDataDone: true });
                 }
             }
         }
+        this.setState({ getDisputeDataDone: true });
     };
 
     sttAtionInit = () => {
@@ -708,6 +720,7 @@ class JobDetailBid extends Component {
                 history.push('/client/your-jobs/' + jobID);
             }
             if (jobStatus.disputing) {
+                this.setState({ getDisputeDataDone: false });
                 this.disputeSttInit();
                 setActionBtnDisabled(true);
             } else {
@@ -845,6 +858,9 @@ class JobDetailBid extends Component {
             listAddress.push(freelancer.address);
         }
         getRatingLogs({ web3, listAddress });
+        this.checkMetamaskID = setInterval(() => {
+            this.checkAccount();
+        }, 1000);
     };
 
     bidSwitched = open => {
@@ -1296,12 +1312,9 @@ class JobDetailBid extends Component {
             jobCompleteDuration,
             rejectPaymentDuration,
         } = this.state;
-        //console.log(jobData);
-
         const { web3 } = this.props;
         const ratingOwner = web3.eth.defaultAccount;
         let jobTplRender;
-
         if (stt.err) {
             jobTplRender = () => (
                 <Grid container className="single-body">

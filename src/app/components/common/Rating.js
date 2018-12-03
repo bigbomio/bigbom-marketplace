@@ -12,7 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 import Loading from './Loading';
-import ComponentLoading from './componentLoading';
+import ComponentLoading from './ComponentLoading';
 
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
