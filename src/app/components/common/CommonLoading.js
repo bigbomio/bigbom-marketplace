@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-class ComponentLoading extends Component {
+class CommonLoading extends Component {
     render() {
         const { size } = this.props;
         return (
@@ -16,11 +16,11 @@ class ComponentLoading extends Component {
     }
 }
 
-ComponentLoading.propTypes = {
+CommonLoading.propTypes = {
     size: PropTypes.number,
 };
 
-ComponentLoading.defaultProps = {
+CommonLoading.defaultProps = {
     size: 20,
 };
 
@@ -34,5 +34,5 @@ export default withRouter(
     connect(
         mapStateToProps,
         mapDispatchToProps
-    )(ComponentLoading)
+    )(CommonLoading)
 );

@@ -20,7 +20,7 @@ import LocalStorage from '../../_utils/localStorage';
 import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 import Loading from '../common/Loading';
-import ComponentLoading from '../common/ComponentLoading';
+import CommonLoading from '../common/CommonLoading';
 
 const skillShow = jobSkills => {
     return (
@@ -1031,7 +1031,7 @@ class JobDetail extends Component {
         } = this.state;
         const isPopperOpen = Boolean(anchorEl);
         if (!getDisputeDataDone) {
-            return <ComponentLoading />;
+            return <CommonLoading />;
         }
         if (!freelancerDispute.responded) {
             if (disputeStt.clientResponseDuration > 0) {
@@ -1139,8 +1139,8 @@ class JobDetail extends Component {
                             {voteWinner === 'client'
                                 ? 'Your dispute has had result and you are winner.'
                                 : voteWinner === 'freelancer'
-                                ? 'Your dispute has had result and you are losers.'
-                                : 'Your dispute has had result, but there is not winner.'}
+                                    ? 'Your dispute has had result and you are losers.'
+                                    : 'Your dispute has had result, but there is not winner.'}
                             <i
                                 className="fas fa-info-circle icon-popper-note"
                                 aria-owns={isPopperOpen ? 'mouse-over-drawn' : null}
@@ -1289,8 +1289,8 @@ class JobDetail extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                        ? jobData.estimatedTime / 24 + ' Days'
-                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                            ? jobData.estimatedTime / 24 + ' Days'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1410,8 +1410,8 @@ class JobDetail extends Component {
                                                                 {freelancer.timeDone <= 24
                                                                     ? freelancer.timeDone + ' H'
                                                                     : Number.isInteger(freelancer.timeDone / 24)
-                                                                    ? freelancer.timeDone / 24 + ' Days'
-                                                                    : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                        ? freelancer.timeDone / 24 + ' Days'
+                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                             </Grid>
                                                             <Grid item xs={2} className="action">
                                                                 {this.bidActions(freelancer)}
