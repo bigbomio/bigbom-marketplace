@@ -1,29 +1,29 @@
-import * as listTypes from './consts';
+import * as types from '../constants/actionTypes';
 
 export const saveDisputes = disputes => {
     return {
-        type: listTypes.SAVE_DISPUTES,
+        type: types.SAVE_DISPUTES,
         disputes,
     };
 };
 
 export const saveVote = vote => {
     return {
-        type: listTypes.SAVE_VOTE,
+        type: types.SAVE_VOTE,
         vote,
     };
 };
 
 export const saveRevealVote = revealVote => {
     return {
-        type: listTypes.SAVE_REVEAL_VOTE,
+        type: types.SAVE_REVEAL_VOTE,
         revealVote,
     };
 };
 
 export const setVoteInputDisable = voteInputDisable => {
     return {
-        type: listTypes.SET_VOTE_INPUT_DISABLE,
+        type: types.SET_VOTE_INPUT_DISABLE,
         voteInputDisable,
     };
 };

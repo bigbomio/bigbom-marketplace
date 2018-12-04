@@ -19,8 +19,8 @@ import Utils from '../../_utils/utils';
 import LocalStorage from '../../_utils/localStorage';
 import RoutersAuthen from '../../routers/RoutersAuthen';
 
-import { logoutMetamask } from '../../components/home/actions';
-import { setRegister, saveAccountInfo } from '../../components/common/actions';
+import { logoutMetamask } from '../../actions/homeActions';
+import { setRegister, saveAccountInfo } from '../../actions/commonActions';
 
 const options = [
     { text: 'View as Client', icon: 'fas fa-user-tie' },
@@ -275,10 +275,10 @@ Header.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        isConnected: state.homeReducer.isConnected,
-        web3: state.homeReducer.web3,
-        view: state.commonReducer.view,
-        accountInfo: state.commonReducer.accountInfo,
+        isConnected: state.HomeReducer.isConnected,
+        web3: state.HomeReducer.web3,
+        view: state.CommonReducer.view,
+        accountInfo: state.CommonReducer.accountInfo,
     };
 };
 

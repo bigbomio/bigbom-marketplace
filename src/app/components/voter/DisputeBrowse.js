@@ -20,8 +20,9 @@ import Utils from '../../_utils/utils';
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
 
-import { saveVotingParams } from '../freelancer/actions';
-import { saveDisputes } from '../voter/actions';
+import { saveVotingParams } from '../../actions/freelancerActions';
+import { saveDisputes } from '../../actions/voterActions';
+import contractApis from '../../_services/contractApis';
 
 let disputes = [];
 let disputesSource = [];
@@ -58,20 +59,19 @@ class DisputeBrowser extends Component {
         this.mounted = false;
     }
 
-    getDisputes = () => {
+    getDisputes = async () => {
         const { web3 } = this.props;
         this.setState({ isLoading: true });
         disputes = [];
-
-        // time out 20s
-        setTimeout(() => {
-            if (disputes.length <= 0) {
-                this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
-                return;
+        const disputeDatas = await contractApis.getAllAvailablePoll(web3);
+        if (disputeDatas.length > 0) {
+            for (let dpData of disputeDatas) {
+                this.disputeCreatedInit(dpData);
             }
-        }, 20000);
-
-        abiConfig.getAllAvailablePoll(web3, this.disputeCreatedInit);
+        } else {
+            this.setState({ stt: { err: true, text: 'Have no any dispute to show!' }, isLoading: false });
+            return;
+        }
     };
 
     disputeCreatedInit = async disputeDataResult => {
@@ -289,10 +289,10 @@ DisputeBrowser.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        isConnected: state.homeReducer.isConnected,
-        disputes: state.voterReducer.disputes,
-        votingParams: state.freelancerReducer.votingParams,
+        web3: state.HomeReducer.web3,
+        isConnected: state.HomeReducer.isConnected,
+        disputes: state.VoterReducer.disputes,
+        votingParams: state.FreelancerReducer.votingParams,
     };
 };
 

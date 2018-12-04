@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
 import DialogPopup from '../components/common/dialog';
-import { setActionBtnDisabled } from '../components/common/actions';
+import { setActionBtnDisabled } from '../actions/commonActions';
 import Utils from '../_utils/utils';
 import abiConfig from '../_services/abiConfig';
 
@@ -34,9 +34,6 @@ class WithdrawToken extends Component {
     componentDidMount() {
         const { isConnected } = this.props;
         if (isConnected) {
-            setTimeout(() => {
-                this.getTokenDeposit();
-            }, 1000);
             this.checkMetamaskID = setInterval(() => {
                 this.checkAccount();
             }, 1000);
@@ -50,8 +47,8 @@ class WithdrawToken extends Component {
     getTokenDeposit = async () => {
         const { web3 } = this.props;
         currentAccount = web3.eth.defaultAccount;
-        const votingInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
-        const [, tokenDeposit] = await Utils.callMethod(votingInstance.instance.checkBalance)();
+        const votingInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
+        const [, tokenDeposit] = await Utils.callMethod(votingInstance.instance.checkStakeBalance)();
         if (tokenDeposit) {
             this.setState({ tokenDeposit: Utils.WeiToBBO(web3, tokenDeposit) });
         }
@@ -241,9 +238,9 @@ WithdrawToken.defaultProps = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        isConnected: state.homeReducer.isConnected,
-        reload: state.commonReducer.reload,
+        web3: state.HomeReducer.web3,
+        isConnected: state.HomeReducer.isConnected,
+        reload: state.CommonReducer.reload,
     };
 };
 

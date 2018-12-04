@@ -1,4 +1,4 @@
-import * as nameActList from './consts';
+import * as types from '../constants/actionTypes';
 
 const data = {
     isConnected: true,
@@ -8,34 +8,34 @@ const data = {
     defaultAccount: '',
 };
 
-const homeReducer = (state = data, action) => {
+const HomeReducer = (state = data, action) => {
     switch (action.type) {
-        case nameActList.LOGIN_METAMASK:
+        case types.LOGIN_METAMASK:
             return {
                 ...state,
                 isConnected: true,
             };
-        case nameActList.LOGOUT_METAMASK:
+        case types.LOGOUT_METAMASK:
             return {
                 ...state,
                 isConnected: false,
             };
-        case nameActList.SET_NETWORK:
+        case types.SET_NETWORK:
             return {
                 ...state,
                 network: action.network,
             };
-        case nameActList.SET_ACCOUNT:
+        case types.SET_ACCOUNT:
             return {
                 ...state,
                 defaultAccount: action.defaultAccount,
             };
-        case nameActList.SET_WEB3:
+        case types.SET_WEB3:
             return {
                 ...state,
                 web3: action.web3 || null,
             };
-        case nameActList.SET_CHECK_ACCOUNT:
+        case types.SET_CHECK_ACCOUNT:
             return {
                 ...state,
                 checkAccount: action.checkAccount,
@@ -45,4 +45,4 @@ const homeReducer = (state = data, action) => {
     }
 };
 
-export default homeReducer;
+export default HomeReducer;

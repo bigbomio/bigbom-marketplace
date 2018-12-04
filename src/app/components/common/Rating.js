@@ -12,10 +12,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 import Loading from './Loading';
-import ComponentLoading from './componentLoading';
+import ComponentLoading from './ComponentLoading';
 
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
+import contractApis from '../../_services/contractApis';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -46,7 +47,7 @@ class Rating extends Component {
     ratingInit = async () => {
         const { web3, jobID, ratingOwner, ratingFor } = this.props;
         const ratingID = Utils.makeIdString(7);
-        const allow = await abiConfig.checkAllowRating(web3, ratingOwner, ratingFor, jobID);
+        const allow = await contractApis.checkAllowRating(web3, ratingOwner, ratingFor, jobID);
         this.setState({ rightOfRating: allow, ratingID });
     };
 
@@ -370,7 +371,7 @@ Rating.defaultProps = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
         ratingDatas: state.RatingReducer.ratingDatas,
     };
 };

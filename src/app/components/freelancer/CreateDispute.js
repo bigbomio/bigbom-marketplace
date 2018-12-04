@@ -9,8 +9,9 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
-import { setSttDisputeCreated } from './actions';
+import { setSttDisputeCreated } from '../../actions/freelancerActions';
 import LocalStorage from '../../_utils/localStorage';
+import contractApis from '../../_services/contractApis';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -79,7 +80,7 @@ class CreateDispute extends Component {
         const { proof, imgs } = this.state;
         const { jobHash, jobID, votingParams, accountInfo, web3 } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
-        const allowance = await abiConfig.getAllowance(web3, 'BBDispute');
+        const allowance = await contractApis.getAllowance(web3, 'BBDispute');
 
         /// check balance
         if (defaultWallet[0].balances.ETH <= 0) {
@@ -129,16 +130,16 @@ class CreateDispute extends Component {
 
             // check allowance
             if (Number(allowance.toString(10)) === 0) {
-                const apprv = await abiConfig.approve(web3, 'BBDispute', Math.pow(2, 255));
+                const apprv = await contractApis.approve(web3, 'BBDispute', Math.pow(2, 255));
                 if (apprv) {
                     await this.createDispute(proofHash);
                 }
             } else if (Number(allowance.toString(10)) > Number(votingParams.stakeDeposit)) {
                 await this.createDispute(proofHash);
             } else {
-                const apprv = await abiConfig.approve(web3, 'BBDispute', 0);
+                const apprv = await contractApis.approve(web3, 'BBDispute', 0);
                 if (apprv) {
-                    const apprv2 = await abiConfig.approve(web3, 'BBDispute', Math.pow(2, 255));
+                    const apprv2 = await contractApis.approve(web3, 'BBDispute', Math.pow(2, 255));
                     if (apprv2) {
                         await this.createDispute(proofHash);
                     }
@@ -276,9 +277,9 @@ CreateDispute.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        accountInfo: state.commonReducer.accountInfo,
-        votingParams: state.freelancerReducer.votingParams,
+        web3: state.HomeReducer.web3,
+        accountInfo: state.CommonReducer.accountInfo,
+        votingParams: state.FreelancerReducer.votingParams,
     };
 };
 

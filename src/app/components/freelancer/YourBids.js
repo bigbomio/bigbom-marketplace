@@ -15,8 +15,9 @@ import settingsApi from '../../_services/settingsApi';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
 import services from '../../_services/services';
 
-import { setReload } from '../common/actions';
-import { saveJobs } from '../client/actions';
+import { setReload } from '../../actions/commonActions';
+import { saveJobs } from '../../actions/clientActions';
+import contractApis from '../../_services/contractApis';
 
 const categories = settingsApi.getCategories();
 
@@ -64,7 +65,19 @@ class YourBids extends Component {
         const { web3 } = this.props;
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
-        abiConfig.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {}, this.JobCreatedInit);
+        const events = await contractApis.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {});
+        if (events.length > 0) {
+            for (let event of events) {
+                this.JobCreatedInit(event);
+            }
+        }
+        // time out 20s
+        setTimeout(() => {
+            if (jobs.length <= 0) {
+                this.setState({ isLoading: false });
+                return;
+            }
+        }, 15000);
     };
 
     getBiddingStt(stts) {
@@ -80,13 +93,12 @@ class YourBids extends Component {
 
     JobCreatedInit = async eventLog => {
         const { web3 } = this.props;
-        const event = eventLog.data;
-        if (!eventLog.data) {
+        if (!eventLog) {
             this.setState({ stt: { err: true, text: 'You have no any bid!' }, isLoading: false });
             return;
         }
-        const jobHash = Utils.toAscii(event.args.jobHash);
-        const jobID = event.args.jobID.toString();
+        const jobHash = Utils.toAscii(eventLog.args.jobHash);
+        const jobID = eventLog.args.jobID.toString();
         // get job status
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const bidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
@@ -109,29 +121,29 @@ class YourBids extends Component {
                         const jobStatus = Utils.getStatus(jobStatusLog);
                         // get detail from ipfs
                         const URl = abiConfig.getIpfsLink() + jobHash;
-                        const employerInfo = await services.getUserByWallet(event.args.owner);
+                        const employerInfo = await services.getUserByWallet(eventLog.args.owner);
                         let employer = {
-                            fullName: event.args.owner,
-                            walletAddress: event.args.owner,
+                            fullName: eventLog.args.owner,
+                            walletAddress: eventLog.args.owner,
                             email: '',
                         };
                         if (employerInfo !== undefined) {
                             employer = {
                                 fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
-                                walletAddress: event.args.owner,
+                                walletAddress: eventLog.args.owner,
                                 email: employerInfo.userInfo.email,
                             };
                         }
                         const jobTpl = {
                             jobID,
-                            id: event.args.jobHash,
-                            owner: event.args.owner,
+                            id: eventLog.args.jobHash,
+                            owner: eventLog.args.owner,
                             ownerInfo: employer,
                             jobHash: jobHash,
-                            category: Utils.toAscii(event.args.category),
-                            expired: event.args.expired.toString(),
+                            category: Utils.toAscii(eventLog.args.category),
+                            expired: eventLog.args.expired.toString(),
                             status: jobStatus,
-                            jobBlockNumber: event.blockNumber,
+                            jobBlockNumber: eventLog.blockNumber,
                             bid: [],
                         };
                         fetch(URl)
@@ -173,19 +185,20 @@ class YourBids extends Component {
 
     BidCreatedInit = async job => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsMergeBidToJob(
+        const jobsMergedBid = await contractApis.mergeBidToJob(
             web3,
             'BBFreelancerBid',
             'BidCreated',
             { jobID: job.jobID, owner: web3.eth.defaultAccount },
-            job,
-            this.BidAcceptedInit
+            job
         );
+        this.BidAcceptedInit(jobsMergedBid);
     };
 
     BidAcceptedInit = async jobData => {
         const { web3 } = this.props;
-        abiConfig.getPastEventsBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data, this.JobsInit);
+        const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data);
+        this.JobsInit(bidAcceptedData);
     };
 
     JobsInit = jobData => {
@@ -503,9 +516,9 @@ YourBids.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        reload: state.commonReducer.reload,
-        isConnected: state.homeReducer.isConnected,
+        web3: state.HomeReducer.web3,
+        reload: state.CommonReducer.reload,
+        isConnected: state.HomeReducer.isConnected,
     };
 };
 

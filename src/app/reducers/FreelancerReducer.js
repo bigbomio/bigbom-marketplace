@@ -1,5 +1,5 @@
 import cloneDeep from 'lodash.clonedeep';
-import * as nameActList from './consts';
+import * as types from '../constants/actionTypes';
 
 const data = {
     bid: {
@@ -16,25 +16,9 @@ const data = {
 
 const initData = cloneDeep(data);
 
-const freelancerReducer = (state = initData, action) => {
+const FreelancerReducer = (state = initData, action) => {
     switch (action.type) {
-        case nameActList.SET_BID: {
-            let bid = cloneDeep(state.bid);
-            bid = action.bid;
-            return {
-                ...state,
-                bid,
-            };
-        }
-        case nameActList.SAVE_FREELANCER_PROOF: {
-            let freelancerProof = cloneDeep(state.freelancerProof);
-            freelancerProof = action.freelancerProof;
-            return {
-                ...state,
-                freelancerProof,
-            };
-        }
-        case nameActList.SAVE_VOTING_PARAMS: {
+        case types.SAVE_VOTING_PARAMS: {
             let votingParams = cloneDeep(state.votingParams);
             votingParams = action.votingParams;
             return {
@@ -42,7 +26,7 @@ const freelancerReducer = (state = initData, action) => {
                 votingParams,
             };
         }
-        case nameActList.SET_STT_DISPUTE_CREATED: {
+        case types.SET_STT_DISPUTE_CREATED: {
             let disputeCreated = cloneDeep(state.disputeCreated);
             disputeCreated = action.disputeCreated;
             return {
@@ -55,4 +39,4 @@ const freelancerReducer = (state = initData, action) => {
     }
 };
 
-export default freelancerReducer;
+export default FreelancerReducer;

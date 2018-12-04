@@ -39,10 +39,10 @@ UserInfoNav.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        isConnected: state.homeReducer.isConnected,
-        web3: state.homeReducer.web3,
-        yourNetwork: state.commonReducer.yourNetwork,
-        defaultAccount: state.homeReducer.defaultAccount,
+        isConnected: state.HomeReducer.isConnected,
+        web3: state.HomeReducer.web3,
+        yourNetwork: state.CommonReducer.yourNetwork,
+        defaultAccount: state.HomeReducer.defaultAccount,
     };
 };
 

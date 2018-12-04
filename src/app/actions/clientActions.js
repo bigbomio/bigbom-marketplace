@@ -1,4 +1,4 @@
-import * as listTypes from './consts';
+import * as listTypes from '../constants/actionTypes';
 
 export const saveJobs = jobs => {
     return {

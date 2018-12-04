@@ -41,7 +41,7 @@ class DisputesRendeManage extends Component {
                 {disputes.length > 0 &&
                     disputes.map((dispute, i) => {
                         return (
-                            <Link to={'disputes/' + dispute.jobID} key={i} className="job-item">
+                            <Link to={'disputes/' + dispute.pollID} key={i} className="job-item">
                                 <Grid item xs={12}>
                                     <Grid container className="header">
                                         <Grid item xs={6} className="title">
@@ -72,8 +72,8 @@ class DisputesRendeManage extends Component {
                                                     dispute.revealEndDate > Date.now()
                                                         ? 'commit-duration orange'
                                                         : !finalDisputes[dispute.jobID]
-                                                            ? 'commit-duration gray'
-                                                            : 'commit-duration blue'
+                                                        ? 'commit-duration gray'
+                                                        : 'commit-duration blue'
                                                 }
                                             >
                                                 <Countdown expiredTime={dispute.revealEndDate} />

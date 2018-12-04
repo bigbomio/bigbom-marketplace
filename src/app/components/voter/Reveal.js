@@ -10,8 +10,8 @@ import Popper from '../common/Popper';
 import Utils from '../../_utils/utils';
 import abiConfig from '../../_services/abiConfig';
 
-import { setActionBtnDisabled } from '../common/actions';
-import { saveRevealVote } from './actions';
+import { setActionBtnDisabled } from '../../actions/commonActions';
+import { saveRevealVote } from '../../actions/voterActions';
 
 import VoteResult from './VoteResult';
 
@@ -196,7 +196,7 @@ Reveal.defaultProps = {
 
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
+        web3: state.HomeReducer.web3,
     };
 };
 

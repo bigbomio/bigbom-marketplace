@@ -5,21 +5,22 @@ import leftPad from 'left-pad';
 
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
-import { setActionBtnDisabled, setReload } from '../common/actions';
+import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
 import LocalStorage from '../../_utils/localStorage';
+import contractApis from '../../_services/contractApis';
 
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
 import Voting from './Voting';
 import Reveal from './Reveal';
 import VoteResult from './VoteResult';
+import Loading from '../common/Loading';
 
-import { setVoteInputDisable } from './actions';
+import { setVoteInputDisable } from '../../actions/voterActions';
 
 class DisputeDetail extends Component {
     constructor(props) {
@@ -61,20 +62,20 @@ class DisputeDetail extends Component {
         const { web3, match } = this.props;
         const pollID = match.params.disputeId;
         this.setState({ isLoading: true, pollID });
-        abiConfig.getJobIDByPollID(web3, pollID, this.getDisputeByJobID);
+        const jobID = await contractApis.getJobIDByPollID(web3, pollID);
+        this.getDisputeByJobID(jobID);
     };
 
-    getDisputeByJobID = jobID => {
+    getDisputeByJobID = async jobID => {
         const { web3 } = this.props;
         this.setState({ jobID });
-        abiConfig.getAllAvailablePoll(web3, this.disputeDataInit, jobID);
-        this.checkGetRewardRight(jobID);
-    };
-
-    getReasonPaymentRejected = async paymentRejectReason => {
-        if (this.mounted) {
-            this.setState({ paymentRejectReason });
+        const disputeDatas = await contractApis.getAllAvailablePoll(web3, jobID);
+        if (disputeDatas.length > 0) {
+            for (let dpData of disputeDatas) {
+                this.disputeDataInit(dpData);
+            }
         }
+        this.checkGetRewardRight(jobID);
     };
 
     setActionBtnStt = async (action, done) => {
@@ -142,7 +143,7 @@ class DisputeDetail extends Component {
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
-        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(jobID, {
+        const [err, tx] = await Utils.callMethod(ctInstance.instance.claimReward)(Number(jobID), {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -208,9 +209,10 @@ class DisputeDetail extends Component {
             console.log(err);
             return;
         }
-        if (Number(result.toString()) > 0) {
+        console.log(result[0].toString());
+        if (Number(result[0].toString()) > 0) {
             if (this.mounted) {
-                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result.toString())) });
+                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result[0].toString())) });
             }
         } else {
             if (this.mounted) {
@@ -236,7 +238,10 @@ class DisputeDetail extends Component {
     disputeDataInit = async disputeData => {
         const { web3 } = this.props;
         this.sttAtionInit();
-        abiConfig.getReasonPaymentRejected(web3, disputeData.data.jobID, this.getReasonPaymentRejected);
+        const reason = await contractApis.getReasonPaymentRejected(web3, disputeData.data.jobID);
+        if (this.mounted) {
+            this.setState({ paymentRejectReason: reason });
+        }
         const URl = abiConfig.getIpfsLink() + disputeData.data.jobHash;
         const dispute = {
             ...disputeData.data,
@@ -248,7 +253,8 @@ class DisputeDetail extends Component {
             }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
-            abiConfig.getDisputeFinalized(web3, disputeData.data.jobID, this.setFinalizedStt);
+            const disputeFinalized = await contractApis.getDisputeFinalized(web3, disputeData.data.jobID);
+            this.setFinalizedStt(disputeFinalized);
         }
         fetch(URl)
             .then(res => res.json())
@@ -308,20 +314,15 @@ class DisputeDetail extends Component {
             .then(
                 result => {
                     dispute.freelancerProof = result;
-                    this.disputeListInit(dispute);
+                    if (this.mounted) {
+                        this.setState({ isLoading: false, disputeData: dispute });
+                    }
                 },
                 error => {
                     console.log(error);
                     dispute.err = 'Can not fetch data from server';
                 }
             );
-    };
-
-    disputeListInit = jobDispute => {
-        //console.log('disputeListInit success: ', jobDispute);
-        if (this.mounted) {
-            this.setState({ isLoading: false, disputeData: jobDispute });
-        }
     };
 
     keccak256(...args) {
@@ -417,7 +418,7 @@ class DisputeDetail extends Component {
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
-        const allowance = await abiConfig.getAllowance(web3, 'BBVoting');
+        const allowance = await contractApis.getAllowance(web3, 'BBVoting');
 
         /// check balance
         if (defaultWallet[0].balances.ETH <= 0) {
@@ -449,16 +450,16 @@ class DisputeDetail extends Component {
         }
 
         if (Number(allowance.toString(10)) === 0) {
-            const apprv = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
+            const apprv = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
             if (apprv) {
                 await this.finalVoting();
             }
         } else if (Number(allowance.toString(10)) > Utils.BBOToWei(web3, vote.token)) {
             await this.finalVoting();
         } else {
-            const apprv = await abiConfig.approve(web3, 'BBVoting', 0);
+            const apprv = await contractApis.approve(web3, 'BBVoting', 0);
             if (apprv) {
-                const apprv2 = await abiConfig.approve(web3, 'BBVoting', Math.pow(2, 255));
+                const apprv2 = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
                 if (apprv2) {
                     await this.finalVoting();
                 }
@@ -577,10 +578,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -613,8 +614,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
@@ -771,10 +772,7 @@ class DisputeDetail extends Component {
                                 disputeTplRender()
                             ) : (
                                 <Grid container className="single-body">
-                                    <div className="loading">
-                                        <CircularProgress size={50} color="secondary" />
-                                        <span>Loading...</span>
-                                    </div>
+                                    <Loading />
                                 </Grid>
                             )}
                         </div>
@@ -800,13 +798,13 @@ DisputeDetail.propTypes = {
 };
 const mapStateToProps = state => {
     return {
-        web3: state.homeReducer.web3,
-        reload: state.commonReducer.reload,
-        isConnected: state.homeReducer.isConnected,
-        disputes: state.voterReducer.disputes,
-        accountInfo: state.commonReducer.accountInfo,
-        vote: state.voterReducer.vote,
-        revealVote: state.voterReducer.revealVote,
+        web3: state.HomeReducer.web3,
+        reload: state.CommonReducer.reload,
+        isConnected: state.HomeReducer.isConnected,
+        disputes: state.VoterReducer.disputes,
+        accountInfo: state.CommonReducer.accountInfo,
+        vote: state.VoterReducer.vote,
+        revealVote: state.VoterReducer.revealVote,
     };
 };
 

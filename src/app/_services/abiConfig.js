@@ -1,7 +1,5 @@
 import IPFS from 'ipfs-mini';
 import Utils from '../_utils/utils';
-import services from '../_services/services';
-import contractApis from '../_services/contractApis';
 
 //import web3v1 from './web3'; // web3 v1
 
@@ -19,9 +17,11 @@ import BBFreelancerJob_prod from '../_services/abi_production/BBFreelancerJob.js
 import BBFreelancerBid_prod from '../_services/abi_production/BBFreelancerBid.json';
 import BBFreelancerPayment_prod from '../_services/abi_production/BBFreelancerPayment.json';
 import BigbomTokenExtended_prod from '../_services/abi_production/BigbomTokenExtended.json'; // bbo
+import BBVotingHelper_prod from '../_services/abi_production/BBVotingHelper.json';
 import BBDispute_prod from '../_services/abi_production/BBDispute.json';
 import BBVoting_prod from '../_services/abi_production/BBVoting.json';
 import BBParams_prod from '../_services/abi_production/BBParams.json';
+import BBRating_prod from '../_services/abi_production/BBRating.json';
 
 const env = process.env.REACT_APP_ENV;
 
@@ -66,61 +66,77 @@ const ropstenAbi = {
     },
     uat: {
         BBFreelancerJob: {
-            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            address: '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1',
             abi: BBFreelancerJob_prod,
         },
         BBFreelancerBid: {
-            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            address: '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4',
             abi: BBFreelancerBid_prod,
         },
         BBFreelancerPayment: {
-            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            address: '0x253f112b946a72a008343d5bccd14e04288ca45c',
             abi: BBFreelancerPayment_prod,
+        },
+        BBRating: {
+            address: '0xb7786dd5e27926c9753e00dc582d1e707b147ceb',
+            abi: BBRating_prod,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
             abi: BigbomTokenExtended_prod,
         },
+        BBVotingHelper: {
+            address: '0x771911025b4eafb6395042b7dca728b275e5d8c0',
+            abi: BBVotingHelper_prod,
+        },
         BBDispute: {
-            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            address: '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e',
             abi: BBDispute_prod,
         },
         BBVoting: {
-            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            address: '0xc7252214d78b15f37b94ae73027419a9f275c36f',
             abi: BBVoting_prod,
         },
         BBParams: {
-            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            address: '0xc0647055b50dce8751908bfbd7f1d219ed592d6f',
             abi: BBParams_prod,
         },
     },
     production: {
         BBFreelancerJob: {
-            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            address: '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1',
             abi: BBFreelancerJob_prod,
         },
         BBFreelancerBid: {
-            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            address: '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4',
             abi: BBFreelancerBid_prod,
         },
         BBFreelancerPayment: {
-            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            address: '0x253f112b946a72a008343d5bccd14e04288ca45c',
             abi: BBFreelancerPayment_prod,
+        },
+        BBRating: {
+            address: '0xb7786dd5e27926c9753e00dc582d1e707b147ceb',
+            abi: BBRating_prod,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
             abi: BigbomTokenExtended_prod,
         },
+        BBVotingHelper: {
+            address: '0x771911025b4eafb6395042b7dca728b275e5d8c0',
+            abi: BBVotingHelper_prod,
+        },
         BBDispute: {
-            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            address: '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e',
             abi: BBDispute_prod,
         },
         BBVoting: {
-            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            address: '0xc7252214d78b15f37b94ae73027419a9f275c36f',
             abi: BBVoting_prod,
         },
         BBParams: {
-            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            address: '0xc0647055b50dce8751908bfbd7f1d219ed592d6f',
             abi: BBParams_prod,
         },
     },
@@ -158,7 +174,7 @@ const ropstenAbi = {
 // };
 
 //let fromBlock = 3165089; // rinkeby
-export const fromBlock = 4439972; // ropsten
+export const fromBlock = 4552643; // ropsten
 
 class abiConfigs {
     getContract(type) {
@@ -194,706 +210,6 @@ class abiConfigs {
         };
     }
 
-    async getAllowance(web3, ctName) {
-        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
-        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, ctInstance.address);
-        if (err) {
-            console.log('err allowance: ', err);
-            return;
-        }
-        return result;
-    }
-
-    async approve(web3, ctName, value) {
-        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
-        const [errApprove, tx] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
-            from: ctInstance.defaultAccount,
-            gasPrice: +ctInstance.gasPrice.toString(10),
-        });
-        if (errApprove) {
-            console.log('errApprove: ', errApprove);
-            return false;
-        }
-        console.log('approve: ', tx);
-        return true;
-    }
-
-    async approveNotWait(web3, ctName, value) {
-        const BBOinstance = await this.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-        const ctInstance = await this.contractInstanceGenerator(web3, ctName);
-        BBOinstance.instance.approve(
-            ctInstance.address,
-            value,
-            {
-                from: ctInstance.defaultAccount,
-                gasPrice: +ctInstance.gasPrice.toString(10),
-            },
-            (err, re) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log(re);
-                }
-            }
-        );
-        return true;
-    }
-
-    async checkPayment(web3, jobID, callback) {
-        const jobInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        const now = Date.now();
-        const [err, paymentLog] = await Utils.callMethod(jobInstance.instance.checkPayment)(jobID, {
-            from: jobInstance.defaultAccount,
-            gasPrice: +jobInstance.gasPrice.toString(10),
-        });
-        if (err) {
-            console.log(err);
-            return;
-        }
-        if (paymentLog[1].toString() * 1000 > now) {
-            callback({
-                claim: false,
-                paymentDuration: paymentLog[1].toString() * 1000,
-            });
-        } else {
-            callback({
-                claim: true,
-                paymentDuration: 0,
-            });
-        }
-    }
-
-    async getPastEvents(web3, type, event, filter, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, type);
-        let results = {
-            data: [],
-        };
-        function resultsInit(error, eventResult) {
-            if (error) {
-                console.log(error);
-                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                callback(results);
-            }
-            if (eventResult.length > 0) {
-                results.data = eventResult;
-                results.status = { err: false, text: 'get events log success!' };
-                callback(results);
-            } else {
-                results.status = { err: true, text: 'Data not found! :(' };
-                callback(results);
-            }
-        }
-
-        const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: fromBlock, // should use recent number
-            toBlock: 'latest',
-        });
-
-        eventInstance.watch((error, eventResult) => {
-            resultsInit(error, eventResult); // when data update
-        });
-
-        eventInstance.get(function(error, eventResult) {
-            resultsInit(error, eventResult);
-        });
-    }
-
-    async getBidCancalled(web3, filter, mergeData, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        let results = {
-            data: {},
-        };
-        const events = contractInstance.instance.BidCanceled(filter, {
-            fromBlock: fromBlock, // should use recent number
-            toBlock: 'latest',
-        });
-        events.get(function(error, bidCanceledEvents) {
-            if (error) {
-                console.log(error);
-                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                callback(results);
-            }
-            for (let bidEvent of bidCanceledEvents) {
-                for (let bid of mergeData.bid) {
-                    if (bid.address === bidEvent.args.owner) {
-                        bid.canceled = true;
-                        bid.canceledBlockNumber = bidEvent.blockNumber;
-                    }
-                }
-            }
-            results.data = mergeData;
-            results.status = { err: false, text: 'get events log success!' };
-            callback(results);
-        });
-    }
-
-    async filterJobByBider(web3, callback) {
-        const filter = { owner: web3.eth.defaultAccount };
-        const contractInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        contractInstance.instance.BidCreated(
-            filter,
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            (error, eventResult) => {
-                callback(Utils.toAscii(eventResult.args.jobHash));
-            }
-        );
-    }
-
-    async getPastEventsMergeBidToJob(web3, type, event, filter, mergeData, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, type);
-        let results = {
-            data: {},
-        };
-
-        const events = contractInstance.instance[event](filter, {
-            fromBlock: fromBlock, // should use recent number
-            toBlock: 'latest',
-        });
-
-        events.get(async (error, events) => {
-            if (error) {
-                console.log(error);
-                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                callback(results);
-            }
-            //console.log('getPastEventsMergeBidToJob', events);
-            for (let event of events) {
-                const userInfoFetch = await services.getUserByWallet(event.args.owner);
-
-                let user = {
-                    fullName: event.args.owner,
-                    walletAddress: event.args.owner,
-                };
-                if (userInfoFetch) {
-                    user = {
-                        fullName: userInfoFetch.userInfo.firstName + ' ' + userInfoFetch.userInfo.lastName,
-                        walletAddress: event.args.owner,
-                    };
-                }
-                const bidTpl = {
-                    address: event.args.owner,
-                    award: Utils.WeiToBBO(web3, event.args.bid.toString()),
-                    timeDone: event.args.bidTime.toString(),
-                    id: event.args.jobHash,
-                    jobHash: mergeData.jobHash,
-                    accepted: false,
-                    canceled: false,
-                    bidBlockNumber: event.blockNumber,
-                    freelancerInfo: user,
-                };
-
-                mergeData.bid.push(bidTpl);
-                if (mergeData.bid.length > 0) {
-                    for (let i = 0; i < mergeData.bid.length; i++) {
-                        if (mergeData.bid[i].address === event.args.owner) {
-                            mergeData.bid[i] = bidTpl;
-                        }
-                    }
-                    mergeData.bid = Utils.removeDuplicates(mergeData.bid, 'address');
-                }
-            }
-            results.data = mergeData;
-            results.status = { err: false, text: 'get events log success!' };
-            this.getBidCancalled(web3, filter, results.data, callback);
-        });
-    }
-
-    async jobStarted(web3, jobData, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        ctInstance.instance.JobStarted(
-            { jobID: jobData.jobID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, re) => {
-                //console.log('jobStarted', re);
-                if (err) {
-                    console.log(err);
-                } else {
-                    if (jobData.jobID === re.args.jobID.toString()) {
-                        const blockLog = await this.getBlock(web3, re.blockNumber);
-                        const result = {
-                            created: blockLog.timestamp,
-                        };
-                        callback(jobData, result);
-                    }
-                }
-            }
-        );
-    }
-
-    async getPastEventsBidAccepted(web3, filter, jobData, callback) {
-        const payload = {
-            web3,
-            jobID: filter.jobID,
-        };
-        const bidAccepted = await contractApis.getBidAccepted(payload);
-        let results = {
-            data: {},
-        };
-        const bidAcceptedFiltered = bidAccepted.filter(bid => bid.args.jobID.toString() === jobData.jobID);
-
-        if (jobData.bid.length > 0) {
-            if (bidAcceptedFiltered.length > 0) {
-                for (let bid of jobData.bid) {
-                    if (bid.address === bidAcceptedFiltered[0].args.freelancer) {
-                        bid.accepted = true;
-                        bid.acceptedBlockNumber = bidAcceptedFiltered.blockNumber;
-                    }
-                }
-            }
-        } else {
-            jobData.status.expired = Number(jobData.expired) <= Math.floor(Date.now() / 1000) ? true : false;
-        }
-        results.data = jobData;
-        results.status = { err: false, text: 'get events log success!' };
-        callback(results);
-    }
-
-    async getPastSingleEvent(web3, type, event, filter, callback) {
-        const contractInstance = await this.contractInstanceGenerator(web3, type);
-        let results = {
-            data: null,
-        };
-
-        function resultsInit(error, eventResult) {
-            if (error) {
-                console.log(error);
-                results.status = { err: true, text: 'something went wrong! can not get events log :(' };
-                callback(results);
-            } else {
-                results.data = eventResult;
-                results.status = { err: false, text: 'get events log success!' };
-                callback(results);
-            }
-        }
-
-        contractInstance.instance[event](
-            filter,
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            (error, eventResult) => {
-                //console.log('job single event -----', eventResult);
-                resultsInit(error, eventResult);
-            }
-        );
-
-        // check no data case
-        const eventInstance = contractInstance.instance[event](filter, {
-            fromBlock: fromBlock, // should use recent number
-            toBlock: 'latest',
-        });
-        eventInstance.get(function(err, allEvent) {
-            if (allEvent.length <= 0) {
-                results.status = { err: false, text: 'Have no event' };
-                callback(results);
-            }
-        });
-    }
-
-    async getBlock(web3, blockNumber) {
-        const [err, blockLogs] = await Utils.callMethod(web3.eth.getBlock)(blockNumber);
-        if (err) {
-            return null;
-        }
-        return blockLogs;
-    }
-
-    async getVotingParams(web3, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBParams');
-        const [, params] = await Utils.callMethod(ctInstance.instance.getVotingParams)();
-        const votingParams = {
-            minVotes: params[0].toString(),
-            maxVotes: params[1].toString(),
-            stakeDeposit: params[2].toString(),
-            evidenceDuration: params[3].toString(),
-            commitDuration: params[4].toString(),
-            revealDuration: params[5].toString(),
-            bboRewards: params[6].toString(),
-        };
-        callback(votingParams);
-    }
-
-    async getDisputeFinalized(web3, jobID, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        try {
-            ctInstance.instance.DisputeFinalized(
-                {},
-                {
-                    fromBlock: fromBlock, // should use recent number
-                    toBlock: 'latest',
-                },
-                async (err, re) => {
-                    if (!err) {
-                        if (re.args.jobID.toString() === jobID) {
-                            callback(true);
-                        } else {
-                            callback(false);
-                        }
-                    }
-                }
-            );
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    async getDisputeFinalizedDisputeContract(web3, jobID, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        try {
-            ctInstance.instance.DisputeFinalized(
-                { jobID },
-                {
-                    fromBlock: fromBlock, // should use recent number
-                    toBlock: 'latest',
-                },
-                async (err, re) => {
-                    if (!err) {
-                        if (re) {
-                            callback(true);
-                        } else {
-                            callback(false);
-                        }
-                    }
-                }
-            );
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    async getTimeDurations(web3, result, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBVotingHelper');
-        const [timmingErr, timmingResult] = await Utils.callMethod(ctInstance.instance.getPollStage)(result.pollID, {
-            from: ctInstance.defaultAccount,
-            gasPrice: +ctInstance.gasPrice.toString(10),
-        });
-        if (timmingErr) {
-            console.log(timmingErr);
-        } else {
-            const mResult = {
-                commitEndDate: Number(timmingResult[3].toString()),
-                evidenceEndDate: Number(timmingResult[2].toString()),
-                revealEndDate: Number(timmingResult[4].toString()),
-                ...result,
-            };
-            callback(mResult);
-        }
-    }
-
-    async getEventsPollStarted(web3, jobID, optionID, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const helperInstance = await this.contractInstanceGenerator(web3, 'BBVotingHelper');
-        ctInstance.instance.DisputeStarted(
-            { jobID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, re) => {
-                //console.log('getEventsPollStarted', re);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const blockLog = await this.getBlock(web3, re.blockNumber);
-                    const [, pollOption] = await Utils.callMethod(helperInstance.instance.getPollOption)(re.args.pollID.toString(), optionID);
-                    const result = {
-                        jobID,
-                        pollID: re.args.pollID.toString(),
-                        //jobHash
-                        owner: re.args.creator,
-                        created: blockLog.timestamp,
-                        started: true,
-                        proofHash: Utils.toAscii(pollOption),
-                    };
-                    this.getTimeDurations(web3, result, callback);
-                }
-            }
-        );
-    }
-
-    async getReasonPaymentRejected(web3, jobID, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerPayment');
-        ctInstance.instance.PaymentRejected(
-            { jobID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, re) => {
-                //console.log('getReasonPaymentRejected', re);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const result = {
-                        reason: re.args.reason.toString(),
-                        created: re.args.rejectedTimestamp.toString(),
-                        owner: re.args.sender,
-                    };
-                    callback(result);
-                }
-            }
-        );
-    }
-
-    async getEventsPollAgainsted(web3, jobID, callback) {
-        const helperInstance = await this.contractInstanceGenerator(web3, 'BBVotingHelper');
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        ctInstance.instance.DisputeAgainsted(
-            { jobID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, re) => {
-                //console.log('getEventsPollAgainsted', re);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const pollID = re.args.pollID.toString();
-                    const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
-                    const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
-                    const blockLog = await this.getBlock(web3, re.blockNumber);
-                    const result = {
-                        created: blockLog.timestamp,
-                        responded: true,
-                        jobID,
-                        pollID,
-                        owner: re.args.creator,
-                        proofHash: clientProofHash,
-                    };
-                    // get freelancer proofhash
-                    ctInstance.instance.DisputeStarted(
-                        { jobID },
-                        {
-                            fromBlock: fromBlock, // should use recent number
-                            toBlock: 'latest',
-                        },
-                        (err, pollStartedResult) => {
-                            //console.log(pollStartedResult);
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                result.freelancerProofHash = freelancerProofHash;
-                                result.freelancer = pollStartedResult.args.creator;
-                                this.getTimeDurations(web3, result, callback);
-                            }
-                        }
-                    );
-                }
-            }
-        );
-    }
-
-    async getJobCreatedByJobID(web3, jobID, datas, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBFreelancerJob');
-        ctInstance.instance.JobCreated(
-            { jobID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, jobCreated) => {
-                if (!err) {
-                    datas.data.jobHash = Utils.toAscii(jobCreated.args.jobHash);
-                    callback(datas);
-                }
-            }
-        );
-    }
-
-    async getAllAvailablePoll(web3, callback, jobID) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const helperInstance = await this.contractInstanceGenerator(web3, 'BBVotingHelper');
-        let filter = {};
-        if (jobID !== undefined) {
-            filter = {
-                jobID,
-            };
-        }
-
-        ctInstance.instance.DisputeStarted(
-            filter,
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, pollStartedResult) => {
-                //console.log('getAllAvailablePoll', pollStartedResult);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const pollID = pollStartedResult.args.pollID.toString();
-                    const [timmingErr, timmingResult] = await Utils.callMethod(helperInstance.instance.getPollStage)(pollID, {
-                        from: ctInstance.defaultAccount,
-                        gasPrice: +ctInstance.gasPrice.toString(10),
-                    });
-                    const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
-                    const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
-                    if (timmingErr) {
-                        console.log(timmingErr);
-                    } else {
-                        let results = {
-                            data: {
-                                freelancerProofHash: Utils.toAscii(freelancerProofHash),
-                                clientProofHash: Utils.toAscii(clientProofHash),
-                                freelancer: pollStartedResult.args.creator,
-                                commitEndDate: timmingResult[3].toString() * 1000,
-                                evidenceEndDate: timmingResult[2].toString() * 1000,
-                                revealEndDate: timmingResult[4].toString() * 1000,
-                            },
-                        };
-                        ctInstance.instance.DisputeAgainsted(
-                            { jobID: pollStartedResult.args.jobID.toString() },
-                            {
-                                fromBlock: fromBlock, // should use recent number
-                                toBlock: 'latest',
-                            },
-                            async (err, re) => {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    const blockLog = await this.getBlock(web3, re.blockNumber);
-                                    results.data.jobID = re.args.jobID.toString();
-                                    results.data.pollID = re.args.pollID.toString();
-                                    results.data.created = blockLog.timestamp;
-                                    results.data.started = true;
-                                    results.data.client = re.args.creator;
-                                    this.getJobCreatedByJobID(web3, pollStartedResult.args.jobID.toString(), results, callback);
-                                }
-                            }
-                        );
-                    }
-                }
-            }
-        );
-    }
-
-    async getMyVoting(web3, callback, jobID) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        const helperInstance = await this.contractInstanceGenerator(web3, 'BBVotingHelper');
-        const votingInstance = await this.contractInstanceGenerator(web3, 'BBVoting');
-        let filter = {};
-        if (jobID !== undefined) {
-            filter = {
-                jobID,
-            };
-        }
-        ctInstance.instance.DisputeStarted(
-            filter,
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            async (err, pollStartedResult) => {
-                //console.log('getMyVoting', pollStartedResult);
-                if (err) {
-                    console.log(err);
-                } else {
-                    const pollID = pollStartedResult.args.pollID.toString();
-                    const [timmingErr, timmingResult] = await Utils.callMethod(helperInstance.instance.getPollStage)(
-                        pollStartedResult.args.pollID.toString(),
-                        {
-                            from: helperInstance.defaultAccount,
-                            gasPrice: +helperInstance.gasPrice.toString(10),
-                        }
-                    );
-                    const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
-                    const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
-                    if (timmingErr) {
-                        console.log(timmingErr);
-                    } else {
-                        let results = {
-                            data: {
-                                freelancerProofHash: Utils.toAscii(freelancerProofHash),
-                                clientProofHash: Utils.toAscii(clientProofHash),
-                                freelancer: pollStartedResult.args.creator,
-                                commitEndDate: timmingResult[3].toString() * 1000,
-                                evidenceEndDate: timmingResult[2].toString() * 1000,
-                                revealEndDate: timmingResult[4].toString() * 1000,
-                            },
-                        };
-                        votingInstance.instance.VoteCommitted(
-                            { voter: web3.eth.defaultAccount, pollID: pollStartedResult.args.pollID.toString() },
-                            {
-                                fromBlock: fromBlock, // should use recent number
-                                toBlock: 'latest',
-                            },
-                            async (err, votingResult) => {
-                                if (!votingResult) {
-                                    console.log(err);
-                                } else {
-                                    //console.log('votingResult', votingResult);
-                                    ctInstance.instance.DisputeAgainsted(
-                                        { jobID: pollStartedResult.args.jobID.toString() },
-                                        {
-                                            fromBlock: fromBlock, // should use recent number
-                                            toBlock: 'latest',
-                                        },
-                                        async (err, re) => {
-                                            if (!re) {
-                                                console.log(err);
-                                            } else {
-                                                const blockLog = await this.getBlock(web3, re.blockNumber);
-                                                results.data.jobID = re.args.jobID.toString();
-                                                results.data.pollID = re.args.pollID.toString();
-                                                results.data.created = blockLog.timestamp;
-                                                results.data.started = true;
-                                                results.data.client = re.args.creator;
-                                                results.data.isFinal = false;
-                                                results.data.rewardRight = false;
-
-                                                const [errRewardCheck, resultRewardCheck] = await Utils.callMethod(ctInstance.instance.calcReward)(
-                                                    re.args.jobID.toString(),
-                                                    {
-                                                        from: ctInstance.defaultAccount,
-                                                        gasPrice: +ctInstance.gasPrice.toString(10),
-                                                    }
-                                                );
-                                                if (errRewardCheck) {
-                                                    console.log(errRewardCheck);
-                                                    return;
-                                                }
-                                                if (Number(resultRewardCheck.toString()) > 0) {
-                                                    results.data.rewardRight = true;
-                                                }
-                                                this.getJobCreatedByJobID(web3, pollStartedResult.args.jobID.toString(), results, callback);
-                                            }
-                                        }
-                                    );
-                                }
-                            }
-                        );
-                    }
-                }
-            }
-        );
-    }
-
-    async getJobIDByPollID(web3, pollID, callback) {
-        const ctInstance = await this.contractInstanceGenerator(web3, 'BBDispute');
-        ctInstance.instance.DisputeStarted(
-            { pollID },
-            {
-                fromBlock: fromBlock, // should use recent number
-                toBlock: 'latest',
-            },
-            (disputeErr, dispute) => {
-                if (!disputeErr) {
-                    callback(dispute.args.jobID.toString());
-                }
-            }
-        );
-    }
-
     async transactionWatch(web3, hashString, callback) {
         async function getReceipt() {
             const [, receipt] = await Utils.callMethod(web3.eth.getTransactionReceipt)(hashString);
@@ -908,15 +224,6 @@ class abiConfigs {
         const watch = setInterval(async () => {
             getReceipt();
         }, 1000);
-    }
-
-    async checkAllowRating(web3, ratingOwner, ratingFor, jobID) {
-        const ratingInstance = await this.contractInstanceGenerator(web3, 'BBRating');
-        const [, allow] = await Utils.callMethod(ratingInstance.instance.allowRating)(ratingOwner, ratingFor, jobID, {
-            from: ratingInstance.defaultAccount,
-            gasPrice: +ratingInstance.gasPrice.toString(10),
-        });
-        return allow;
     }
 }
 

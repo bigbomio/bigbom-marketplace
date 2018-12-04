@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 
-import { setReload } from '../../components/common/actions';
+import { setReload } from '../../actions/commonActions';
 
 let countdown;
 
@@ -57,7 +57,7 @@ class Countdown extends Component {
             if (this.mounted) {
                 if (distance <= 0) {
                     this.setState({ countDown: { exprired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
-                    if (reload) {
+                    if (!reload) {
                         setReload(true);
                     }
                     setTimeout(() => {

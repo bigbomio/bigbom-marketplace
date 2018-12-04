@@ -11,7 +11,7 @@ import NotFound from '../../components/NotFound';
 import UserInfoNav from '../../components/common/UserInfoNav';
 import Parameters from '../Parameters';
 
-import { setView } from '../common/actions';
+import { setView } from '../../actions/commonActions';
 
 const styles = theme => ({
     lightTooltip: {
@@ -91,7 +91,7 @@ ClientCatagories.propTypes = {
 
 const mapStateToProps = state => {
     return {
-        isConnected: state.homeReducer.isConnected,
+        isConnected: state.HomeReducer.isConnected,
     };
 };
 
