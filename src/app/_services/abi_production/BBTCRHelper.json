@@ -28,20 +28,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "payment",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -62,25 +48,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobCancel",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -126,86 +93,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobStart",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isOwnerOfJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobExpired",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobHasFreelancer",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -224,65 +111,26 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
         "name": "owner",
         "type": "address"
       },
       {
-        "indexed": false,
-        "name": "bid",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "bidTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "BidCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       },
       {
         "indexed": true,
-        "name": "owner",
+        "name": "tokenAddress",
         "type": "address"
-      }
-    ],
-    "name": "BidCanceled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
       },
       {
         "indexed": false,
-        "name": "bid",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "freelancer",
-        "type": "address"
+        "name": "nameHash",
+        "type": "bytes"
       }
     ],
-    "name": "BidAccepted",
+    "name": "CreateListID",
     "type": "event"
   },
   {
@@ -318,11 +166,15 @@
     "constant": false,
     "inputs": [
       {
-        "name": "paymentAddress",
+        "name": "nameHash",
+        "type": "bytes"
+      },
+      {
+        "name": "tokenAddress",
         "type": "address"
       }
     ],
-    "name": "setPaymentContract",
+    "name": "createListID",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -332,98 +184,152 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "listID",
         "type": "uint256"
       },
       {
-        "name": "bid",
-        "type": "uint256"
-      },
-      {
-        "name": "bidTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "createBid",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "name": "bid",
-        "type": "uint256"
-      },
-      {
-        "name": "bidTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "createSingleBid",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobIDs",
-        "type": "uint256[]"
-      },
-      {
-        "name": "bids",
-        "type": "uint256[]"
-      },
-      {
-        "name": "bidTimes",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "createMultipleBid",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "cancelBid",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      },
-      {
-        "name": "freelancer",
+        "name": "tokenAddress",
         "type": "address"
       }
     ],
-    "name": "acceptBid",
+    "name": "updateToken",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getToken",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "applicationDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "minStake",
+        "type": "uint256"
+      },
+      {
+        "name": "initQuorum",
+        "type": "uint256"
+      },
+      {
+        "name": "exitDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "setParams",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      }
+    ],
+    "name": "getListParams",
+    "outputs": [
+      {
+        "name": "applicationDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "minStake",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getStakedBalance",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "listID",
+        "type": "uint256"
+      },
+      {
+        "name": "itemHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getItemStage",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   }
 ]

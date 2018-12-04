@@ -1,44 +1,6 @@
 [
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isJobHasFreelancer",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isJobExpired",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [],
     "name": "bbo",
     "outputs": [
@@ -66,52 +28,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isJobCancel",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isOwnerOfJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -132,6 +48,25 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isJobCancel",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -180,11 +115,72 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "isJobStart",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isOwnerOfJob",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isJobExpired",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isJobHasFreelancer",
     "outputs": [
       {
         "name": "",
@@ -224,6 +220,23 @@
       }
     ],
     "name": "AdminAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "key",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "relatedAddress",
+        "type": "address"
+      }
+    ],
+    "name": "AddRelatedAddress",
     "type": "event"
   },
   {
@@ -332,6 +345,43 @@
     "constant": false,
     "inputs": [
       {
+        "name": "pollType",
+        "type": "uint256"
+      },
+      {
+        "name": "relatedAddr",
+        "type": "address"
+      }
+    ],
+    "name": "setPollType",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "pollType",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPollType",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "minVotes",
         "type": "uint256"
       },
@@ -344,7 +394,7 @@
         "type": "uint256"
       },
       {
-        "name": "evidenceDuration",
+        "name": "addOptionDuration",
         "type": "uint256"
       },
       {
@@ -402,6 +452,24 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "key",
+        "type": "uint256"
+      },
+      {
+        "name": "relatedAddress",
+        "type": "address"
+      }
+    ],
+    "name": "addRelatedAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

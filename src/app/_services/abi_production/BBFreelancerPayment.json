@@ -1,44 +1,6 @@
 [
   {
     "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isJobHasFreelancer",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isJobExpired",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [],
     "name": "bbo",
     "outputs": [
@@ -66,52 +28,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isJobCancel",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isOwnerOfJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -132,6 +48,25 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isJobCancel",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -180,11 +115,72 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "isJobStart",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isOwnerOfJob",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isJobExpired",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "isJobHasFreelancer",
     "outputs": [
       {
         "name": "",
@@ -214,18 +210,13 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "indexJobHash",
-        "type": "bytes32"
+        "name": "jobID",
+        "type": "uint256"
       },
       {
         "indexed": true,
         "name": "sender",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
       }
     ],
     "name": "PaymentClaimed",
@@ -236,18 +227,13 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "indexJobHash",
-        "type": "bytes32"
+        "name": "jobID",
+        "type": "uint256"
       },
       {
         "indexed": true,
         "name": "sender",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
       }
     ],
     "name": "PaymentAccepted",
@@ -258,8 +244,8 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "indexJobHash",
-        "type": "bytes32"
+        "name": "jobID",
+        "type": "uint256"
       },
       {
         "indexed": true,
@@ -275,11 +261,6 @@
         "indexed": false,
         "name": "rejectedTimestamp",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
       }
     ],
     "name": "PaymentRejected",
@@ -290,18 +271,13 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "indexJobHash",
-        "type": "bytes32"
+        "name": "jobID",
+        "type": "uint256"
       },
       {
         "indexed": true,
         "name": "winner",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
       }
     ],
     "name": "DisputeFinalized",
@@ -340,8 +316,8 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "acceptPayment",
@@ -354,8 +330,8 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       },
       {
         "name": "reason",
@@ -372,8 +348,8 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "claimePayment",
@@ -386,8 +362,8 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "checkPayment",
@@ -409,8 +385,8 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "refundBBO",
@@ -428,8 +404,8 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "jobID",
+        "type": "uint256"
       }
     ],
     "name": "finalizeDispute",

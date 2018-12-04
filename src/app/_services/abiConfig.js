@@ -17,9 +17,11 @@ import BBFreelancerJob_prod from '../_services/abi_production/BBFreelancerJob.js
 import BBFreelancerBid_prod from '../_services/abi_production/BBFreelancerBid.json';
 import BBFreelancerPayment_prod from '../_services/abi_production/BBFreelancerPayment.json';
 import BigbomTokenExtended_prod from '../_services/abi_production/BigbomTokenExtended.json'; // bbo
+import BBVotingHelper_prod from '../_services/abi_production/BBVotingHelper.json';
 import BBDispute_prod from '../_services/abi_production/BBDispute.json';
 import BBVoting_prod from '../_services/abi_production/BBVoting.json';
 import BBParams_prod from '../_services/abi_production/BBParams.json';
+import BBRating_prod from '../_services/abi_production/BBRating.json';
 
 const env = process.env.REACT_APP_ENV;
 
@@ -64,61 +66,77 @@ const ropstenAbi = {
     },
     uat: {
         BBFreelancerJob: {
-            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            address: '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1',
             abi: BBFreelancerJob_prod,
         },
         BBFreelancerBid: {
-            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            address: '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4',
             abi: BBFreelancerBid_prod,
         },
         BBFreelancerPayment: {
-            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            address: '0x253f112b946a72a008343d5bccd14e04288ca45c',
             abi: BBFreelancerPayment_prod,
+        },
+        BBRating: {
+            address: '0xb7786dd5e27926c9753e00dc582d1e707b147ceb',
+            abi: BBRating_prod,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
             abi: BigbomTokenExtended_prod,
         },
+        BBVotingHelper: {
+            address: '0x771911025b4eafb6395042b7dca728b275e5d8c0',
+            abi: BBVotingHelper_prod,
+        },
         BBDispute: {
-            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            address: '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e',
             abi: BBDispute_prod,
         },
         BBVoting: {
-            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            address: '0xc7252214d78b15f37b94ae73027419a9f275c36f',
             abi: BBVoting_prod,
         },
         BBParams: {
-            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            address: '0xc0647055b50dce8751908bfbd7f1d219ed592d6f',
             abi: BBParams_prod,
         },
     },
     production: {
         BBFreelancerJob: {
-            address: '0x1900fa17bbe8221873a126bd9e5eb9d0709379ec',
+            address: '0xb1e878028d0e3e47c803cbb9d1684d9d3d72a1b1',
             abi: BBFreelancerJob_prod,
         },
         BBFreelancerBid: {
-            address: '0x39abc4386a817b5d8a4b008e022b446637e2a1eb',
+            address: '0x7b388ecfec2f5f706aa34b540a39e8c434cfc8b4',
             abi: BBFreelancerBid_prod,
         },
         BBFreelancerPayment: {
-            address: '0x5c6e2663ca0481156a63c7c8ca0372c3efa0471f',
+            address: '0x253f112b946a72a008343d5bccd14e04288ca45c',
             abi: BBFreelancerPayment_prod,
+        },
+        BBRating: {
+            address: '0xb7786dd5e27926c9753e00dc582d1e707b147ceb',
+            abi: BBRating_prod,
         },
         BigbomTokenExtended: {
             address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
             abi: BigbomTokenExtended_prod,
         },
+        BBVotingHelper: {
+            address: '0x771911025b4eafb6395042b7dca728b275e5d8c0',
+            abi: BBVotingHelper_prod,
+        },
         BBDispute: {
-            address: '0xdeeaaad9a5f7c63fd2a29db1c9d522b056637b28',
+            address: '0x2b44a5589e8b3cd106a7542d4af9c5eb0016ef6e',
             abi: BBDispute_prod,
         },
         BBVoting: {
-            address: '0x347d3adf5081718020d11a2add2a52b39ad9971a',
+            address: '0xc7252214d78b15f37b94ae73027419a9f275c36f',
             abi: BBVoting_prod,
         },
         BBParams: {
-            address: '0x2866cef47dce5db897678695d08f0633102f164a',
+            address: '0xc0647055b50dce8751908bfbd7f1d219ed592d6f',
             abi: BBParams_prod,
         },
     },

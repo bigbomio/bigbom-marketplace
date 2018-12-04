@@ -28,6 +28,20 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "helper",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -48,20 +62,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "bboReward",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -125,6 +125,57 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "name": "PollStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "isCancel",
+        "type": "bool"
+      }
+    ],
+    "name": "PollUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "optionID",
+        "type": "uint256"
+      }
+    ],
+    "name": "PollOptionAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "name": "voter",
         "type": "address"
       },
@@ -163,9 +214,9 @@
         "type": "address"
       },
       {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
       }
     ],
     "name": "VoteCommitted",
@@ -180,14 +231,9 @@
         "type": "address"
       },
       {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
-      },
-      {
-        "indexed": false,
-        "name": "secretHash",
-        "type": "bytes32"
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
       }
     ],
     "name": "VoteRevealed",
@@ -223,33 +269,14 @@
     "type": "event"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "isAgaintsPoll",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "name": "rewardAddress",
+        "name": "_helper",
         "type": "address"
       }
     ],
-    "name": "setBBOReward",
+    "name": "setHelper",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -284,25 +311,11 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "checkBalance",
-    "outputs": [
-      {
-        "name": "tokens",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "pollID",
+        "type": "uint256"
       },
       {
         "name": "secretHash",
@@ -320,42 +333,15 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      },
-      {
-        "name": "choice",
-        "type": "address"
-      },
-      {
-        "name": "salt",
-        "type": "uint256"
-      }
-    ],
-    "name": "checkHash",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "pollID",
+        "type": "uint256"
       },
       {
         "name": "choice",
-        "type": "address"
+        "type": "uint256"
       },
       {
         "name": "salt",
@@ -372,33 +358,85 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "name": "isCancel",
+        "type": "bool"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
       }
     ],
-    "name": "claimReward",
-    "outputs": [],
+    "name": "updatePoll",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
+        "name": "extraData",
         "type": "bytes"
+      },
+      {
+        "name": "addOptionDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
       }
     ],
-    "name": "calcReward",
+    "name": "startPoll",
     "outputs": [
       {
-        "name": "numReward",
+        "name": "pollID",
         "type": "uint256"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "name": "pollOption",
+        "type": "bytes"
+      }
+    ],
+    "name": "addPollOption",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
