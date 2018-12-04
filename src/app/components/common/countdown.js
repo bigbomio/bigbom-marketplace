@@ -57,9 +57,7 @@ class Countdown extends Component {
             if (this.mounted) {
                 if (distance <= 0) {
                     this.setState({ countDown: { exprired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
-                    if (!reload) {
-                        setReload(true);
-                    }
+                    setReload(reload);
                     setTimeout(() => {
                         clearInterval(countdown);
                     }, 1000);

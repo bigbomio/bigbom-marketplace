@@ -578,10 +578,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                        ? 'Commit Vote'
-                                        : !isFinal
-                                        ? 'Reveal Vote'
-                                        : 'Dispute finalized'}
+                                            ? 'Commit Vote'
+                                            : !isFinal
+                                                ? 'Reveal Vote'
+                                                : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -614,8 +614,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                            ? 'commit-duration orange'
-                                            : 'commit-duration blue'
+                                                ? 'commit-duration orange'
+                                                : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
@@ -626,7 +626,7 @@ class DisputeDetail extends Component {
                                             <Countdown reload expiredTime={disputeData.commitEndDate} />
                                         )
                                     ) : (
-                                        <Countdown expiredTime={disputeData.revealEndDate} />
+                                        <Countdown reload={false} expiredTime={disputeData.revealEndDate} />
                                     )}
                                 </Grid>
                                 <Grid item xs={12}>
