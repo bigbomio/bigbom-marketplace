@@ -59,7 +59,7 @@ class DisputesRendeManage extends Component {
                                         </Grid>
                                         {dispute.commitEndDate > Date.now() ? (
                                             <Grid item xs={3} className="commit-duration">
-                                                <Countdown expiredTime={dispute.commitEndDate} />
+                                                <Countdown reload={false} expiredTime={dispute.commitEndDate} />
                                                 <Grid className="vote-btn">
                                                     <ButtonBase className="btn btn-normal btn-green">Vote</ButtonBase>
                                                 </Grid>
@@ -72,11 +72,11 @@ class DisputesRendeManage extends Component {
                                                     dispute.revealEndDate > Date.now()
                                                         ? 'commit-duration orange'
                                                         : !finalDisputes[dispute.jobID]
-                                                        ? 'commit-duration gray'
-                                                        : 'commit-duration blue'
+                                                            ? 'commit-duration gray'
+                                                            : 'commit-duration blue'
                                                 }
                                             >
-                                                <Countdown expiredTime={dispute.revealEndDate} />
+                                                <Countdown reload={false} expiredTime={dispute.revealEndDate} />
                                                 <Grid className="vote-btn">
                                                     {dispute.rewardRight ? (
                                                         <ButtonBase className="btn btn-normal btn-orange btn-getreward">Claim Reward</ButtonBase>

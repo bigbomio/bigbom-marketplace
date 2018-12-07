@@ -52,9 +52,9 @@ class DisputesRender extends Component {
                                     </Grid>
                                     <Grid item xs={3} className="commit-duration">
                                         {dispute.evidenceEndDate > Date.now() ? (
-                                            <Countdown expiredTime={dispute.evidenceEndDate} />
+                                            <Countdown reload={false} expiredTime={dispute.evidenceEndDate} />
                                         ) : (
-                                            <Countdown expiredTime={dispute.commitEndDate} />
+                                            <Countdown reload={false} expiredTime={dispute.commitEndDate} />
                                         )}
                                         <Grid className="vote-btn">
                                             <ButtonBase className="btn btn-normal btn-green" disabled={dispute.evidenceEndDate > Date.now()}>
