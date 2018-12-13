@@ -514,6 +514,9 @@ a {
     margin-left: 30px;
     position: relative;
     line-height: 1;
+    i {
+        font-style: normal !important;
+    }
     cursor: pointer;
     .fix-hover {
         width: 100%;

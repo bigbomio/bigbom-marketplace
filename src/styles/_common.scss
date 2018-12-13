@@ -655,6 +655,9 @@ $orange: #f99a0c;
         display: flex;
         float: left;
         align-items: center;
+        i {
+            font-style: normal !important;
+        }
     }
 }
 
