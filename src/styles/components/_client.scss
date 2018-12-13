@@ -51,6 +51,34 @@
     }
 }
 
+.container-wrp {
+    .single-body {
+        .mkp-form-row {
+            .description-text {
+                .ql-editor {
+                    min-height: 200px;
+                    strong,
+                    b {
+                        font-weight: bold;
+                    }
+                    em,
+                    i {
+                        font-style: italic;
+                    }
+                }
+                .ql-active {
+                    background: #eee;
+                }
+                .ql-tooltip {
+                    input {
+                        width: inherit !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
 #bigbomMarketplace {
     .job-detail {
         .btn-back {

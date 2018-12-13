@@ -124,7 +124,11 @@ const mergeBidToJob = async (web3, type, event, filter, mergeData) => {
             };
             if (userInfoFetch) {
                 user = {
-                    fullName: userInfoFetch.userInfo.firstName + ' ' + userInfoFetch.userInfo.lastName,
+                    fullName: userInfoFetch.userInfo.firstName
+                        ? userInfoFetch.userInfo.firstName + ' '
+                        : 'N/A ' + userInfoFetch.userInfo.lastName
+                            ? userInfoFetch.userInfo.lastName
+                            : null,
                     walletAddress: event.args.owner,
                 };
             }

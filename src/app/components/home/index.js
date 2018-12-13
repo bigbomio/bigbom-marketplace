@@ -90,7 +90,7 @@ class Home extends Component {
         const { isLogout } = this.state;
         return (
             <Container id="intro" className="home-intro sidebar" pose={isLogout ? 'open' : 'closed'}>
-                <Square className="col-6">
+                <Square className="col-7">
                     <h1>Find a freelancer or find a job</h1>
                     <div className="buttons">
                         <ButtonBase className="btn btn-medium btn-white left" onClick={() => this.HomeAction('postJobAction')}>
@@ -101,7 +101,7 @@ class Home extends Component {
                         </ButtonBase>
                     </div>
                 </Square>
-                <Square className="col-6">
+                <Square className="col-5">
                     <img src="/images/homebanner.png" alt="" />
                 </Square>
             </Container>

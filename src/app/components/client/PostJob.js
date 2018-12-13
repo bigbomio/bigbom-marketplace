@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import ReactQuill from 'react-quill';
 
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
@@ -10,6 +11,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
+
+import 'react-quill/dist/quill.snow.css';
 
 import settingsApi from '../../_services/settingsApi';
 import abiConfig from '../../_services/abiConfig';
@@ -21,6 +24,19 @@ const currencies = settingsApi.getCurrencies();
 const categories = settingsApi.getCategories();
 const skills = settingsApi.getSkills();
 const budgetsSource = settingsApi.getBudgets();
+
+const modules = {
+    toolbar: [
+        [{ header: [1, 2, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ align: ['right', 'center', 'justify'] }],
+        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+        ['link'],
+        ['clean'],
+    ],
+};
+
+const formats = ['header', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'align', 'list', 'bullet', 'indent', 'link'];
 
 class ClientPostJob extends Component {
     constructor(props) {
@@ -55,6 +71,18 @@ class ClientPostJob extends Component {
     componentWillUnmount() {
         this.mounted = false;
     }
+
+    descriptionOnChange = value => {
+        const string = Utils.strimHTML(value);
+        this.setState({ desPrepare: value, desErr: null });
+        if (!this.validate(string, 'description', true)) {
+            this.setState({ submitDisabled: true });
+            return;
+        }
+        setTimeout(() => {
+            this.validateAll();
+        }, 300);
+    };
 
     async newJobInit(jobHash) {
         const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
@@ -105,7 +133,7 @@ class ClientPostJob extends Component {
         setTimeout(async () => {
             const [, jobID] = await Utils.callMethod(ctInstance.instance.getJobID)(jobHash);
             if (jobID) {
-                history.push('/client/your-jobs/' + jobID.toString());
+                history.push('/client/your-jobs/');
             }
         }, 2000);
     };
@@ -342,12 +370,6 @@ class ClientPostJob extends Component {
                 this.setState({ submitDisabled: true });
                 return;
             }
-        } else if (field === 'description') {
-            this.setState({ desPrepare: val, desErr: null });
-            if (!this.validate(val, 'description', true)) {
-                this.setState({ submitDisabled: true });
-                return;
-            }
         } else if (field === 'estimatedTime') {
             this.setState({ estimatedTimePrepare: Number(val), estimatedTimeErr: null });
             if (!this.validate(val, 'estimatedTime', true)) {
@@ -471,6 +493,7 @@ class ClientPostJob extends Component {
             namePrepare,
             desPrepare,
         } = this.state;
+
         return (
             <div className="container-wrp">
                 <Dialog
@@ -553,12 +576,13 @@ class ClientPostJob extends Component {
                                 <span className="mkp-form-row-description">
                                     Start with a bit about yourself or your business, and include an overview of what you need done.
                                 </span>
-                                <textarea
-                                    defaultValue={desPrepare}
+                                <ReactQuill
                                     id="des-ip"
-                                    rows="5"
-                                    className={desErr ? 'input-err' : ''}
-                                    onChange={e => this.inputOnChange(e, 'description')}
+                                    className="description-text"
+                                    value={desPrepare}
+                                    onChange={this.descriptionOnChange}
+                                    modules={modules}
+                                    formats={formats}
                                 />
                                 {desErr && <span className="err">{desErr}</span>}
                             </Grid>

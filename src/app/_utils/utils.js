@@ -379,6 +379,12 @@ class Utils {
             return e[key] > l[key] ? e : l;
         });
     };
+
+    strimHTML = html => {
+        const temporalDivElement = document.createElement('div');
+        temporalDivElement.innerHTML = html;
+        return temporalDivElement.textContent || temporalDivElement.innerText || '';
+    };
 }
 
 export default new Utils();

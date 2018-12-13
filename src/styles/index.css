@@ -517,6 +517,12 @@ body {
   #bigbomMarketplace .job-detail .job-detail-description .ct {
     line-height: 1.6;
     white-space: pre-wrap; }
+    #bigbomMarketplace .job-detail .job-detail-description .ct strong,
+    #bigbomMarketplace .job-detail .job-detail-description .ct b {
+      font-weight: bold; }
+    #bigbomMarketplace .job-detail .job-detail-description .ct em,
+    #bigbomMarketplace .job-detail .job-detail-description .ct i {
+      font-style: italic; }
     #bigbomMarketplace .job-detail .job-detail-description .ct .skill {
       width: 100%;
       padding-top: 20px; }
@@ -1049,6 +1055,21 @@ body {
 #client .mkp-form-row .mkp-form-row-sub.number input {
   padding: 7px 10px; }
 
+.container-wrp .single-body .mkp-form-row .description-text .ql-editor {
+  min-height: 200px; }
+  .container-wrp .single-body .mkp-form-row .description-text .ql-editor strong,
+  .container-wrp .single-body .mkp-form-row .description-text .ql-editor b {
+    font-weight: bold; }
+  .container-wrp .single-body .mkp-form-row .description-text .ql-editor em,
+  .container-wrp .single-body .mkp-form-row .description-text .ql-editor i {
+    font-style: italic; }
+
+.container-wrp .single-body .mkp-form-row .description-text .ql-active {
+  background: #eee; }
+
+.container-wrp .single-body .mkp-form-row .description-text .ql-tooltip input {
+  width: inherit !important; }
+
 #bigbomMarketplace .job-detail .btn-back {
   margin-top: -30px;
   margin-bottom: 30px; }
@@ -1240,6 +1261,12 @@ body {
     max-height: 200px;
     overflow: hidden;
     padding: 0 20px 0 0; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct strong,
+    #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct b {
+      font-weight: bold; }
+    #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct em,
+    #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct i {
+      font-style: italic; }
   #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .ct-full {
     max-height: inherit; }
   #bigbomMarketplace #voter .job-detail .single-body .job-detail-description .bottom-ct {

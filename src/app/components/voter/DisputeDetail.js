@@ -6,6 +6,8 @@ import leftPad from 'left-pad';
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
+import renderHTML from 'react-render-html';
+
 import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
@@ -590,7 +592,7 @@ class DisputeDetail extends Component {
                                     Job description
                                 </Grid>
                                 <Grid item xs={12} className="ct" id="des-ct">
-                                    {disputeData.jobDispute.description}
+                                    {renderHTML(disputeData.jobDispute.description)}
                                 </Grid>
                                 <Grid item xs={12} className="bottom-ct">
                                     <ButtonBase className="btn btn-small btn-white" onClick={this.viewFull}>

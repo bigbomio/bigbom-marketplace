@@ -6,6 +6,8 @@ import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Fade from '@material-ui/core/Fade';
 
+import renderHTML from 'react-render-html';
+
 import Utils from '../../_utils/utils';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
 import api from '../../_services/settingsApi';
@@ -742,7 +744,11 @@ class JobDetailBid extends Component {
             };
             if (employerInfo !== undefined) {
                 employer = {
-                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                    fullName: employerInfo.userInfo.firstName
+                        ? employerInfo.userInfo.firstName + ' '
+                        : 'N/A ' + employerInfo.userInfo.lastName
+                            ? employerInfo.userInfo.lastName
+                            : null,
                     walletAddress: jobStatusLog[0],
                 };
             }
@@ -1461,7 +1467,7 @@ class JobDetailBid extends Component {
                                         Job description
                                     </Grid>
                                     <Grid item xs={12} className="ct">
-                                        {jobData.description}
+                                        {renderHTML(jobData.description)}
                                         {skillShow(jobData)}
                                     </Grid>
                                     <Grid item xs={12} className="ct job-owner">

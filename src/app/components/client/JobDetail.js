@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import renderHTML from 'react-render-html';
 
 import Utils from '../../_utils/utils';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
@@ -399,7 +400,11 @@ class JobDetail extends Component {
             };
             if (employerInfo !== undefined) {
                 employer = {
-                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                    fullName: employerInfo.userInfo.firstName
+                        ? employerInfo.userInfo.firstName + ' '
+                        : 'N/A ' + employerInfo.userInfo.lastName
+                            ? employerInfo.userInfo.lastName
+                            : null,
                     walletAddress: jobStatusLog[0],
                 };
             }
@@ -1327,7 +1332,7 @@ class JobDetail extends Component {
                                         Job description
                                     </Grid>
                                     <Grid item xs={12} className="ct">
-                                        {jobData.description}
+                                        {renderHTML(jobData.description)}
                                         {skillShow(jobData.skills)}
                                     </Grid>
                                     <Grid item xs={12} className="ct job-owner">

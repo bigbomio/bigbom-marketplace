@@ -129,7 +129,11 @@ class YourBids extends Component {
                         };
                         if (employerInfo !== undefined) {
                             employer = {
-                                fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                                fullName: employerInfo.userInfo.firstName
+                                    ? employerInfo.userInfo.firstName + ' '
+                                    : 'N/A' + employerInfo.userInfo.lastName
+                                        ? employerInfo.userInfo.lastName
+                                        : null,
                                 walletAddress: eventLog.args.owner,
                                 email: employerInfo.userInfo.email,
                             };

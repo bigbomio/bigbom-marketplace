@@ -469,6 +469,14 @@ $orange: #f99a0c;
             .ct {
                 line-height: 1.6;
                 white-space: pre-wrap;
+                strong,
+                b {
+                    font-weight: bold;
+                }
+                em,
+                i {
+                    font-style: italic;
+                }
                 .skill {
                     width: 100%;
                     padding-top: 20px;
