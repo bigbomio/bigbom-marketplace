@@ -210,8 +210,8 @@ class JobDetail extends Component {
             }
         }
         voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+            clientVotes: Utils.weiToToken(web3, Number(result[1][2].toString())),
+            freelancerVotes: Utils.weiToToken(web3, Number(result[1][1].toString())),
         };
         if (this.mounted) {
             if (voteResult.clientVotes > voteResult.freelancerVotes) {
@@ -509,13 +509,18 @@ class JobDetail extends Component {
     };
 
     acceptBid = async () => {
-        const { jobID, bidAddress } = this.state;
+        const { jobID, bidAddress, jobData, bidValue } = this.state;
+        const currency = jobData.currency.label;
         const { web3 } = this.props;
         const BidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
-        const [errAccept, tx] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobID, bidAddress, {
+        let msgParam = {
             from: BidInstance.defaultAccount,
             gasPrice: +BidInstance.gasPrice.toString(10),
-        });
+        };
+        if (currency === 'ETH') {
+            msgParam.value = bidValue;
+        }
+        const [errAccept, tx] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobID, bidAddress, msgParam);
         if (errAccept) {
             this.setActionBtnStt('acceptDone', false);
             this.setState({
@@ -526,25 +531,28 @@ class JobDetail extends Component {
             console.log('errAccept', errAccept);
             return;
         }
-        this.setActionBtnStt('acceptDone', true);
-        this.setState({
-            actStt: {
-                title: '',
-                err: false,
-                text: 'Your job has been accepted! Please waiting for confirm from your network.',
-                link: (
-                    <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
-                        HERE
-                    </a>
-                ),
-            },
-            dialogLoading: false,
-            dialogContent: null,
-        });
+        if (tx) {
+            this.setActionBtnStt('acceptDone', true);
+            this.setState({
+                actStt: {
+                    title: '',
+                    err: false,
+                    text: 'Your job has been accepted! Please waiting for confirm from your network.',
+                    link: (
+                        <a className="bold link" href={abiConfig.getTXlink() + tx} target="_blank" rel="noopener noreferrer">
+                            HERE
+                        </a>
+                    ),
+                },
+                dialogLoading: false,
+                dialogContent: null,
+            });
+        }
     };
 
     acceptBidInit = async () => {
-        const { bidValue } = this.state;
+        const { bidValue, jobData } = this.state;
+        const currency = jobData.currency.label;
         const { web3, accountInfo } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await contractApis.getAllowance(web3, 'BBFreelancerBid');
@@ -560,18 +568,19 @@ class JobDetail extends Component {
                 dialogContent: null,
             });
             return;
-        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < Number(bidValue)) {
+        } else if (Utils.tokenToWei(web3, defaultWallet[0].balances[currency]) < Number(bidValue)) {
             this.setActionBtnDisabled(true);
             this.setState({
                 actStt: {
                     title: 'Error: ',
                     err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than fee.',
-                    link: (
-                        <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
-                            Get free BBO
-                        </a>
-                    ),
+                    text: `Sorry, you have insufficient funds! You can not create a job if your ${currency} balance less than fee.`,
+                    link:
+                        currency === 'BBO' ? (
+                            <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
+                                Get free BBO
+                            </a>
+                        ) : null,
                 },
                 dialogContent: null,
             });
@@ -579,19 +588,24 @@ class JobDetail extends Component {
         }
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
-        if (Number(allowance.toString(10)) === 0) {
-            const apprv = await contractApis.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
-            if (apprv) {
-                await this.acceptBid();
-            }
-        } else if (Number(allowance.toString(10)) > Number(bidValue)) {
+
+        if (currency === 'ETH') {
             await this.acceptBid();
         } else {
-            const apprv = await contractApis.approve(web3, 'BBFreelancerBid', 0);
-            if (apprv) {
-                const apprv2 = await contractApis.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
-                if (apprv2) {
+            if (Number(allowance.toString(10)) === 0) {
+                const apprv = await contractApis.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
+                if (apprv) {
                     await this.acceptBid();
+                }
+            } else if (Number(allowance.toString(10)) > Number(bidValue)) {
+                await this.acceptBid();
+            } else {
+                const apprv = await contractApis.approve(web3, 'BBFreelancerBid', 0);
+                if (apprv) {
+                    const apprv2 = await contractApis.approve(web3, 'BBFreelancerBid', Math.pow(2, 255));
+                    if (apprv2) {
+                        await this.acceptBid();
+                    }
                 }
             }
         }
@@ -742,14 +756,18 @@ class JobDetail extends Component {
 
     confirmAccept = bid => {
         const { web3 } = this.props;
+        const { jobData } = this.state;
         this.setActionBtnDisabled(false);
         const dialogContent = () => {
             return (
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, you will deposit <span className="bold">{Utils.currencyFormat(bid.award)} BBO</span> into our
-                        escrow contract. Please make sure you understand what you&#39;re doing.
+                        By confirming this action, you will deposit{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bid.award)} {jobData.currency.label}
+                        </span>{' '}
+                        into our escrow contract. Please make sure you understand what you&#39;re doing.
                     </p>
                 </div>
             );
@@ -757,7 +775,7 @@ class JobDetail extends Component {
         this.setState({
             open: true,
             bidAddress: bid.address,
-            bidValue: Utils.BBOToWei(web3, bid.award), // convert bbo to eth wei
+            bidValue: Utils.tokenToWei(web3, bid.award), // convert bbo to eth wei
             dialogData: {
                 actionText: 'Accept',
                 actions: this.acceptBidInit,
@@ -788,8 +806,11 @@ class JobDetail extends Component {
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> into
-                        your account as the payment for this job. Your staked tokens also will be refunded into your account.
+                        By confirming this action, you will get{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}
+                        </span>{' '}
+                        into your account as the payment for this job. Your staked tokens also will be refunded into your account.
                     </p>
                 </div>
             );
@@ -798,8 +819,12 @@ class JobDetail extends Component {
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> will be sent from
-                        escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become reward for voters.
+                        By confirming this action,{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}
+                        </span>{' '}
+                        will be sent from escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become
+                        reward for voters.
                     </p>
                 </div>
             );
@@ -855,7 +880,10 @@ class JobDetail extends Component {
                     <i className="fas fa-exclamation-circle" />
                     <p>
                         By confirming this action, you will allow escrow contract to pay your freelancer{' '}
-                        <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO </span> from your deposit balance.
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}{' '}
+                        </span>{' '}
+                        from your deposit balance.
                     </p>
                 </div>
             );
@@ -880,8 +908,11 @@ class JobDetail extends Component {
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, your <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO </span> BBO deposited
-                        in the escrow contract will be send back to your account.
+                        By confirming this action, your{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}{' '}
+                        </span>{' '}
+                        {jobData.currency.label} deposited in the escrow contract will be send back to your account.
                     </p>
                 </div>
             );

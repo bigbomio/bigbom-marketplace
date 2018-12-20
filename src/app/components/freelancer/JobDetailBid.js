@@ -10,7 +10,7 @@ import renderHTML from 'react-render-html';
 
 import Utils from '../../_utils/utils';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
-import api from '../../_services/settingsApi';
+import api from '../../_services/configs';
 
 import Countdown from '../common/countdown';
 import Popper from '../common/Popper';
@@ -228,8 +228,8 @@ class JobDetailBid extends Component {
             }
         }
         voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+            clientVotes: Utils.weiToToken(web3, Number(result[1][2].toString())),
+            freelancerVotes: Utils.weiToToken(web3, Number(result[1][1].toString())),
         };
         if (this.mounted) {
             if (voteResult.clientVotes > voteResult.freelancerVotes) {
@@ -890,7 +890,7 @@ class JobDetailBid extends Component {
         const { web3 } = this.props;
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
-        const awardSend = Utils.BBOToWei(web3, award);
+        const awardSend = Utils.tokenToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, tx] = await Utils.callMethod(instanceBid.instance.createBid)(jobID, awardSend, time, {
             from: instanceBid.defaultAccount,

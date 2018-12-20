@@ -1072,6 +1072,26 @@ body {
 .container-wrp .single-body .mkp-form-row .description-text .ql-tooltip input {
   width: inherit !important; }
 
+.container-wrp .currency {
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  border-left: none;
+  color: #666; }
+
+.container-wrp .convert {
+  justify-content: center;
+  display: flex;
+  align-items: center; }
+  .container-wrp .convert i {
+    color: #3f89b9;
+    font-size: 25px; }
+
 #bigbomMarketplace .job-detail .btn-back {
   margin-top: -30px;
   margin-bottom: 30px; }
@@ -1091,12 +1111,9 @@ body {
   display: flex;
   width: 100%; }
   #bigbomMarketplace .custom-budget button {
-    margin-right: -90px;
     box-shadow: none;
     border: solid 1px #ccc;
     padding: 9px 25px; }
-  #bigbomMarketplace .custom-budget input {
-    margin-left: 89px !important; }
 
 #bigbomMarketplace .reason-menu h3 {
   text-align: left;

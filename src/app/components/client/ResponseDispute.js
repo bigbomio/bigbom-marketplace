@@ -36,7 +36,7 @@ class ResponseDispute extends Component {
 
     componentDidMount() {
         const { web3, votingParams } = this.props;
-        const stakeDeposit = Utils.currencyFormat(Utils.WeiToBBO(web3, Number(votingParams.stakeDeposit)));
+        const stakeDeposit = Utils.currencyFormat(Utils.weiToToken(web3, Number(votingParams.stakeDeposit)));
         this.setState({ stakeDeposit });
     }
 
@@ -94,7 +94,7 @@ class ResponseDispute extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < Number(votingParams.stakeDeposit)) {
+        } else if (Utils.tokenToWei(web3, defaultWallet[0].balances.BBO) < Number(votingParams.stakeDeposit)) {
             this.setState({
                 isDone: true,
                 isLoading: false,

@@ -223,11 +223,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
-      },
-      {
         "indexed": true,
         "name": "jobID",
         "type": "uint256"
@@ -239,26 +234,16 @@
       },
       {
         "indexed": false,
-        "name": "expired",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "category",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "name": "budget",
+        "name": "bid",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "name": "estimateTime",
+        "name": "bidTime",
         "type": "uint256"
       }
     ],
-    "name": "JobCreated",
+    "name": "BidCreated",
     "type": "event"
   },
   {
@@ -268,9 +253,14 @@
         "indexed": true,
         "name": "jobID",
         "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "owner",
+        "type": "address"
       }
     ],
-    "name": "JobCanceled",
+    "name": "BidCanceled",
     "type": "event"
   },
   {
@@ -280,21 +270,19 @@
         "indexed": true,
         "name": "jobID",
         "type": "uint256"
-      }
-    ],
-    "name": "JobStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
+      {
+        "indexed": false,
+        "name": "bid",
+        "type": "uint256"
+      },
       {
         "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
+        "name": "freelancer",
+        "type": "address"
       }
     ],
-    "name": "JobFinished",
+    "name": "BidAccepted",
     "type": "event"
   },
   {
@@ -341,73 +329,66 @@
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
         "name": "jobID",
         "type": "uint256"
+      },
+      {
+        "name": "bid",
+        "type": "uint256"
+      },
+      {
+        "name": "bidTime",
+        "type": "uint256"
       }
     ],
-    "name": "getJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "bool"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "name": "createBid",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
-      },
-      {
-        "name": "expired",
+        "name": "jobID",
         "type": "uint256"
       },
       {
-        "name": "estimateTime",
+        "name": "bid",
         "type": "uint256"
       },
       {
-        "name": "budget",
+        "name": "bidTime",
         "type": "uint256"
-      },
-      {
-        "name": "category",
-        "type": "bytes32"
-      },
-      {
-        "name": "tokenAddress",
-        "type": "address"
       }
     ],
-    "name": "createJob",
+    "name": "createSingleBid",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobIDs",
+        "type": "uint256[]"
+      },
+      {
+        "name": "bids",
+        "type": "uint256[]"
+      },
+      {
+        "name": "bidTimes",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "createMultipleBid",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -421,7 +402,7 @@
         "type": "uint256"
       }
     ],
-    "name": "cancelJob",
+    "name": "cancelBid",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -433,72 +414,16 @@
       {
         "name": "jobID",
         "type": "uint256"
+      },
+      {
+        "name": "freelancer",
+        "type": "address"
       }
     ],
-    "name": "startJob",
+    "name": "acceptBid",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "finishJob",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "getJobID",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "rateTo",
-        "type": "address"
-      },
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "allowRating",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   }
 ]

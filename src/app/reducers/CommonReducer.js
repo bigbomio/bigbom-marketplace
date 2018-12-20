@@ -20,6 +20,7 @@ const data = {
         wallets: [],
     },
     register: false,
+    rates: [],
 };
 
 const initData = cloneDeep(data);
@@ -86,6 +87,11 @@ const CommonReducer = (state = initData, action) => {
                 register,
             };
         }
+        case types.GET_EXCHANGE_RATES_SUCCESS:
+            return {
+                ...state,
+                rates: action.rates,
+            };
         default:
             return state;
     }

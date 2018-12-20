@@ -14,7 +14,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import Utils from '../../_utils/utils';
-import settingsApi from '../../_services/settingsApi';
+import configs from '../../_services/configs';
 import abiConfig from '../../_services/abiConfig';
 import services from '../../_services/services';
 
@@ -266,7 +266,7 @@ class JobBrowser extends Component {
         const { selectedCategory, anchorEl, isLoading, stt } = this.state;
         const { jobs } = this.props;
         const filteredJobs = jobs.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
-        const categories = settingsApi.getCategories();
+        const categories = configs.getCategories();
         return (
             <div id="freelancer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">

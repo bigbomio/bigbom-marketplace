@@ -134,7 +134,7 @@ const mergeBidToJob = async (web3, type, event, filter, mergeData) => {
             }
             const bidTpl = {
                 address: event.args.owner,
-                award: Utils.WeiToBBO(web3, event.args.bid.toString()),
+                award: Utils.weiToToken(web3, event.args.bid.toString()),
                 timeDone: event.args.bidTime.toString(),
                 id: event.args.jobHash,
                 jobHash: mergeData.jobHash,
@@ -692,6 +692,25 @@ const getJobIDByPollID = async (web3, pollID) => {
     }
 };
 
+const getTokenAddress = async web3 => {
+    try {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const tokenAddressEvent = await ctInstance.instance.PaymentTokenAdded(
+            {},
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            }
+        );
+        const tokenAddressList = await Utils.WaitAllContractEventGet(tokenAddressEvent);
+        if (tokenAddressList.length > 0) {
+            return tokenAddressList;
+        }
+    } catch (e) {
+        console.log(e);
+    }
+};
+
 export default {
     getAllowance,
     approve,
@@ -715,4 +734,5 @@ export default {
     getJobCreatedByJobID,
     getMyVoting,
     getJobIDByPollID,
+    getTokenAddress,
 };

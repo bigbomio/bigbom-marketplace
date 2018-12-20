@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Eth from 'ethjs';
@@ -23,7 +23,7 @@ import { saveAccountInfo, setRegister } from '../../actions/commonActions';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
-class LoginMetamask extends Component {
+class LoginMetamask extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -65,15 +65,19 @@ class LoginMetamask extends Component {
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
         for (let acc of userInfo.wallets) {
-            let address = { address: acc.address, default: defaultAddress.toLowerCase() === acc.address.toLowerCase(), balances: { ETH: 0, BBO: 0 } };
+            let address = {
+                address: acc.address,
+                default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
+                balances: { ETH: 0, BBO: 0 },
+            };
             await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
                 address.balances.ETH = ethBalance;
             });
             const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
             const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
             if (!errBalance) {
-                const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                const BBOBalance = Utils.weiToToken(web3, balance).toFixed(3);
                 address.balances.BBO = BBOBalance;
             }
             accounts.push(address);

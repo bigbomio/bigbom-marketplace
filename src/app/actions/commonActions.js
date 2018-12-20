@@ -46,3 +46,10 @@ export const setRegister = register => {
         register,
     };
 };
+
+export const getExchangeRates = rates => {
+    return {
+        type: types.GET_EXCHANGE_RATES,
+        rates,
+    };
+};

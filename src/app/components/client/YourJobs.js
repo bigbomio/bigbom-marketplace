@@ -11,14 +11,14 @@ import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
 
 import Utils from '../../_utils/utils';
-import settingsApi from '../../_services/settingsApi';
+import configs from '../../_services/configs';
 import abiConfig from '../../_services/abiConfig';
 
 import { saveJobs } from '../../actions/clientActions';
 import { setReload } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 
-const categories = settingsApi.getCategories();
+const categories = configs.getCategories();
 
 let jobs = [];
 

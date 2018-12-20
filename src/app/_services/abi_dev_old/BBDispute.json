@@ -42,6 +42,20 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "votingHelper",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -62,25 +76,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobCancel",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -126,86 +121,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobStart",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isOwnerOfJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobExpired",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobHasFreelancer",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -220,13 +135,39 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "voting",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
+        "indexed": true,
+        "name": "jobID",
+        "type": "uint256"
       },
+      {
+        "indexed": false,
+        "name": "winner",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeFinalized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": true,
         "name": "jobID",
@@ -234,67 +175,60 @@
       },
       {
         "indexed": true,
-        "name": "owner",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "jobID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeAgainsted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "jobID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "creator",
         "type": "address"
       },
       {
         "indexed": false,
-        "name": "expired",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "name": "category",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "name": "budget",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "estimateTime",
-        "type": "uint256"
+        "name": "whiteFlag",
+        "type": "bool"
       }
     ],
-    "name": "JobCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "JobCanceled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "JobStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "JobFinished",
+    "name": "DisputeUpdated",
     "type": "event"
   },
   {
@@ -330,11 +264,39 @@
     "constant": false,
     "inputs": [
       {
-        "name": "paymentAddress",
+        "name": "p",
         "type": "address"
       }
     ],
-    "name": "setPaymentContract",
+    "name": "setPayment",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "p",
+        "type": "address"
+      }
+    ],
+    "name": "setVoting",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "p",
+        "type": "address"
+      }
+    ],
+    "name": "setVotingHelper",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -348,31 +310,11 @@
         "type": "uint256"
       }
     ],
-    "name": "getJob",
+    "name": "isAgaintsDispute",
     "outputs": [
       {
-        "name": "",
-        "type": "address"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
+        "name": "r",
         "type": "bool"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "address"
       }
     ],
     "payable": false,
@@ -383,31 +325,65 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "finalizeDispute",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      },
+      {
+        "name": "proofHash",
         "type": "bytes"
-      },
-      {
-        "name": "expired",
-        "type": "uint256"
-      },
-      {
-        "name": "estimateTime",
-        "type": "uint256"
-      },
-      {
-        "name": "budget",
-        "type": "uint256"
-      },
-      {
-        "name": "category",
-        "type": "bytes32"
-      },
-      {
-        "name": "tokenAddress",
-        "type": "address"
       }
     ],
-    "name": "createJob",
+    "name": "startDispute",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      },
+      {
+        "name": "againstProofHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "againstDispute",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "jobID",
+        "type": "uint256"
+      },
+      {
+        "name": "whiteFlag",
+        "type": "bool"
+      }
+    ],
+    "name": "updateDispute",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -421,35 +397,7 @@
         "type": "uint256"
       }
     ],
-    "name": "cancelJob",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "startJob",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "finishJob",
+    "name": "claimReward",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -459,41 +407,18 @@
     "constant": true,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "getJobID",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "rateTo",
-        "type": "address"
-      },
-      {
         "name": "jobID",
         "type": "uint256"
       }
     ],
-    "name": "allowRating",
+    "name": "calcReward",
     "outputs": [
       {
-        "name": "",
+        "name": "numReward",
+        "type": "uint256"
+      },
+      {
+        "name": "win",
         "type": "bool"
       }
     ],

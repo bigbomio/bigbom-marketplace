@@ -11,7 +11,7 @@ import renderHTML from 'react-render-html';
 import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
-import api from '../../_services/settingsApi';
+import api from '../../_services/configs';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
 
@@ -120,8 +120,8 @@ class DisputeDetail extends Component {
             }
             // Returns (options[default, opt1, opt2], votes[default,clientVotes, freelancerVotes])
             voteResult = {
-                clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
-                freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+                clientVotes: Utils.weiToToken(web3, Number(result[1][2].toString())),
+                freelancerVotes: Utils.weiToToken(web3, Number(result[1][1].toString())),
             };
             this.setState({
                 dialogLoading: false,
@@ -214,7 +214,7 @@ class DisputeDetail extends Component {
         console.log(result[0].toString());
         if (Number(result[0].toString()) > 0) {
             if (this.mounted) {
-                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result[0].toString())) });
+                this.setState({ getRewardRight: true, reward: Utils.weiToToken(web3, Number(result[0].toString())) });
             }
         } else {
             if (this.mounted) {
@@ -353,7 +353,7 @@ class DisputeDetail extends Component {
         const { web3, vote, setVoteInputDisable } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
         const secretHashString = this.keccak256(vote.choice, Number(vote.secretPhrase));
-        const token = Utils.BBOToWei(web3, vote.token);
+        const token = Utils.tokenToWei(web3, vote.token);
         setVoteInputDisable(true);
         const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.pollID, secretHashString, token, {
             from: ctInstance.defaultAccount,
@@ -434,7 +434,7 @@ class DisputeDetail extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < vote.token) {
+        } else if (Utils.tokenToWei(web3, defaultWallet[0].balances.BBO) < vote.token) {
             this.setState({
                 dialogLoading: false,
                 actStt: {
@@ -456,7 +456,7 @@ class DisputeDetail extends Component {
             if (apprv) {
                 await this.finalVoting();
             }
-        } else if (Number(allowance.toString(10)) > Utils.BBOToWei(web3, vote.token)) {
+        } else if (Number(allowance.toString(10)) > Utils.tokenToWei(web3, vote.token)) {
             await this.finalVoting();
         } else {
             const apprv = await contractApis.approve(web3, 'BBVoting', 0);

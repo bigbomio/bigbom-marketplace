@@ -30,7 +30,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "payment",
+    "name": "helper",
     "outputs": [
       {
         "name": "",
@@ -62,25 +62,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobCancel",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -126,86 +107,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobStart",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isOwnerOfJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobExpired",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "isJobHasFreelancer",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -223,42 +124,102 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "name": "jobHash",
-        "type": "bytes"
-      },
-      {
         "indexed": true,
-        "name": "jobID",
+        "name": "pollID",
         "type": "uint256"
       },
       {
         "indexed": true,
-        "name": "owner",
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "name": "PollStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "isCancel",
+        "type": "bool"
+      }
+    ],
+    "name": "PollUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "optionID",
+        "type": "uint256"
+      }
+    ],
+    "name": "PollOptionAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
         "type": "address"
       },
       {
         "indexed": false,
-        "name": "expired",
+        "name": "numTokens",
         "type": "uint256"
-      },
+      }
+    ],
+    "name": "VotingRightsGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": true,
-        "name": "category",
-        "type": "bytes32"
+        "name": "voter",
+        "type": "address"
       },
       {
         "indexed": false,
-        "name": "budget",
+        "name": "numTokens",
         "type": "uint256"
+      }
+    ],
+    "name": "VotingRightsWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
       },
       {
-        "indexed": false,
-        "name": "estimateTime",
+        "indexed": true,
+        "name": "pollID",
         "type": "uint256"
       }
     ],
-    "name": "JobCreated",
+    "name": "VoteCommitted",
     "type": "event"
   },
   {
@@ -266,35 +227,16 @@
     "inputs": [
       {
         "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "JobCanceled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+        "name": "voter",
+        "type": "address"
+      },
       {
         "indexed": true,
-        "name": "jobID",
+        "name": "pollID",
         "type": "uint256"
       }
     ],
-    "name": "JobStarted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "JobFinished",
+    "name": "VoteRevealed",
     "type": "event"
   },
   {
@@ -330,84 +272,61 @@
     "constant": false,
     "inputs": [
       {
-        "name": "paymentAddress",
+        "name": "_helper",
         "type": "address"
       }
     ],
-    "name": "setPaymentContract",
+    "name": "setHelper",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "numTokens",
         "type": "uint256"
       }
     ],
-    "name": "getJob",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "bool"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "name": "requestVotingRights",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": false,
     "inputs": [
       {
-        "name": "jobHash",
-        "type": "bytes"
-      },
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawVotingRights",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
       {
-        "name": "expired",
+        "name": "pollID",
         "type": "uint256"
       },
       {
-        "name": "estimateTime",
-        "type": "uint256"
-      },
-      {
-        "name": "budget",
-        "type": "uint256"
-      },
-      {
-        "name": "category",
+        "name": "secretHash",
         "type": "bytes32"
       },
       {
-        "name": "tokenAddress",
-        "type": "address"
+        "name": "tokens",
+        "type": "uint256"
       }
     ],
-    "name": "createJob",
+    "name": "commitVote",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -417,88 +336,107 @@
     "constant": false,
     "inputs": [
       {
-        "name": "jobID",
+        "name": "pollID",
         "type": "uint256"
-      }
-    ],
-    "name": "cancelJob",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "startJob",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "jobID",
-        "type": "uint256"
-      }
-    ],
-    "name": "finishJob",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "jobHash",
-        "type": "bytes"
-      }
-    ],
-    "name": "getJobID",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "sender",
-        "type": "address"
       },
       {
-        "name": "rateTo",
-        "type": "address"
+        "name": "choice",
+        "type": "uint256"
       },
       {
-        "name": "jobID",
+        "name": "salt",
         "type": "uint256"
       }
     ],
-    "name": "allowRating",
+    "name": "revealVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "name": "isCancel",
+        "type": "bool"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "updatePoll",
     "outputs": [
       {
-        "name": "",
+        "name": "success",
         "type": "bool"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "extraData",
+        "type": "bytes"
+      },
+      {
+        "name": "addOptionDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "startPoll",
+    "outputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "name": "pollOption",
+        "type": "bytes"
+      }
+    ],
+    "name": "addPollOption",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

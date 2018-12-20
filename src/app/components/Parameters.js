@@ -25,13 +25,13 @@ class Parameters extends Component {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBParams');
         const [, votingParamsSource] = await Utils.callMethod(ctInstance.instance.getVotingParams)();
         const [, freelancerParams] = await Utils.callMethod(ctInstance.instance.getFreelancerParams)();
-        const minVotes = Utils.currencyFormat(Utils.WeiToBBO(web3, votingParamsSource[0].toString()));
-        const maxVotes = Utils.currencyFormat(Utils.WeiToBBO(web3, votingParamsSource[1].toString()));
-        const stakeDeposit = Utils.currencyFormat(Utils.WeiToBBO(web3, votingParamsSource[2].toString()));
+        const minVotes = Utils.currencyFormat(Utils.weiToToken(web3, votingParamsSource[0].toString()));
+        const maxVotes = Utils.currencyFormat(Utils.weiToToken(web3, votingParamsSource[1].toString()));
+        const stakeDeposit = Utils.currencyFormat(Utils.weiToToken(web3, votingParamsSource[2].toString()));
         const evidenceDuration = Utils.secondsToHours(votingParamsSource[3].toString());
         const commitDuration = Utils.secondsToHours(votingParamsSource[4].toString());
         const revealDuration = Utils.secondsToHours(votingParamsSource[5].toString());
-        const bboRewards = Utils.currencyFormat(Utils.WeiToBBO(web3, votingParamsSource[6].toString()));
+        const bboRewards = Utils.currencyFormat(Utils.weiToToken(web3, votingParamsSource[6].toString()));
         const paymentLimitTimestamp = Utils.secondsToHours(freelancerParams[0].toString());
         const rejectedPaymentLimitTimestamp = Utils.secondsToHours(freelancerParams[1].toString());
         const bbparams = {

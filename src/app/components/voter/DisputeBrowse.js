@@ -17,7 +17,7 @@ import DisputesRender from './DisputesRender';
 import SwitchIOS from '../common/switchIOS';
 
 import Utils from '../../_utils/utils';
-import settingsApi from '../../_services/settingsApi';
+import configs from '../../_services/configs';
 import abiConfig from '../../_services/abiConfig';
 
 import { saveVotingParams } from '../../actions/freelancerActions';
@@ -194,7 +194,7 @@ class DisputeBrowser extends Component {
         const { disputes } = this.props;
         const availableDisputes = disputes.filter(dispute => dispute.commitEndDate > Date.now());
         const filteredDisputes = availableDisputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
-        const categories = settingsApi.getCategories();
+        const categories = configs.getCategories();
         return (
             <div id="freelancer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">

@@ -79,11 +79,11 @@ class Routers extends PureComponent {
             lastName: '',
             wallets: [],
         };
-        logoutMetamask();
         LocalStorage.removeItem('userInfo');
         LocalStorage.removeItem('userToken');
         saveAccountInfo(accountInfo);
         setReload(false);
+        logoutMetamask();
     };
 
     updateBalance = async userInfo => {
@@ -100,7 +100,7 @@ class Routers extends PureComponent {
 
             // get eth balance
             await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
                 address.balances.ETH = ethBalance;
             });
 
@@ -108,7 +108,7 @@ class Routers extends PureComponent {
             const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
             const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
             if (!errBalance) {
-                const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                const BBOBalance = Utils.weiToToken(web3, balance).toFixed(3);
                 address.balances.BBO = BBOBalance;
             }
             accounts.push(address);

@@ -178,6 +178,33 @@
     "type": "event"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "name": "rateToAddress",
+        "type": "address"
+      },
+      {
+        "name": "jobID",
+        "type": "uint256"
+      }
+    ],
+    "name": "allowRating",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {

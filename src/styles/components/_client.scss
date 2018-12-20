@@ -77,6 +77,27 @@
             }
         }
     }
+    .currency {
+        padding: 0;
+        box-sizing: border-box;
+        font-size: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        border-left: none;
+        color: #666;
+    }
+    .convert {
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        i {
+            color: $darkBlue;
+            font-size: 25px;
+        }
+    }
 }
 
 #bigbomMarketplace {
@@ -105,13 +126,13 @@
         display: flex;
         width: 100%;
         button {
-            margin-right: -90px;
+            //margin-right: -90px;
             box-shadow: none;
             border: solid 1px #ccc;
             padding: 9px 25px;
         }
         input {
-            margin-left: 89px !important;
+            //margin-left: 89px !important;
         }
     }
     .reason-menu {

@@ -68,8 +68,8 @@ class Voting extends Component {
         const val = e.target.value;
         const { web3, setActionBtnDisabled, saveVote } = this.props;
         const { votingParams, vote } = this.state;
-        const min = Utils.WeiToBBO(web3, votingParams.minVotes);
-        const max = Utils.WeiToBBO(web3, votingParams.maxVotes);
+        const min = Utils.weiToToken(web3, votingParams.minVotes);
+        const max = Utils.weiToToken(web3, votingParams.maxVotes);
         if (Number(val) < min) {
             this.setState({ voteErr: `Please enter at least  ${min}  BBO.`, downloadDisable: true });
             setActionBtnDisabled(true);
