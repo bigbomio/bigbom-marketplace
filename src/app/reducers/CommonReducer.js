@@ -21,6 +21,7 @@ const data = {
     },
     register: false,
     rates: [],
+    tokensAddress: [],
 };
 
 const initData = cloneDeep(data);
@@ -91,6 +92,11 @@ const CommonReducer = (state = initData, action) => {
             return {
                 ...state,
                 rates: action.rates,
+            };
+        case types.GET_TOKENS_ADDRESS_SUCCESS:
+            return {
+                ...state,
+                tokensAddress: action.tokensAddress,
             };
         default:
             return state;

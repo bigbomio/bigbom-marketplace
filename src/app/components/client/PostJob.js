@@ -19,7 +19,6 @@ import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
 
 import { getExchangeRates } from '../../actions/commonActions';
-import contractApis from '../../_services/contractApis';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -104,16 +103,15 @@ class ClientPostJob extends Component {
 
     async newJobInit(jobHash) {
         const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare, selectedCurrency } = this.state;
-        const { web3 } = this.props;
+        const { web3, tokens } = this.props;
         const budget = Utils.tokenToWei(web3, selectedBudget.max_sum);
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
-        const tokenAddressLog = await contractApis.getTokenAddress(web3);
-        console.log(tokenAddressLog);
+        console.log(tokens);
         let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
         if (selectedCurrency.label !== 'ETH') {
-            tokenAddress = tokenAddressLog[1].args.tokenAddress; // BBO address
+            // tokenAddress = tokenAddressLog[0].args.tokenAddress; // BBO address
         }
         const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
@@ -797,12 +795,14 @@ ClientPostJob.propTypes = {
     accountInfo: PropTypes.any.isRequired,
     getExchangeRates: PropTypes.func.isRequired,
     rates: PropTypes.array.isRequired,
+    tokens: PropTypes.array.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.HomeReducer.web3,
         accountInfo: state.CommonReducer.accountInfo,
         rates: state.CommonReducer.rates,
+        tokens: state.CommonReducer.tokens,
     };
 };
 

@@ -27,9 +27,8 @@ class Voting extends Component {
     }
 
     async componentDidMount() {
-        const { web3 } = this.props;
         this.mounted = true;
-        const votingParams = await contractApis.getVotingParams(web3);
+        const votingParams = await contractApis.getVotingParams();
         this.saveVotingParams(votingParams);
         this.getSecretPhrase();
     }

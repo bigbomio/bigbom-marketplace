@@ -45,9 +45,9 @@ class Rating extends Component {
     };
 
     ratingInit = async () => {
-        const { web3, jobID, ratingOwner, ratingFor } = this.props;
+        const { jobID, ratingOwner, ratingFor } = this.props;
         const ratingID = Utils.makeIdString(7);
-        const allow = await contractApis.checkAllowRating(web3, ratingOwner, ratingFor, jobID);
+        const allow = await contractApis.checkAllowRating(ratingOwner, ratingFor, jobID);
         this.setState({ rightOfRating: allow, ratingID });
     };
 
@@ -360,13 +360,14 @@ class Rating extends Component {
 Rating.propTypes = {
     web3: PropTypes.object.isRequired,
     jobID: PropTypes.string.isRequired,
-    ratingOwner: PropTypes.string.isRequired,
+    ratingOwner: PropTypes.string,
     ratingFor: PropTypes.string.isRequired,
     ratingDatas: PropTypes.array,
 };
 
 Rating.defaultProps = {
     ratingDatas: [],
+    ratingOwner: '',
 };
 
 const mapStateToProps = state => {

@@ -61,17 +61,16 @@ class DisputeDetail extends Component {
     }
 
     getDispute = async () => {
-        const { web3, match } = this.props;
+        const { match } = this.props;
         const pollID = match.params.disputeId;
         this.setState({ isLoading: true, pollID });
-        const jobID = await contractApis.getJobIDByPollID(web3, pollID);
+        const jobID = await contractApis.getJobIDByPollID(pollID);
         this.getDisputeByJobID(jobID);
     };
 
     getDisputeByJobID = async jobID => {
-        const { web3 } = this.props;
         this.setState({ jobID });
-        const disputeDatas = await contractApis.getAllAvailablePoll(web3, jobID);
+        const disputeDatas = await contractApis.getAllAvailablePoll(jobID);
         if (disputeDatas.length > 0) {
             for (let dpData of disputeDatas) {
                 this.disputeDataInit(dpData);
@@ -238,9 +237,8 @@ class DisputeDetail extends Component {
     };
 
     disputeDataInit = async disputeData => {
-        const { web3 } = this.props;
         this.sttAtionInit();
-        const reason = await contractApis.getReasonPaymentRejected(web3, disputeData.data.jobID);
+        const reason = await contractApis.getReasonPaymentRejected(disputeData.data.jobID);
         if (this.mounted) {
             this.setState({ paymentRejectReason: reason });
         }
@@ -255,7 +253,7 @@ class DisputeDetail extends Component {
             }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
-            const disputeFinalized = await contractApis.getDisputeFinalized(web3, disputeData.data.jobID);
+            const disputeFinalized = await contractApis.getDisputeFinalized(disputeData.data.jobID);
             this.setFinalizedStt(disputeFinalized);
         }
         fetch(URl)
@@ -420,7 +418,7 @@ class DisputeDetail extends Component {
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
-        const allowance = await contractApis.getAllowance(web3, 'BBVoting');
+        const allowance = await contractApis.getAllowance('BBVoting');
 
         /// check balance
         if (defaultWallet[0].balances.ETH <= 0) {
@@ -452,16 +450,16 @@ class DisputeDetail extends Component {
         }
 
         if (Number(allowance.toString(10)) === 0) {
-            const apprv = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
+            const apprv = await contractApis.approve('BBVoting', Math.pow(2, 255));
             if (apprv) {
                 await this.finalVoting();
             }
         } else if (Number(allowance.toString(10)) > Utils.tokenToWei(web3, vote.token)) {
             await this.finalVoting();
         } else {
-            const apprv = await contractApis.approve(web3, 'BBVoting', 0);
+            const apprv = await contractApis.approve('BBVoting', 0);
             if (apprv) {
-                const apprv2 = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
+                const apprv2 = await contractApis.approve('BBVoting', Math.pow(2, 255));
                 if (apprv2) {
                     await this.finalVoting();
                 }
@@ -580,10 +578,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -616,8 +614,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>

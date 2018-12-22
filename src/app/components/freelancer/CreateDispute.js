@@ -80,7 +80,7 @@ class CreateDispute extends Component {
         const { proof, imgs } = this.state;
         const { jobHash, jobID, votingParams, accountInfo, web3 } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
-        const allowance = await contractApis.getAllowance(web3, 'BBDispute');
+        const allowance = await contractApis.getAllowance('BBDispute');
 
         /// check balance
         if (defaultWallet[0].balances.ETH <= 0) {
@@ -130,16 +130,16 @@ class CreateDispute extends Component {
 
             // check allowance
             if (Number(allowance.toString(10)) === 0) {
-                const apprv = await contractApis.approve(web3, 'BBDispute', Math.pow(2, 255));
+                const apprv = await contractApis.approve( 'BBDispute', Math.pow(2, 255));
                 if (apprv) {
                     await this.createDispute(proofHash);
                 }
             } else if (Number(allowance.toString(10)) > Number(votingParams.stakeDeposit)) {
                 await this.createDispute(proofHash);
             } else {
-                const apprv = await contractApis.approve(web3, 'BBDispute', 0);
+                const apprv = await contractApis.approve( 'BBDispute', 0);
                 if (apprv) {
-                    const apprv2 = await contractApis.approve(web3, 'BBDispute', Math.pow(2, 255));
+                    const apprv2 = await contractApis.approve( 'BBDispute', Math.pow(2, 255));
                     if (apprv2) {
                         await this.createDispute(proofHash);
                     }

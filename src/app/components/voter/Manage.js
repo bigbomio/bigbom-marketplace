@@ -62,10 +62,9 @@ class Manage extends Component {
     }
 
     getDisputes = async () => {
-        const { web3 } = this.props;
         this.setState({ isLoading: true });
         disputes = [];
-        const disputeDatas = await contractApis.getMyVoting(web3);
+        const disputeDatas = await contractApis.getMyVoting();
         if (disputeDatas && disputeDatas.length > 0) {
             for (let dpData of disputeDatas) {
                 this.disputeCreatedInit(dpData);

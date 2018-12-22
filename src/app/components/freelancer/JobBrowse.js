@@ -61,7 +61,6 @@ class JobBrowser extends Component {
     }
 
     getJobs = async () => {
-        const { web3 } = this.props;
         this.setState({ isLoading: true });
         jobs = [];
         // time out 20s
@@ -71,7 +70,7 @@ class JobBrowser extends Component {
                 return;
             }
         }, 15000);
-        const events = await contractApis.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', {});
+        const events = await contractApis.getPastSingleEvent('BBFreelancerJob', 'JobCreated', {});
         if (events.length > 0) {
             for (let event of events) {
                 this.JobCreatedInit(event);
@@ -112,8 +111,8 @@ class JobBrowser extends Component {
                         fullName: employerInfo.userInfo.firstName
                             ? employerInfo.userInfo.firstName + ' '
                             : 'N/A ' + employerInfo.userInfo.lastName
-                                ? employerInfo.userInfo.lastName
-                                : null,
+                            ? employerInfo.userInfo.lastName
+                            : null,
                         walletAddress: eventLog.args.owner,
                         email: employerInfo.userInfo.email,
                     };
@@ -156,15 +155,13 @@ class JobBrowser extends Component {
 
     BidCreatedInit = async job => {
         //console.log('BidCreatedInit success: ', job);
-        const { web3 } = this.props;
-        const jobsMergedBid = await contractApis.mergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
+        const jobsMergedBid = await contractApis.mergeBidToJob('BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
         this.BidAcceptedInit(jobsMergedBid);
     };
 
     BidAcceptedInit = async jobData => {
         //console.log('BidAcceptedInit success: ', jobData);
-        const { web3 } = this.props;
-        const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data);
+        const bidAcceptedData = await contractApis.getBidAccepted({ jobID: jobData.data.jobID }, jobData.data);
         this.JobsInit(bidAcceptedData);
     };
 

@@ -53,3 +53,10 @@ export const getExchangeRates = rates => {
         rates,
     };
 };
+
+export const getTokensAddress = tokensAddress => {
+    return {
+        type: types.GET_TOKENS_ADDRESS,
+        tokensAddress,
+    };
+};

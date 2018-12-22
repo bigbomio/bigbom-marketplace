@@ -204,17 +204,17 @@ class Header extends PureComponent {
                                                                 </div>
                                                             )}
                                                         </li>
-                                                        {defaultWallet && (
-                                                            <li className="user-info-item balance">
-                                                                {Utils.currencyFormat(defaultWallet[0].balances.ETH)} <span>ETH</span>
-                                                            </li>
-                                                        )}
-
-                                                        {defaultWallet && (
-                                                            <li className="user-info-item balance">
-                                                                {Utils.currencyFormat(defaultWallet[0].balances.BBO)} <span>BBO</span>
-                                                            </li>
-                                                        )}
+                                                        {defaultWallet &&
+                                                            Object.keys(defaultWallet[0].balances).map(function(key, index) {
+                                                                if (defaultWallet[0].balances[key] > 0) {
+                                                                    return (
+                                                                        <li key={index} className="user-info-item balance">
+                                                                            {Utils.currencyFormat(defaultWallet[0].balances[key])} <span>{key}</span>
+                                                                        </li>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })}
                                                         <li className="user-info-item addresses">
                                                             {accountInfo.wallets.map(wallet => {
                                                                 return (

@@ -12,12 +12,12 @@ import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
 import WithrawToken from '../components/WithrawToken';
 
-import abiConfig from '../_services/abiConfig';
 import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../actions/commonActions';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister, getTokensAddress } from '../actions/commonActions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../actions/homeActions';
+import contractApis from '../_services/contractApis';
 
 const Home = asyncComponent(() => import('../components/home'));
 
@@ -86,8 +86,13 @@ class Routers extends PureComponent {
         logoutMetamask();
     };
 
+    updateBalanceTokens = userInfo => {
+        const { saveAccountInfo } = this.props;
+        saveAccountInfo(userInfo);
+    };
+
     updateBalance = async userInfo => {
-        const { web3, saveAccountInfo } = this.props;
+        const { web3, tokensAddress } = this.props;
         // if wallet has existed in current account's wallet list, login and get account info
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
@@ -95,7 +100,7 @@ class Routers extends PureComponent {
             let address = {
                 address: acc.address,
                 default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
-                balances: { ETH: 0, BBO: 0 },
+                balances: { ETH: 0, BBO: 0, DAI: 0, USDT: 0, USDC: 0 },
             };
 
             // get eth balance
@@ -103,18 +108,11 @@ class Routers extends PureComponent {
                 const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
                 address.balances.ETH = ethBalance;
             });
-
-            // get bbo balance
-            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-            const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
-            if (!errBalance) {
-                const BBOBalance = Utils.weiToToken(web3, balance).toFixed(3);
-                address.balances.BBO = BBOBalance;
-            }
             accounts.push(address);
         }
         userInfo.wallets = accounts;
-        saveAccountInfo(userInfo);
+        // get tokens balance
+        contractApis.getBalanceToken(tokensAddress, userInfo, this.updateBalanceTokens);
     };
 
     accountsInit = async (account, network) => {
@@ -137,9 +135,10 @@ class Routers extends PureComponent {
     };
 
     checkMetamask = async () => {
-        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload } = this.props;
+        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload, getTokensAddress } = this.props;
         const { web3 } = this.state;
         if (isConnected) {
+            getTokensAddress();
             const userToken = LocalStorage.getItemJson('userToken');
             if (userToken) {
                 if (userToken.expired <= Date.now()) {
@@ -233,6 +232,8 @@ Routers.propTypes = {
     saveAccountInfo: PropTypes.func.isRequired,
     accountInfo: PropTypes.object.isRequired,
     setRegister: PropTypes.func.isRequired,
+    getTokensAddress: PropTypes.func.isRequired,
+    tokensAddress: PropTypes.array.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -242,6 +243,7 @@ const mapStateToProps = state => {
         defaultAccount: state.HomeReducer.defaultAccount,
         checkAccount: state.HomeReducer.checkAccount,
         accountInfo: state.CommonReducer.accountInfo,
+        tokensAddress: state.CommonReducer.tokensAddress,
     };
 };
 
@@ -256,6 +258,7 @@ const mapDispatchToProps = {
     setReload,
     saveAccountInfo,
     setRegister,
+    getTokensAddress,
 };
 
 export default connect(
