@@ -18,7 +18,7 @@ import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 
 import { loginMetamask, setWeb3, setCheckAcount } from '../../actions/homeActions';
-import { saveAccountInfo, setRegister, getTokensAddress } from '../../actions/commonActions';
+import { saveAccountInfo, setRegister, getTokensAddress, saveTokens } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
@@ -75,6 +75,11 @@ class LoginMetamask extends PureComponent {
         }
     };
 
+    mapTokens = tokens => {
+        const { saveTokens } = this.props;
+        saveTokens(tokens);
+    };
+
     accountsInit = async userInfo => {
         const { web3, tokensAddress } = this.props;
         // wallets from current account
@@ -95,7 +100,9 @@ class LoginMetamask extends PureComponent {
             accounts.push(address);
         }
         userInfo.wallets = accounts;
-
+        if (tokensAddress.length > 0) {
+            contractApis.tokenAddressSymbolMap(tokensAddress, this.mapTokens);
+        }
         // get tokens balance
         if (userInfo) {
             contractApis.getBalanceToken(tokensAddress, userInfo, this.updateBalanceTokens);
@@ -478,6 +485,7 @@ LoginMetamask.propTypes = {
     register: PropTypes.bool.isRequired,
     getTokensAddress: PropTypes.func.isRequired,
     tokensAddress: PropTypes.array.isRequired,
+    saveTokens: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -496,6 +504,7 @@ const mapDispatchToProps = {
     saveAccountInfo,
     setRegister,
     getTokensAddress,
+    saveTokens,
 };
 
 export default connect(

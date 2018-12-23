@@ -5,6 +5,66 @@ import Utils from '../_utils/utils';
 import abiConfig, { fromBlock } from '../_services/abiConfig';
 import services from './services';
 
+const minABI = [
+    {
+        constant: true,
+        inputs: [],
+        name: 'name',
+        outputs: [
+            {
+                name: '',
+                type: 'string',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+    {
+        constant: true,
+        inputs: [],
+        name: 'decimals',
+        outputs: [
+            {
+                name: '',
+                type: 'uint8',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+    {
+        constant: true,
+        inputs: [
+            {
+                name: '_owner',
+                type: 'address',
+            },
+        ],
+        name: 'balanceOf',
+        outputs: [
+            {
+                name: 'balance',
+                type: 'uint256',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+    {
+        constant: true,
+        inputs: [],
+        name: 'symbol',
+        outputs: [
+            {
+                name: '',
+                type: 'string',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+];
+
 const web3 = global.web3;
 
 const getAllowance = async ctName => {
@@ -177,7 +237,7 @@ const jobStarted = async jobData => {
         const jobLogs = await Utils.WaitAllContractEventGet(jobEvent);
         for (let jobLog of jobLogs) {
             if (jobData.jobID === jobLog.args.jobID.toString()) {
-                const blockLog = await getBlock(web3, jobLog.blockNumber);
+                const blockLog = await getBlock(jobLog.blockNumber);
                 const result = {
                     created: blockLog.timestamp,
                 };
@@ -415,7 +475,7 @@ const getEventsPollStarted = async (jobID, optionID) => {
         );
         const logs = await Utils.WaitAllContractEventGet(ctEvent);
         for (let log of logs) {
-            const blockLog = await getBlock(web3, log.blockNumber);
+            const blockLog = await getBlock(log.blockNumber);
             const [, pollOption] = await Utils.callMethod(helperInstance.instance.getPollOption)(log.args.pollID.toString(), optionID);
             const result = {
                 jobID,
@@ -473,7 +533,7 @@ const getEventsPollAgainsted = async jobID => {
         const pollID = DisputeAgainstedlogs[0].args.pollID.toString();
         const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
         const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
-        const blockLog = await getBlock(web3, DisputeAgainstedlogs[0].blockNumber);
+        const blockLog = await getBlock(DisputeAgainstedlogs[0].blockNumber);
         const result = {
             created: blockLog.timestamp,
             responded: true,
@@ -571,7 +631,7 @@ const getAllAvailablePoll = async jobID => {
                         revealEndDate: timmingResult[4].toString() * 1000,
                     },
                 };
-                const blockLog = await getBlock(web3, disputeAgaistedLog.blockNumber);
+                const blockLog = await getBlock(disputeAgaistedLog.blockNumber);
                 results.data.jobID = disputeAgaistedLog.args.jobID.toString();
                 results.data.pollID = disputeAgaistedLog.args.pollID.toString();
                 results.data.created = blockLog.timestamp;
@@ -641,7 +701,7 @@ const getMyVoting = async () => {
                     );
                     const disputeAgaistedLogs = await Utils.WaitAllContractEventGet(disputeAgaistedEvent);
                     for (let disputeAgaistedLog of disputeAgaistedLogs) {
-                        const blockLog = await getBlock(web3, disputeAgaistedLog.blockNumber);
+                        const blockLog = await getBlock(disputeAgaistedLog.blockNumber);
                         results.data.jobID = disputeAgaistedLog.args.jobID.toString();
                         results.data.pollID = disputeAgaistedLog.args.pollID.toString();
                         results.data.created = blockLog.timestamp;
@@ -697,68 +757,9 @@ const getJobIDByPollID = async pollID => {
 const getToken = async (tokenAddress, userInfo, callback) => {
     const walletAddress = web3.eth.defaultAccount;
     const wallet = userInfo.wallets.filter(wallet => wallet.address === walletAddress);
-    let minABI = [
-        {
-            constant: true,
-            inputs: [],
-            name: 'name',
-            outputs: [
-                {
-                    name: '',
-                    type: 'string',
-                },
-            ],
-            payable: false,
-            type: 'function',
-        },
-        {
-            constant: true,
-            inputs: [],
-            name: 'decimals',
-            outputs: [
-                {
-                    name: '',
-                    type: 'uint8',
-                },
-            ],
-            payable: false,
-            type: 'function',
-        },
-        {
-            constant: true,
-            inputs: [
-                {
-                    name: '_owner',
-                    type: 'address',
-                },
-            ],
-            name: 'balanceOf',
-            outputs: [
-                {
-                    name: 'balance',
-                    type: 'uint256',
-                },
-            ],
-            payable: false,
-            type: 'function',
-        },
-        {
-            constant: true,
-            inputs: [],
-            name: 'symbol',
-            outputs: [
-                {
-                    name: '',
-                    type: 'string',
-                },
-            ],
-            payable: false,
-            type: 'function',
-        },
-    ];
     try {
         // Get ERC20 Token contract instance
-        let contract = web3.eth.contract(minABI).at(tokenAddress);
+        const contract = web3.eth.contract(minABI).at(tokenAddress);
         // Call balanceOf function
         contract.balanceOf(walletAddress, (error, balance) => {
             // Get decimals
@@ -786,6 +787,23 @@ const getBalanceToken = async (tokenAddressList, userInfo, callback) => {
         if (tokenLog.args.tokenAddress !== '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0') {
             const tokenAddress = tokenLog.args.tokenAddress;
             getToken(tokenAddress, userInfo, callback);
+        }
+    }
+};
+
+const tokenAddressSymbolMap = (tokensAddress, callback) => {
+    const tokenList = {};
+    for (let tokenLog of tokensAddress) {
+        if (tokenLog.args.tokenAddress !== '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0') {
+            try {
+                const contract = web3.eth.contract(minABI).at(tokenLog.args.tokenAddress);
+                contract.symbol((err, ctSymbol) => {
+                    tokenList[ctSymbol] = tokenLog.args.tokenAddress;
+                    callback(tokenList);
+                });
+            } catch (err) {
+                console.log(err);
+            }
         }
     }
 };
@@ -834,4 +852,6 @@ export default {
     getJobIDByPollID,
     getTokenAddress,
     getBalanceToken,
+    minABI,
+    tokenAddressSymbolMap,
 };

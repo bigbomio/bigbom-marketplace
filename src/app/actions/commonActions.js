@@ -60,3 +60,10 @@ export const getTokensAddress = tokensAddress => {
         tokensAddress,
     };
 };
+
+export const saveTokens = tokens => {
+    return {
+        type: types.SAVE_TOKENS,
+        tokens,
+    };
+};

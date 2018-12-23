@@ -15,7 +15,7 @@ import WithrawToken from '../components/WithrawToken';
 import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccountInfo, setRegister, getTokensAddress } from '../actions/commonActions';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister, getTokensAddress, saveTokens } from '../actions/commonActions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../actions/homeActions';
 import contractApis from '../_services/contractApis';
 
@@ -91,6 +91,11 @@ class Routers extends PureComponent {
         saveAccountInfo(userInfo);
     };
 
+    mapTokens = tokens => {
+        const { saveTokens } = this.props;
+        saveTokens(tokens);
+    };
+
     updateBalance = async userInfo => {
         const { web3, tokensAddress } = this.props;
         // if wallet has existed in current account's wallet list, login and get account info
@@ -111,6 +116,9 @@ class Routers extends PureComponent {
             accounts.push(address);
         }
         userInfo.wallets = accounts;
+        if (tokensAddress.length > 0) {
+            contractApis.tokenAddressSymbolMap(tokensAddress, this.mapTokens);
+        }
         // get tokens balance
         contractApis.getBalanceToken(tokensAddress, userInfo, this.updateBalanceTokens);
     };
@@ -234,6 +242,7 @@ Routers.propTypes = {
     setRegister: PropTypes.func.isRequired,
     getTokensAddress: PropTypes.func.isRequired,
     tokensAddress: PropTypes.array.isRequired,
+    saveTokens: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => {
@@ -259,6 +268,7 @@ const mapDispatchToProps = {
     saveAccountInfo,
     setRegister,
     getTokensAddress,
+    saveTokens,
 };
 
 export default connect(
