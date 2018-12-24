@@ -67,6 +67,13 @@ class Header extends PureComponent {
         this.setState({ avatarColor: Utils.getCookie('avatar') ? Utils.getCookie('avatar') : 'red' });
     };
 
+    buyBBO = () => {
+        window.open(
+            'https://widget.kyber.network/v0.4/?type=buy&mode=popup&theme=light&receiveToken=BBO&callback=https%3A%2F%2Fkyberpay-sample.knstats.com%2Fcallback&paramForwarding=true&network=mainnet',
+            '_blank'
+        );
+    };
+
     login = () => {
         const { history } = this.props;
         history.push('/');
@@ -135,7 +142,7 @@ class Header extends PureComponent {
 
     render() {
         const { routes, anchorEl, avatarColor, checked } = this.state;
-        const { setRegister, accountInfo, isConnected } = this.props;
+        const { setRegister, accountInfo, isConnected, network } = this.props;
         let defaultWallet;
         if (accountInfo.wallets.length > 0) {
             defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
@@ -180,9 +187,23 @@ class Header extends PureComponent {
                                     </Menu>
                                 </li>
                                 <li>
-                                    <ButtonBase variant="contained" className="btn btn-normal btn-green get-bbo-btn" onClick={() => this.getBBO()}>
-                                        Get Free BBO
-                                    </ButtonBase>
+                                    {network === 'MAINNET' ? (
+                                        <ButtonBase
+                                            variant="contained"
+                                            className="btn btn-normal btn-green get-bbo-btn"
+                                            onClick={() => this.buyBBO()}
+                                        >
+                                            Buy BBO
+                                        </ButtonBase>
+                                    ) : (
+                                        <ButtonBase
+                                            variant="contained"
+                                            className="btn btn-normal btn-green get-bbo-btn"
+                                            onClick={() => this.getBBO()}
+                                        >
+                                            Get Free BBO
+                                        </ButtonBase>
+                                    )}
                                 </li>
                                 {accountInfo.wallets.length > 0 ? (
                                     <ClickAwayListener onClickAway={this.handleClickAway}>
@@ -271,6 +292,11 @@ Header.propTypes = {
     logoutMetamask: PropTypes.func.isRequired,
     saveAccountInfo: PropTypes.func.isRequired,
     isConnected: PropTypes.bool.isRequired,
+    network: PropTypes.string,
+};
+
+Header.defaultProps = {
+    network: null,
 };
 
 const mapStateToProps = state => {

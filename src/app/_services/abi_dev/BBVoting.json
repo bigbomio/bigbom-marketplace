@@ -28,6 +28,20 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "helper",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "renounceOwnership",
@@ -111,6 +125,125 @@
     "inputs": [
       {
         "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "name": "PollStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "isCancel",
+        "type": "bool"
+      }
+    ],
+    "name": "PollUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "optionID",
+        "type": "uint256"
+      }
+    ],
+    "name": "PollOptionAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "VotingRightsGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "VotingRightsWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "name": "VoteCommitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "name": "VoteRevealed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "name": "previousOwner",
         "type": "address"
       }
@@ -136,88 +269,71 @@
     "type": "event"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPollResult",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256[]"
-      },
-      {
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "pollType",
-        "type": "uint256"
-      },
-      {
-        "name": "relatedTo",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPollID",
-    "outputs": [
-      {
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPollStage",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
+        "name": "_helper",
         "type": "address"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "name": "",
-        "type": "uint256"
       }
     ],
+    "name": "setHelper",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
+    "inputs": [
+      {
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "requestVotingRights",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "numTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawVotingRights",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "tokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "commitVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [
       {
         "name": "pollID",
@@ -232,133 +348,95 @@
         "type": "uint256"
       }
     ],
-    "name": "checkHash",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
+    "name": "revealVote",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "checkStakeBalance",
-    "outputs": [
-      {
-        "name": "tokens",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "pollType",
-        "type": "uint256"
-      },
-      {
-        "name": "relatedTo",
-        "type": "uint256"
-      }
-    ],
-    "name": "hasVoting",
-    "outputs": [
-      {
-        "name": "r",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
         "name": "pollID",
         "type": "uint256"
       },
       {
-        "name": "optID",
+        "name": "isCancel",
+        "type": "bool"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
         "type": "uint256"
       }
     ],
-    "name": "getPollOption",
+    "name": "updatePoll",
     "outputs": [
       {
-        "name": "opt",
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "extraData",
+        "type": "bytes"
+      },
+      {
+        "name": "addOptionDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "startPoll",
+    "outputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "pollID",
+        "type": "uint256"
+      },
+      {
+        "name": "pollOption",
         "type": "bytes"
       }
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPollWinner",
+    "name": "addPollOption",
     "outputs": [
       {
-        "name": "isFinished",
+        "name": "success",
         "type": "bool"
-      },
-      {
-        "name": "winner",
-        "type": "uint256"
-      },
-      {
-        "name": "winnerVotes",
-        "type": "uint256"
-      },
-      {
-        "name": "hasVote",
-        "type": "bool"
-      },
-      {
-        "name": "quorum",
-        "type": "uint256"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "voter",
-        "type": "address"
-      },
-      {
-        "name": "pollID",
-        "type": "uint256"
-      }
-    ],
-    "name": "getNumPassingTokens",
-    "outputs": [
-      {
-        "name": "correctVotes",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

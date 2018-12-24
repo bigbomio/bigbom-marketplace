@@ -111,34 +111,34 @@ class ClientPostJob extends Component {
         let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
         if (selectedCurrency.label !== 'ETH') {
             tokenAddress = tokens[selectedCurrency.label];
-            const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
-                jobHash,
-                expiredTime,
-                estimatedTime,
-                budget,
-                selectedCategory.value,
-                tokenAddress, // only one category suport for now
-                {
-                    from: jobInstance.defaultAccount,
-                    gasPrice: +jobInstance.gasPrice.toString(10),
-                }
-            );
-            if (err) {
-                this.setState({
-                    isLoading: false,
-                    status: {
-                        title: 'Create New Job: ',
-                        err: true,
-                        text: 'something went wrong! Can not create job :(',
-                        link: '',
-                    },
-                });
-                console.log(err);
+        }
+        const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
+            jobHash,
+            expiredTime,
+            estimatedTime,
+            budget,
+            selectedCategory.value,
+            tokenAddress, // only one category suport for now
+            {
+                from: jobInstance.defaultAccount,
+                gasPrice: +jobInstance.gasPrice.toString(10),
             }
-            // check event logs
-            if (jobTx) {
-                abiConfig.transactionWatch(web3, jobTx, () => this.createJobDone(jobHash));
-            }
+        );
+        if (err) {
+            this.setState({
+                isLoading: false,
+                status: {
+                    title: 'Create New Job: ',
+                    err: true,
+                    text: 'something went wrong! Can not create job :(',
+                    link: '',
+                },
+            });
+            console.log(err);
+        }
+        // check event logs
+        if (jobTx) {
+            abiConfig.transactionWatch(web3, jobTx, () => this.createJobDone(jobHash));
         }
     }
 
@@ -799,7 +799,6 @@ ClientPostJob.propTypes = {
     accountInfo: PropTypes.any.isRequired,
     getExchangeRates: PropTypes.func.isRequired,
     rates: PropTypes.array.isRequired,
-    tokensAddress: PropTypes.array.isRequired,
     tokens: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
@@ -807,7 +806,6 @@ const mapStateToProps = state => {
         web3: state.HomeReducer.web3,
         accountInfo: state.CommonReducer.accountInfo,
         rates: state.CommonReducer.rates,
-        tokensAddress: state.CommonReducer.tokensAddress,
         tokens: state.CommonReducer.tokens,
     };
 };

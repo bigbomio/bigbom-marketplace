@@ -60,6 +60,7 @@ class Routers extends PureComponent {
                 console.log('Access denied!');
             }
         }
+        this.getNetwork();
     };
 
     getNetwork = async () => {
@@ -68,6 +69,7 @@ class Routers extends PureComponent {
         if (!err) {
             const yourNetwork = Utils.getNetwork(netId);
             setYourNetwork({ id: netId, name: yourNetwork });
+            this.setState({ yourNetwork });
         }
     };
 
@@ -132,7 +134,6 @@ class Routers extends PureComponent {
                 this.updateBalance(userInfo);
                 setAccount(account);
                 setNetwork(network);
-                this.getNetwork();
             } else {
                 // if wallet has not existed in current account's wallet list, logout current account
                 this.logout();
@@ -189,7 +190,7 @@ class Routers extends PureComponent {
 
     render() {
         const { history } = this.props;
-        const { routes } = this.state;
+        const { routes, yourNetwork } = this.state;
         if (isMobile) {
             return (
                 <div className="not-support-err">
@@ -209,7 +210,7 @@ class Routers extends PureComponent {
                         <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
                             <meta name="description" content="Bigbom Marketplace" />
                         </Helmet>
-                        <Header history={history} />
+                        <Header network={yourNetwork} history={history} />
                         <Switch>
                             <Route exact path="/" component={Home} />
                             <Route path="/withraw" component={WithrawToken} />
@@ -241,8 +242,12 @@ Routers.propTypes = {
     accountInfo: PropTypes.object.isRequired,
     setRegister: PropTypes.func.isRequired,
     getTokensAddress: PropTypes.func.isRequired,
-    tokensAddress: PropTypes.array.isRequired,
+    tokensAddress: PropTypes.array,
     saveTokens: PropTypes.func.isRequired,
+};
+
+Routers.defaultProps = {
+    tokensAddress: [],
 };
 
 const mapStateToProps = state => {

@@ -484,8 +484,12 @@ LoginMetamask.propTypes = {
     setRegister: PropTypes.func.isRequired,
     register: PropTypes.bool.isRequired,
     getTokensAddress: PropTypes.func.isRequired,
-    tokensAddress: PropTypes.array.isRequired,
+    tokensAddress: PropTypes.array,
     saveTokens: PropTypes.func.isRequired,
+};
+
+LoginMetamask.defaultProps = {
+    tokensAddress: [],
 };
 
 const mapStateToProps = state => {

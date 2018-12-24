@@ -353,6 +353,7 @@ class DisputeDetail extends Component {
         const secretHashString = this.keccak256(vote.choice, Number(vote.secretPhrase));
         const token = Utils.tokenToWei(web3, vote.token);
         setVoteInputDisable(true);
+        console.log(ctInstance.instance);
         const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.pollID, secretHashString, token, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
@@ -578,10 +579,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                        ? 'Commit Vote'
-                                        : !isFinal
-                                        ? 'Reveal Vote'
-                                        : 'Dispute finalized'}
+                                            ? 'Commit Vote'
+                                            : !isFinal
+                                                ? 'Reveal Vote'
+                                                : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -614,19 +615,19 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                            ? 'commit-duration orange'
-                                            : 'commit-duration blue'
+                                                ? 'commit-duration orange'
+                                                : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>
                                     {!reveal ? (
                                         disputeData.evidenceEndDate > Date.now() ? (
-                                            <Countdown reload expiredTime={disputeData.evidenceEndDate} />
+                                            <Countdown onReload expiredTime={disputeData.evidenceEndDate} />
                                         ) : (
-                                            <Countdown reload expiredTime={disputeData.commitEndDate} />
+                                            <Countdown onReload expiredTime={disputeData.commitEndDate} />
                                         )
                                     ) : (
-                                        <Countdown reload={false} expiredTime={disputeData.revealEndDate} />
+                                        <Countdown onReload={false} expiredTime={disputeData.revealEndDate} />
                                     )}
                                 </Grid>
                                 <Grid item xs={12}>
