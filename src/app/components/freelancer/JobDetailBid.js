@@ -263,7 +263,6 @@ class JobDetailBid extends Component {
 
     checkAccount = () => {
         const { reload, setReload } = this.props;
-        console.log(reload);
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
