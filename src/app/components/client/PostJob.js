@@ -18,7 +18,7 @@ import configs, { postJobConfigs } from '../../_services/configs';
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
 
-import { getExchangeRates } from '../../actions/commonActions';
+import { getExchangeRates, setCurrentToken } from '../../actions/commonActions';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -443,12 +443,20 @@ class ClientPostJob extends Component {
 
     handleChangeCurrency = selectedOption => {
         const { budgets } = this.state;
+        const { setCurrentToken, tokens } = this.props;
         for (let budget of budgets) {
             budget.currency = selectedOption.label;
         }
         usdInputEl.value = null;
         tokenInputEl.value = null;
         this.setState({ selectedCurrency: selectedOption, budgets: budgets, customBudgetErr: null });
+        if (selectedOption.label !== 'ETH') {
+            const currentToken = {
+                symbol: selectedOption.label,
+                address: tokens[selectedOption.label],
+            };
+            setCurrentToken(currentToken);
+        }
     };
 
     handleChangeBudget = selectedOption => {
@@ -800,6 +808,7 @@ ClientPostJob.propTypes = {
     getExchangeRates: PropTypes.func.isRequired,
     rates: PropTypes.array.isRequired,
     tokens: PropTypes.object.isRequired,
+    setCurrentToken: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -812,6 +821,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = {
     getExchangeRates,
+    setCurrentToken,
 };
 
 export default connect(

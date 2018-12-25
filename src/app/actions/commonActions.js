@@ -67,3 +67,10 @@ export const saveTokens = tokens => {
         tokens,
     };
 };
+
+export const setCurrentToken = currentToken => {
+    return {
+        type: types.SET_CURRENT_TOKEN,
+        currentToken,
+    };
+};

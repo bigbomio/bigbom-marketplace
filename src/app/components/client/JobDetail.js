@@ -18,7 +18,7 @@ import Rating from '../common/Rating';
 import ResponseDispute from './ResponseDispute';
 import VoteResult from '../voter/VoteResult';
 import LocalStorage from '../../_utils/localStorage';
-import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
+import { getRatingLogs, setActionBtnDisabled, setReload, setCurrentToken } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 import Loading from '../common/Loading';
 import CommonLoading from '../common/CommonLoading';
@@ -486,7 +486,15 @@ class JobDetail extends Component {
 
     JobsInit = async jobData => {
         //console.log('JobsInit', jobData);
-        const { web3, getRatingLogs } = this.props;
+        this.setActionBtnStt('acceptDone', false);
+        const { web3, getRatingLogs, setCurrentToken, tokens } = this.props;
+        if (jobData.data.currency.label !== 'ETH') {
+            const currentToken = {
+                symbol: jobData.data.currency.label,
+                address: tokens[jobData.data.currency.label],
+            };
+            setCurrentToken(currentToken);
+        }
         if (jobData.data.status.started) {
             const jobStartedData = await contractApis.jobStarted(jobData.data);
             this.jobStarted(jobStartedData);
@@ -1528,6 +1536,8 @@ JobDetail.propTypes = {
     reload: PropTypes.bool.isRequired,
     setReload: PropTypes.func.isRequired,
     getRatingLogs: PropTypes.func.isRequired,
+    tokens: PropTypes.object.isRequired,
+    setCurrentToken: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -1539,6 +1549,7 @@ const mapStateToProps = state => {
         actionBtnDisabled: state.CommonReducer.actionBtnDisabled,
         accountInfo: state.CommonReducer.accountInfo,
         sttRespondedDispute: state.ClientReducer.sttRespondedDispute,
+        tokens: state.CommonReducer.tokens,
     };
 };
 
@@ -1547,6 +1558,7 @@ const mapDispatchToProps = {
     saveVotingParams,
     setReload,
     getRatingLogs,
+    setCurrentToken,
 };
 
 export default connect(

@@ -23,7 +23,7 @@ import { saveVotingParams } from '../../actions/freelancerActions';
 import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
-import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
+import { getRatingLogs, setActionBtnDisabled, setReload, setCurrentToken } from '../../actions/commonActions';
 import Loading from '../common/Loading';
 import CommonLoading from '../common/CommonLoading';
 
@@ -588,8 +588,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                        ? 'Your dispute has had result and you are losers.'
-                                        : 'Your dispute has had result, but there is not winner.'}
+                                            ? 'Your dispute has had result and you are losers.'
+                                            : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -746,8 +746,8 @@ class JobDetailBid extends Component {
                     fullName: employerInfo.userInfo.firstName
                         ? employerInfo.userInfo.firstName + ' '
                         : 'N/A ' + employerInfo.userInfo.lastName
-                        ? employerInfo.userInfo.lastName
-                        : null,
+                            ? employerInfo.userInfo.lastName
+                            : null,
                     walletAddress: jobStatusLog[0],
                 };
             }
@@ -840,7 +840,14 @@ class JobDetailBid extends Component {
     };
 
     JobsInit = async jobData => {
-        const { web3, history, getRatingLogs } = this.props;
+        const { web3, history, getRatingLogs, setCurrentToken, tokens } = this.props;
+        if (jobData.data.currency.label !== 'ETH') {
+            const currentToken = {
+                symbol: jobData.data.currency.label,
+                address: tokens[jobData.data.currency.label],
+            };
+            setCurrentToken(currentToken);
+        }
         if (jobData.data.status.started) {
             const jobStartedData = await contractApis.jobStarted(jobData.data);
             this.jobStarted(jobStartedData);
@@ -1430,8 +1437,8 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                        ? jobData.estimatedTime / 24 + ' Days'
-                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                            ? jobData.estimatedTime / 24 + ' Days'
+                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
                                             {jobData.status.bidding && <Countdown onReload name="Bid duration" expiredTime={jobData.expiredTime} />}
@@ -1544,8 +1551,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                        ? freelancer.timeDone / 24 + ' Days'
-                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                            ? freelancer.timeDone / 24 + ' Days'
+                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );
@@ -1620,6 +1627,8 @@ JobDetailBid.propTypes = {
     saveVotingParams: PropTypes.func.isRequired,
     reload: PropTypes.bool.isRequired,
     setReload: PropTypes.func.isRequired,
+    setCurrentToken: PropTypes.func.isRequired,
+    tokens: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -1629,6 +1638,7 @@ const mapStateToProps = state => {
         jobs: state.ClientReducer.jobs,
         setActionBtnDisabled: state.CommonReducer.setActionBtnDisabled,
         disputeCreated: state.FreelancerReducer.disputeCreated,
+        tokens: state.CommonReducer.tokens,
     };
 };
 
@@ -1637,6 +1647,7 @@ const mapDispatchToProps = {
     saveVotingParams,
     setReload,
     getRatingLogs,
+    setCurrentToken,
 };
 
 export default connect(

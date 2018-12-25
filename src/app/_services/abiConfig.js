@@ -1,6 +1,8 @@
 import IPFS from 'ipfs-mini';
 import Utils from '../_utils/utils';
 
+import { store } from '../stores';
+
 //import web3v1 from './web3'; // web3 v1
 
 import BBFreelancerJob_dev from '../_services/abi_dev/BBFreelancerJob.json';
@@ -14,6 +16,7 @@ import BBParams_dev from '../_services/abi_dev/BBParams.json';
 import BBRating_dev from '../_services/abi_dev/BBRating.json';
 
 const env = process.env.REACT_APP_ENV;
+export const defaultToken = { symbol: 'BBO', address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b' };
 
 const ropstenAbi = {
     dev: {
@@ -34,7 +37,7 @@ const ropstenAbi = {
             abi: BBRating_dev,
         },
         BigbomTokenExtended: {
-            address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
+            address: defaultToken.address,
             abi: BigbomTokenExtended_dev,
         },
         BBVotingHelper: {
@@ -153,18 +156,28 @@ class abiConfigs {
     }
 
     async contractInstanceGenerator(web3, type) {
-        const defaultAccount = web3.eth.defaultAccount;
-        const address = this.getContract(type).address;
-        const abi = this.getContract(type).abi;
-        const abiInstance = web3.eth.contract(abi);
-        const instance = await abiInstance.at(address);
-        const gasPrice = await Utils.callMethodWithReject(web3.eth.getGasPrice)();
-        return {
-            defaultAccount,
-            instance,
-            gasPrice,
-            address,
-        };
+        try {
+            const reducers = store.getState();
+            const currentTokenAddress = reducers.CommonReducer.currentToken.address;
+            const defaultAccount = web3.eth.defaultAccount;
+            console.log(currentTokenAddress);
+            let address = this.getContract(type).address;
+            if (currentTokenAddress !== defaultToken.address) {
+                address = currentTokenAddress;
+            }
+            const abi = this.getContract(type).abi;
+            const abiInstance = web3.eth.contract(abi);
+            const instance = await abiInstance.at(address);
+            const gasPrice = await Utils.callMethodWithReject(web3.eth.getGasPrice)();
+            return {
+                defaultAccount,
+                instance,
+                gasPrice,
+                address,
+            };
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     async transactionWatch(web3, hashString, callback) {

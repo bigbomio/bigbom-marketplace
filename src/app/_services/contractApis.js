@@ -71,7 +71,8 @@ const getAllowance = async ctName => {
     try {
         const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, ctName);
-        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, ctInstance.address);
+        let address = ctInstance.address;
+        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, address);
         if (err) {
             console.log('err allowance: ', err);
             return;
@@ -86,7 +87,8 @@ const approve = async (ctName, value) => {
     try {
         const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, ctName);
-        const [errApprove, tx] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
+        let address = ctInstance.address;
+        const [errApprove, tx] = await Utils.callMethod(BBOinstance.instance.approve)(address, value, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -189,8 +191,8 @@ const mergeBidToJob = async (type, event, filter, mergeData) => {
                     fullName: userInfoFetch.userInfo.firstName
                         ? userInfoFetch.userInfo.firstName + ' '
                         : 'N/A ' + userInfoFetch.userInfo.lastName
-                        ? userInfoFetch.userInfo.lastName
-                        : null,
+                            ? userInfoFetch.userInfo.lastName
+                            : null,
                     walletAddress: event.args.owner,
                 };
             }
