@@ -103,6 +103,14 @@
                         max-height: 200px;
                         overflow: hidden;
                         padding: 0 20px 0 0;
+                        strong,
+                        b {
+                            font-weight: bold;
+                        }
+                        em,
+                        i {
+                            font-style: italic;
+                        }
                     }
                     .ct-full {
                         max-height: inherit;

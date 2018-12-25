@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import ReactQuill from 'react-quill';
 
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
@@ -11,16 +12,35 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import settingsApi from '../../_services/settingsApi';
+import 'react-quill/dist/quill.snow.css';
+
+import configs, { postJobConfigs } from '../../_services/configs';
 import abiConfig from '../../_services/abiConfig';
 import Utils from '../../_utils/utils';
 
+import { getExchangeRates } from '../../actions/commonActions';
+
 const ipfs = abiConfig.getIpfs();
 
-const currencies = settingsApi.getCurrencies();
-const categories = settingsApi.getCategories();
-const skills = settingsApi.getSkills();
-const budgetsSource = settingsApi.getBudgets();
+const currencies = configs.getCurrencies();
+const categories = configs.getCategories();
+const skills = configs.getSkills();
+const budgetsSource = configs.getBudgets();
+
+const modules = {
+    toolbar: [
+        [{ header: [1, 2, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ align: ['right', 'center', 'justify'] }],
+        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+        ['link'],
+        ['clean'],
+    ],
+};
+
+let usdInputEl, tokenInputEl;
+
+const formats = ['header', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'align', 'list', 'bullet', 'indent', 'link'];
 
 class ClientPostJob extends Component {
     constructor(props) {
@@ -34,8 +54,17 @@ class ClientPostJob extends Component {
             selectedCategory: {},
             selectedCurrency: currencies[0],
             budgets: budgetsSource,
-            isCustomBudget: false,
-            selectedBudget: budgetsSource[2],
+            isCustomBudget: true,
+            selectedBudget: {
+                value: new Date().getTime(),
+                id: new Date().getTime(),
+                min_sum: null,
+                max_sum: 0,
+                currency: 'BBO',
+                get label() {
+                    return 'Custom budget ( ' + this.max_sum + '+ ' + this.currency + ')';
+                },
+            },
             isLoading: false,
             open: false,
             submitDisabled: true,
@@ -49,26 +78,47 @@ class ClientPostJob extends Component {
     }
 
     componentDidMount() {
+        const { getExchangeRates } = this.props;
+        getExchangeRates();
         this.mounted = true;
+        usdInputEl = document.getElementById('usdConverted');
+        tokenInputEl = document.getElementById('tokenInput');
     }
 
     componentWillUnmount() {
         this.mounted = false;
     }
 
+    descriptionOnChange = value => {
+        const string = Utils.strimHTML(value);
+        this.setState({ desPrepare: value, desErr: null });
+        if (!this.validate(string, 'description', true)) {
+            this.setState({ submitDisabled: true });
+            return;
+        }
+        setTimeout(() => {
+            this.validateAll();
+        }, 300);
+    };
+
     async newJobInit(jobHash) {
-        const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare } = this.state;
-        const { web3 } = this.props;
-        const budget = Utils.BBOToWei(web3, selectedBudget.max_sum);
+        const { selectedCategory, selectedBudget, estimatedTimePrepare, expiredTimePrepare, selectedCurrency } = this.state;
+        const { web3, tokens } = this.props;
+        const budget = Utils.tokenToWei(web3, selectedBudget.max_sum);
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
+        let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
+        if (selectedCurrency.label !== 'ETH') {
+            tokenAddress = tokens[selectedCurrency.label];
+        }
         const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
             estimatedTime,
             budget,
-            selectedCategory.value, // only one category suport for now
+            selectedCategory.value,
+            tokenAddress, // only one category suport for now
             {
                 from: jobInstance.defaultAccount,
                 gasPrice: +jobInstance.gasPrice.toString(10),
@@ -77,7 +127,12 @@ class ClientPostJob extends Component {
         if (err) {
             this.setState({
                 isLoading: false,
-                status: { title: 'Create New Job: ', err: true, text: 'something went wrong! Can not create job :(', link: '' },
+                status: {
+                    title: 'Create New Job: ',
+                    err: true,
+                    text: 'something went wrong! Can not create job :(',
+                    link: '',
+                },
             });
             console.log(err);
         }
@@ -105,7 +160,7 @@ class ClientPostJob extends Component {
         setTimeout(async () => {
             const [, jobID] = await Utils.callMethod(ctInstance.instance.getJobID)(jobHash);
             if (jobID) {
-                history.push('/client/your-jobs/' + jobID.toString());
+                history.push('/client/your-jobs/');
             }
         }, 2000);
     };
@@ -193,32 +248,28 @@ class ClientPostJob extends Component {
     };
 
     validate = (val, field, setState) => {
-        let min = 10;
-        let max = 255;
         if (field === 'title') {
-            if (val.length < min) {
+            if (val.length < postJobConfigs.minTitle) {
                 if (setState) {
-                    this.setState({ nameErr: `Please enter at least  ${min}  characters.` });
+                    this.setState({ nameErr: `Please enter at least  ${postJobConfigs.minTitle}  characters.` });
                 }
                 return false;
-            } else if (val.length > max) {
+            } else if (val.length > postJobConfigs.maxTitle) {
                 if (setState) {
-                    this.setState({ nameErr: `Please enter at most ${max} characters.` });
+                    this.setState({ nameErr: `Please enter at most ${postJobConfigs.maxTitle} characters.` });
                 }
                 return false;
             }
             return true;
         } else if (field === 'description') {
-            min = 30;
-            max = 4000;
-            if (val.length < min) {
+            if (val.length < postJobConfigs.minDescription) {
                 if (setState) {
-                    this.setState({ desErr: `Please enter at least ${min} characters.` });
+                    this.setState({ desErr: `Please enter at least ${postJobConfigs.minDescription} characters.` });
                 }
                 return false;
-            } else if (val.length > max) {
+            } else if (val.length > postJobConfigs.maxDescription) {
                 if (setState) {
-                    this.setState({ desErr: `Please enter at most ${max} characters.` });
+                    this.setState({ desErr: `Please enter at most ${postJobConfigs.maxDescription} characters.` });
                 }
                 return false;
             }
@@ -309,22 +360,36 @@ class ClientPostJob extends Component {
             if (!val) {
                 if (setState) {
                     this.setState({
-                        customBudgetErr: 'Please enter your custom budget!',
+                        customBudgetErr: 'Please enter your budget!',
                     });
                 }
                 return false;
             } else {
-                if (Number(val) < 200000) {
+                if (Number(val.budget) < val.min) {
                     if (setState) {
                         this.setState({
-                            customBudgetErr: 'Please enter your custom budget least 200.000 BBO',
+                            customBudgetErr:
+                                'Please enter your budget least ' +
+                                Utils.currencyFormat(val.min) +
+                                ' ' +
+                                val.currency +
+                                ' (' +
+                                postJobConfigs.minBudget +
+                                '$)',
                         });
                     }
                     return false;
-                } else if (Number(val) > 999999999) {
+                } else if (Number(val.budget) > val.max) {
                     if (setState) {
                         this.setState({
-                            customBudgetErr: 'Please enter your custom budget most 999.999.999 BBO',
+                            customBudgetErr:
+                                'Please enter your budget most ' +
+                                Utils.currencyFormat(val.max) +
+                                ' ' +
+                                val.currency +
+                                ' (' +
+                                Utils.currencyFormat(postJobConfigs.maxBudget) +
+                                '$)',
                         });
                     }
                     return false;
@@ -342,12 +407,6 @@ class ClientPostJob extends Component {
                 this.setState({ submitDisabled: true });
                 return;
             }
-        } else if (field === 'description') {
-            this.setState({ desPrepare: val, desErr: null });
-            if (!this.validate(val, 'description', true)) {
-                this.setState({ submitDisabled: true });
-                return;
-            }
         } else if (field === 'estimatedTime') {
             this.setState({ estimatedTimePrepare: Number(val), estimatedTimeErr: null });
             if (!this.validate(val, 'estimatedTime', true)) {
@@ -357,22 +416,6 @@ class ClientPostJob extends Component {
         } else if (field === 'expiredTime') {
             this.setState({ expiredTimePrepare: Number(val), expiredTimeErr: null });
             if (!this.validate(val, 'expiredTime', true)) {
-                this.setState({ submitDisabled: true });
-                return;
-            }
-        } else if (field === 'customBudget') {
-            const customBudget = {
-                value: new Date().getTime(),
-                id: new Date().getTime(),
-                min_sum: null,
-                max_sum: val,
-                currency: 'BBO',
-                get label() {
-                    return 'Custom budget ( ' + this.max_sum + '+ ' + this.currency + ')';
-                },
-            };
-            this.setState({ selectedBudget: customBudget, customBudgetErr: null });
-            if (!this.validate(val, 'customBudget', true)) {
                 this.setState({ submitDisabled: true });
                 return;
             }
@@ -403,7 +446,9 @@ class ClientPostJob extends Component {
         for (let budget of budgets) {
             budget.currency = selectedOption.label;
         }
-        this.setState({ selectedCurrency: selectedOption, budgets: budgets });
+        usdInputEl.value = null;
+        tokenInputEl.value = null;
+        this.setState({ selectedCurrency: selectedOption, budgets: budgets, customBudgetErr: null });
     };
 
     handleChangeBudget = selectedOption => {
@@ -419,6 +464,54 @@ class ClientPostJob extends Component {
 
     backToCustom = () => {
         this.setState({ isCustomBudget: false, selectedBudget: budgetsSource[2] });
+    };
+
+    budgetHandleInput = (e, currency, rates, convert) => {
+        const currentC = rates.filter(rate => rate.symbol === currency);
+        const val = Number(e.target.value);
+        const min = postJobConfigs.minBudget / Number(currentC[0].price_usd);
+        const max = postJobConfigs.maxBudget / Number(currentC[0].price_usd);
+        let valValidate = {
+            min,
+            max,
+            budget: val,
+            currency,
+        };
+        const usdConverted =
+            val * Number(currentC[0].price_usd) > 1
+                ? (val * Number(currentC[0].price_usd)).toFixed(2)
+                : (val * Number(currentC[0].price_usd)).toFixed(10);
+        const tokenInput =
+            val / Number(currentC[0].price_usd) > 1
+                ? (val / Number(currentC[0].price_usd)).toFixed(2)
+                : (val / Number(currentC[0].price_usd)).toFixed(10);
+        let selectedBudget = {
+            value: new Date().getTime(),
+            id: new Date().getTime(),
+            min_sum: null,
+            max_sum: 0,
+            currency,
+            get label() {
+                return 'Custom budget ( ' + this.max_sum + '+ ' + this.currency + ')';
+            },
+        };
+        if (convert) {
+            selectedBudget.max_sum = tokenInput;
+            tokenInputEl.value = tokenInput;
+            valValidate.budget = tokenInput;
+        } else {
+            usdInputEl.value = usdConverted;
+            selectedBudget.max_sum = val;
+        }
+
+        this.setState({ selectedBudget, customBudgetErr: null });
+        if (!this.validate(valValidate, 'customBudget', true)) {
+            this.setState({ submitDisabled: true });
+            return;
+        }
+        setTimeout(() => {
+            this.validateAll();
+        }, 200);
     };
 
     handleClose = () => {
@@ -471,6 +564,9 @@ class ClientPostJob extends Component {
             namePrepare,
             desPrepare,
         } = this.state;
+
+        const { rates } = this.props;
+
         return (
             <div className="container-wrp">
                 <Dialog
@@ -553,12 +649,13 @@ class ClientPostJob extends Component {
                                 <span className="mkp-form-row-description">
                                     Start with a bit about yourself or your business, and include an overview of what you need done.
                                 </span>
-                                <textarea
-                                    defaultValue={desPrepare}
+                                <ReactQuill
                                     id="des-ip"
-                                    rows="5"
-                                    className={desErr ? 'input-err' : ''}
-                                    onChange={e => this.inputOnChange(e, 'description')}
+                                    className="description-text"
+                                    value={desPrepare}
+                                    onChange={this.descriptionOnChange}
+                                    modules={modules}
+                                    formats={formats}
                                 />
                                 {desErr && <span className="err">{desErr}</span>}
                             </Grid>
@@ -599,20 +696,47 @@ class ClientPostJob extends Component {
                                         <Select value={selectedBudget} onChange={this.handleChangeBudget} options={budgets} />
                                     ) : (
                                         <Grid container>
-                                            <span className="custom-budget">
-                                                <ButtonBase className="btn btn-medium btn-gray medium-rectangle" onClick={this.backToCustom}>
-                                                    <i className="fas fa-long-arrow-alt-left" />
-                                                </ButtonBase>
-                                                <input
-                                                    className={customBudgetErr ? 'input-err' : ''}
-                                                    type="number"
-                                                    id="customBudget"
-                                                    name="customBudget"
-                                                    placeholder="Enter your custom budget..."
-                                                    onChange={e => this.inputOnChange(e, 'customBudget')}
-                                                />
-                                            </span>
-                                            <Grid container>{customBudgetErr && <span className="err">{customBudgetErr}</span>}</Grid>
+                                            <Grid item xs={5}>
+                                                <Grid container>
+                                                    <Grid item xs={10}>
+                                                        <input
+                                                            className={customBudgetErr ? 'input-err' : ''}
+                                                            type="number"
+                                                            id="tokenInput"
+                                                            name="customBudget"
+                                                            disabled={rates.length < 0}
+                                                            placeholder="Enter your budget..."
+                                                            onChange={e => this.budgetHandleInput(e, selectedCurrency.label, rates, false)}
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={2} className="currency">
+                                                        {selectedCurrency.label}
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                            <Grid item xs={1} className="convert">
+                                                <i className="fas fa-arrows-alt-h" />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <Grid container>
+                                                    <Grid item xs={10}>
+                                                        <input
+                                                            className={customBudgetErr ? 'input-err' : ''}
+                                                            id="usdConverted"
+                                                            type="number"
+                                                            name="customBudget"
+                                                            disabled={rates.length < 0}
+                                                            onChange={e => this.budgetHandleInput(e, selectedCurrency.label, rates, true)}
+                                                        />
+                                                    </Grid>
+                                                    <Grid item xs={2} className="currency">
+                                                        USD
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                {customBudgetErr && <span className="err">{customBudgetErr}</span>}
+                                            </Grid>
                                         </Grid>
                                     )}
                                 </Grid>
@@ -673,15 +797,22 @@ class ClientPostJob extends Component {
 ClientPostJob.propTypes = {
     web3: PropTypes.object.isRequired,
     accountInfo: PropTypes.any.isRequired,
+    getExchangeRates: PropTypes.func.isRequired,
+    rates: PropTypes.array.isRequired,
+    tokens: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
         web3: state.HomeReducer.web3,
         accountInfo: state.CommonReducer.accountInfo,
+        rates: state.CommonReducer.rates,
+        tokens: state.CommonReducer.tokens,
     };
 };
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+    getExchangeRates,
+};
 
 export default connect(
     mapStateToProps,

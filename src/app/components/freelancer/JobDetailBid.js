@@ -6,9 +6,11 @@ import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Fade from '@material-ui/core/Fade';
 
+import renderHTML from 'react-render-html';
+
 import Utils from '../../_utils/utils';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
-import api from '../../_services/settingsApi';
+import api from '../../_services/configs';
 
 import Countdown from '../common/countdown';
 import Popper from '../common/Popper';
@@ -81,7 +83,7 @@ class JobDetailBid extends Component {
     async componentDidMount() {
         const { isConnected, web3, saveVotingParams } = this.props;
         const { isLoading } = this.state;
-        const votingParams = await contractApis.getVotingParams(web3);
+        const votingParams = await contractApis.getVotingParams();
         saveVotingParams(votingParams);
         myAddress = web3.eth.defaultAccount;
         if (isConnected) {
@@ -136,11 +138,10 @@ class JobDetailBid extends Component {
 
     setDisputeStt = async event => {
         const { jobID } = this.state;
-        const { web3 } = this.props;
         this.setState({ pollID: event.pollID });
         const clientResponseDuration = event.evidenceEndDate * 1000;
         if (event.revealEndDate <= Date.now()) {
-            const isFinal = await contractApis.getDisputeFinalized(web3, jobID);
+            const isFinal = await contractApis.getDisputeFinalized(jobID);
             if (this.mounted) {
                 this.setState({ isFinal });
             }
@@ -226,8 +227,8 @@ class JobDetailBid extends Component {
             }
         }
         voteResult = {
-            clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
-            freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+            clientVotes: Utils.weiToToken(web3, Number(result[1][2].toString())),
+            freelancerVotes: Utils.weiToToken(web3, Number(result[1][1].toString())),
         };
         if (this.mounted) {
             if (voteResult.clientVotes > voteResult.freelancerVotes) {
@@ -265,8 +266,8 @@ class JobDetailBid extends Component {
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
-                this.jobDataInit();
                 setReload(false);
+                this.jobDataInit();
             }
         }
     };
@@ -587,8 +588,8 @@ class JobDetailBid extends Component {
                                     {voteWinner === 'freelancer'
                                         ? 'Your dispute has had result and you are winner.'
                                         : voteWinner === 'client'
-                                            ? 'Your dispute has had result and you are losers.'
-                                            : 'Your dispute has had result, but there is not winner.'}
+                                        ? 'Your dispute has had result and you are losers.'
+                                        : 'Your dispute has had result, but there is not winner.'}
                                 </span>
                                 <ButtonBase onClick={this.viewVotingResult} className="btn btn-normal btn-blue btn-right">
                                     View voting result
@@ -665,10 +666,10 @@ class JobDetailBid extends Component {
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
         const jobID = match.params.jobId;
-        const pollStarted = await contractApis.getEventsPollStarted(web3, jobID, 1);
+        const pollStarted = await contractApis.getEventsPollStarted(jobID, 1);
         this.setDisputeStt(pollStarted);
-        const isFinal = await contractApis.getDisputeFinalized(web3, jobID);
-        const isFinalWithoutAgainst = await contractApis.getDisputeFinalizedDisputeContract(web3, jobID);
+        const isFinal = await contractApis.getDisputeFinalized(jobID);
+        const isFinalWithoutAgainst = await contractApis.getDisputeFinalizedDisputeContract(jobID);
         if (this.mounted) {
             this.setState({ isFinalWithoutAgainst, isFinal });
         }
@@ -680,7 +681,7 @@ class JobDetailBid extends Component {
         });
         if (!error) {
             if (re) {
-                const disputeDutations = await contractApis.getEventsPollAgainsted(web3, jobID);
+                const disputeDutations = await contractApis.getEventsPollAgainsted(jobID);
                 this.setRespondedisputeStt(disputeDutations);
                 return;
             } else {
@@ -728,7 +729,7 @@ class JobDetailBid extends Component {
             }
 
             if (jobStatus.reject) {
-                const reason = await contractApis.getReasonPaymentRejected(web3, jobID);
+                const reason = await contractApis.getReasonPaymentRejected(jobID);
                 const rejectPaymentDuration = Number(reason.created) * 1000;
                 if (this.mounted) {
                     this.setState({ rejectPaymentDuration });
@@ -742,7 +743,11 @@ class JobDetailBid extends Component {
             };
             if (employerInfo !== undefined) {
                 employer = {
-                    fullName: employerInfo.userInfo.firstName + ' ' + employerInfo.userInfo.lastName,
+                    fullName: employerInfo.userInfo.firstName
+                        ? employerInfo.userInfo.firstName + ' '
+                        : 'N/A ' + employerInfo.userInfo.lastName
+                        ? employerInfo.userInfo.lastName
+                        : null,
                     walletAddress: jobStatusLog[0],
                 };
             }
@@ -799,21 +804,19 @@ class JobDetailBid extends Component {
     };
 
     BidCreatedInit = async job => {
-        const { web3 } = this.props;
         if (job.status.reject) {
-            const reason = await contractApis.getReasonPaymentRejected(web3, job.jobID);
+            const reason = await contractApis.getReasonPaymentRejected(job.jobID);
             this.getReasonPaymentRejected(reason);
         }
-        const jobsMergedBid = await contractApis.mergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
+        const jobsMergedBid = await contractApis.mergeBidToJob('BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
         this.BidAcceptedInit(jobsMergedBid);
     };
 
     BidAcceptedInit = async jobData => {
-        const { web3 } = this.props;
         const { jobID } = this.state;
-        const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID }, jobData.data);
+        const bidAcceptedData = await contractApis.getBidAccepted({ jobID }, jobData.data);
         this.JobsInit(bidAcceptedData);
-        const paymentStt = await contractApis.checkPayment(web3, jobID);
+        const paymentStt = await contractApis.checkPayment(jobID);
         if (this.mounted) {
             this.setState({ ...paymentStt });
         }
@@ -839,7 +842,7 @@ class JobDetailBid extends Component {
     JobsInit = async jobData => {
         const { web3, history, getRatingLogs } = this.props;
         if (jobData.data.status.started) {
-            const jobStartedData = await contractApis.jobStarted(web3, jobData.data);
+            const jobStartedData = await contractApis.jobStarted(jobData.data);
             this.jobStarted(jobStartedData);
         } else {
             if (this.mounted) {
@@ -851,6 +854,9 @@ class JobDetailBid extends Component {
                     isOwner: web3.eth.defaultAccount === jobData.data.owner,
                     isLoading: false,
                 });
+                this.checkMetamaskID = setInterval(() => {
+                    this.checkAccount();
+                }, 1000);
             }
         }
         let listAddress = [jobData.data.owner];
@@ -858,9 +864,6 @@ class JobDetailBid extends Component {
             listAddress.push(freelancer.address);
         }
         getRatingLogs({ web3, listAddress });
-        this.checkMetamaskID = setInterval(() => {
-            this.checkAccount();
-        }, 1000);
     };
 
     bidSwitched = open => {
@@ -884,7 +887,7 @@ class JobDetailBid extends Component {
         const { web3 } = this.props;
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
-        const awardSend = Utils.BBOToWei(web3, award);
+        const awardSend = Utils.tokenToWei(web3, award);
         const instanceBid = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const [err, tx] = await Utils.callMethod(instanceBid.instance.createBid)(jobID, awardSend, time, {
             from: instanceBid.defaultAccount,
@@ -1120,8 +1123,11 @@ class JobDetailBid extends Component {
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> as your
-                        payment.
+                        By confirming this action, you will get{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}
+                        </span>{' '}
+                        as your payment.
                     </p>
                 </div>
             );
@@ -1171,8 +1177,11 @@ class JobDetailBid extends Component {
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, you will get <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> into
-                        your account as the payment for this job. Your staked tokens also will be refunded into your account.
+                        By confirming this action, you will get{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}
+                        </span>{' '}
+                        into your account as the payment for this job. Your staked tokens also will be refunded into your account.
                     </p>
                 </div>
             );
@@ -1181,8 +1190,12 @@ class JobDetailBid extends Component {
                 <div className="dialog-note">
                     <i className="fas fa-exclamation-circle" />
                     <p>
-                        By confirming this action, <span className="bold">{Utils.currencyFormat(bidAccepted[0].award)} BBO</span> will be sent from
-                        escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become reward for voters.
+                        By confirming this action,{' '}
+                        <span className="bold">
+                            {Utils.currencyFormat(bidAccepted[0].award)} {jobData.currency.label}
+                        </span>{' '}
+                        will be sent from escrow contract to winner&#39;s account. If you already staked your tokens, these tokens also will become
+                        reward for voters.
                     </p>
                 </div>
             );
@@ -1417,22 +1430,22 @@ class JobDetailBid extends Component {
                                                     {jobData.estimatedTime < 24
                                                         ? jobData.estimatedTime + ' H'
                                                         : Number.isInteger(jobData.estimatedTime / 24)
-                                                            ? jobData.estimatedTime / 24 + ' Days'
-                                                            : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
+                                                        ? jobData.estimatedTime / 24 + ' Days'
+                                                        : (jobData.estimatedTime / 24).toFixed(2) + ' Days'}
                                                 </div>
                                             </Grid>
-                                            {jobData.status.bidding && <Countdown reload name="Bid duration" expiredTime={jobData.expiredTime} />}
+                                            {jobData.status.bidding && <Countdown onReload name="Bid duration" expiredTime={jobData.expiredTime} />}
                                             {jobData.status.started && (
-                                                <Countdown reload name="Complete duration" expiredTime={jobCompleteDuration} />
+                                                <Countdown onReload name="Complete duration" expiredTime={jobCompleteDuration} />
                                             )}
                                             {disputeStt.started &&
-                                                (disputeStt.clientResponseDuration > 0 ? (
-                                                    <Countdown reload name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
+                                                (disputeStt.clientResponseDuration > Date.now() ? (
+                                                    <Countdown onReload name="Evidence Duration" expiredTime={disputeStt.clientResponseDuration} />
                                                 ) : (
                                                     clientRespondedDispute.responded &&
-                                                    (clientRespondedDispute.commitDuration > 0 && (
+                                                    (clientRespondedDispute.commitDuration > Date.now() && (
                                                         <Countdown
-                                                            reload
+                                                            onReload
                                                             name="Voting Duration"
                                                             expiredTime={clientRespondedDispute.commitDuration}
                                                         />
@@ -1441,11 +1454,11 @@ class JobDetailBid extends Component {
                                             {paymentDuration !== 0 &&
                                                 (!jobData.status.reject &&
                                                     (!jobData.status.disputing && (
-                                                        <Countdown reload name="Payment duration" expiredTime={paymentDuration} />
+                                                        <Countdown onReload name="Payment duration" expiredTime={paymentDuration} />
                                                     )))}
 
                                             {jobData.status.reject && rejectPaymentDuration && (
-                                                <Countdown reload name="Respone duration" expiredTime={rejectPaymentDuration} />
+                                                <Countdown onReload name="Respone duration" expiredTime={rejectPaymentDuration} />
                                             )}
                                         </Grid>
                                     </Grid>
@@ -1461,7 +1474,7 @@ class JobDetailBid extends Component {
                                         Job description
                                     </Grid>
                                     <Grid item xs={12} className="ct">
-                                        {jobData.description}
+                                        {renderHTML(jobData.description)}
                                         {skillShow(jobData)}
                                     </Grid>
                                     <Grid item xs={12} className="ct job-owner">
@@ -1531,8 +1544,8 @@ class JobDetailBid extends Component {
                                                                     {freelancer.timeDone <= 24
                                                                         ? freelancer.timeDone + ' H'
                                                                         : Number.isInteger(freelancer.timeDone / 24)
-                                                                            ? freelancer.timeDone / 24 + ' Days'
-                                                                            : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
+                                                                        ? freelancer.timeDone / 24 + ' Days'
+                                                                        : (freelancer.timeDone / 24).toFixed(2) + ' Days'}
                                                                 </Grid>
                                                             </Grid>
                                                         );

@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import LocalStorage from '../_utils/localStorage';
 import { store } from '../stores';
 import * as types from '../constants/actionTypes';
@@ -34,6 +35,24 @@ function dataFetch(options) {
                     return error.response.data;
                 }
                 console.log(error);
+            } else if (error.request) {
+                console.log(error.request);
+            } else {
+                console.log('Error', error.message);
+            }
+            //console.log(error.config);
+        });
+}
+
+function dataNormalFetch(options) {
+    return axios(options)
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            if (error.response) {
+                console.log(error);
+                return error.response.data;
             } else if (error.request) {
                 console.log(error.request);
             } else {
@@ -181,6 +200,24 @@ async function getUserByWallet(wallet) {
     return dataFetch(options);
 }
 
+async function getRates() {
+    const tokenListId = ['ethereum', 'dai', 'usd-coin', 'tether', 'bigbom'];
+    let tokenData = [];
+    // https://api.coinmarketcap.com/v1/ticker/?limit=0 get all
+    // https://api.coinmarketcap.com/v1/ticker/bigbom/?convert=EUR get bigbom convert to euro
+
+    for (let id of tokenListId) {
+        const endpoint = 'https://api.coinmarketcap.com/v1/ticker/' + id + '/';
+        const options = {
+            method: 'GET',
+            url: endpoint,
+        };
+        const tokenInfo = await dataNormalFetch(options);
+        tokenData.push(tokenInfo[0]);
+    }
+    return tokenData;
+}
+
 export default {
     getHashFromAddress,
     getToken,
@@ -190,4 +227,5 @@ export default {
     getWallets,
     getUserByWallet,
     refreshToken,
+    getRates,
 };

@@ -46,3 +46,24 @@ export const setRegister = register => {
         register,
     };
 };
+
+export const getExchangeRates = rates => {
+    return {
+        type: types.GET_EXCHANGE_RATES,
+        rates,
+    };
+};
+
+export const getTokensAddress = tokensAddress => {
+    return {
+        type: types.GET_TOKENS_ADDRESS,
+        tokensAddress,
+    };
+};
+
+export const saveTokens = tokens => {
+    return {
+        type: types.SAVE_TOKENS,
+        tokens,
+    };
+};

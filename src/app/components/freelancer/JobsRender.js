@@ -28,7 +28,9 @@ class JobsRender extends Component {
                 {Jobs.length > 0 &&
                     Jobs.map((job, i) => {
                         const maxLength = 400; // max length characters show on description
-                        const description = job.description.length > maxLength ? job.description.slice(0, maxLength) + '...' : job.description;
+                        const descriptionStrimed = Utils.strimHTML(job.description);
+                        const description =
+                            descriptionStrimed.length > maxLength ? descriptionStrimed.slice(0, maxLength) + '...' : descriptionStrimed;
                         return (
                             <Link to={'freelancer/jobs/' + job.jobID} key={i} className="job-item">
                                 <Grid item xs={12}>

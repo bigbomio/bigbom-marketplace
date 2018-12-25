@@ -11,14 +11,14 @@ import Switch from '@material-ui/core/Switch';
 import Select from 'react-select';
 
 import Utils from '../../_utils/utils';
-import settingsApi from '../../_services/settingsApi';
+import configs from '../../_services/configs';
 import abiConfig from '../../_services/abiConfig';
 
 import { saveJobs } from '../../actions/clientActions';
 import { setReload } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 
-const categories = settingsApi.getCategories();
+const categories = configs.getCategories();
 
 let jobs = [];
 
@@ -64,7 +64,7 @@ class YourJobs extends Component {
         const { web3 } = this.props;
         this.setState({ isLoading: true, Jobs: [] });
         jobs = [];
-        const events = await contractApis.getPastSingleEvent(web3, 'BBFreelancerJob', 'JobCreated', { owner: web3.eth.defaultAccount });
+        const events = await contractApis.getPastSingleEvent('BBFreelancerJob', 'JobCreated', { owner: web3.eth.defaultAccount });
         if (events.length > 0) {
             for (let event of events) {
                 this.JobCreatedInit(event);
@@ -152,14 +152,12 @@ class YourJobs extends Component {
     };
 
     BidCreatedInit = async job => {
-        const { web3 } = this.props;
-        const jobsMergedBid = await contractApis.mergeBidToJob(web3, 'BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
+        const jobsMergedBid = await contractApis.mergeBidToJob('BBFreelancerBid', 'BidCreated', { jobID: job.jobID }, job);
         this.BidAcceptedInit(jobsMergedBid);
     };
 
     BidAcceptedInit = async jobData => {
-        const { web3 } = this.props;
-        const bidAcceptedData = await contractApis.getBidAccepted(web3, { jobID: jobData.data.jobID }, jobData.data);
+        const bidAcceptedData = await contractApis.getBidAccepted({ jobID: jobData.data.jobID }, jobData.data);
         this.JobsInit(bidAcceptedData);
     };
 

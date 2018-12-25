@@ -401,6 +401,10 @@
       {
         "name": "category",
         "type": "bytes32"
+      },
+      {
+        "name": "tokenAddress",
+        "type": "address"
       }
     ],
     "name": "createJob",

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Eth from 'ethjs';
@@ -14,16 +14,16 @@ import { Grid } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Utils from '../../_utils/utils';
-import abiConfig from '../../_services/abiConfig';
 import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 
 import { loginMetamask, setWeb3, setCheckAcount } from '../../actions/homeActions';
-import { saveAccountInfo, setRegister } from '../../actions/commonActions';
+import { saveAccountInfo, setRegister, getTokensAddress, saveTokens } from '../../actions/commonActions';
+import contractApis from '../../_services/contractApis';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
 
-class LoginMetamask extends Component {
+class LoginMetamask extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -59,30 +59,10 @@ class LoginMetamask extends Component {
         Utils.setCookie('avatar', avatarColors[Math.floor(Math.random() * avatarColors.length)], 1);
     };
 
-    accountsInit = async userInfo => {
-        const { saveAccountInfo, web3, loginMetamask, history, setCheckAcount } = this.props;
-        // wallets from current account
-        const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
-        let accounts = [];
-        for (let acc of userInfo.wallets) {
-            let address = { address: acc.address, default: defaultAddress.toLowerCase() === acc.address.toLowerCase(), balances: { ETH: 0, BBO: 0 } };
-            await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-                address.balances.ETH = ethBalance;
-            });
-            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-            const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
-            if (!errBalance) {
-                const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-                address.balances.BBO = BBOBalance;
-            }
-            accounts.push(address);
-        }
-        userInfo.wallets = accounts;
-        if (userInfo) {
-            saveAccountInfo(userInfo);
-            LocalStorage.setItemJson('userInfo', userInfo);
-        }
+    updateBalanceTokens = userInfo => {
+        const { saveAccountInfo, loginMetamask, history, setCheckAcount } = this.props;
+        saveAccountInfo(userInfo);
+        LocalStorage.setItemJson('userInfo', userInfo);
         loginMetamask();
         this.radomClass(); // set color for avatar
         history.goBack();
@@ -95,8 +75,42 @@ class LoginMetamask extends Component {
         }
     };
 
+    mapTokens = tokens => {
+        const { saveTokens } = this.props;
+        saveTokens(tokens);
+    };
+
+    accountsInit = async userInfo => {
+        const { web3, tokensAddress } = this.props;
+        // wallets from current account
+        const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
+        let accounts = [];
+        for (let acc of userInfo.wallets) {
+            let address = {
+                address: acc.address,
+                default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
+                balances: { ETH: 0, BBO: 0 },
+            };
+
+            //get eth balance
+            await web3.eth.getBalance(acc.address, (err, balance) => {
+                const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
+                address.balances.ETH = ethBalance;
+            });
+            accounts.push(address);
+        }
+        userInfo.wallets = accounts;
+        if (tokensAddress.length > 0) {
+            contractApis.tokenAddressSymbolMap(tokensAddress, this.mapTokens);
+        }
+        // get tokens balance
+        if (userInfo) {
+            contractApis.getBalanceToken(tokensAddress, userInfo, this.updateBalanceTokens);
+        }
+    };
+
     connectMetaMask = async () => {
-        const { setRegister } = this.props;
+        const { setRegister, getTokensAddress } = this.props;
         const { web3 } = this.state;
         this.setState({ isLoading: true });
         Utils.connectMetaMask(web3).then(
@@ -109,6 +123,7 @@ class LoginMetamask extends Component {
                     let userInfo = {};
                     const tokenExpired = Date.now() + 15 * 60 * 1000; // 15p to refresh token
                     const [err, signature] = await Utils.callMethod(eth.personal_sign)(msg, web3.eth.defaultAccount);
+                    getTokensAddress();
                     if (err) {
                         if (this.mounted) {
                             return this.setState({ open: true, errMsg: 'Something went wrong!', isLoading: false });
@@ -468,6 +483,13 @@ LoginMetamask.propTypes = {
     web3: PropTypes.object.isRequired,
     setRegister: PropTypes.func.isRequired,
     register: PropTypes.bool.isRequired,
+    getTokensAddress: PropTypes.func.isRequired,
+    tokensAddress: PropTypes.array,
+    saveTokens: PropTypes.func.isRequired,
+};
+
+LoginMetamask.defaultProps = {
+    tokensAddress: [],
 };
 
 const mapStateToProps = state => {
@@ -475,6 +497,7 @@ const mapStateToProps = state => {
         web3: state.HomeReducer.web3,
         isConnected: state.HomeReducer.isConnected,
         register: state.CommonReducer.register,
+        tokensAddress: state.CommonReducer.tokensAddress,
     };
 };
 
@@ -484,6 +507,8 @@ const mapDispatchToProps = {
     setCheckAcount,
     saveAccountInfo,
     setRegister,
+    getTokensAddress,
+    saveTokens,
 };
 
 export default connect(

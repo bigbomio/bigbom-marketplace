@@ -278,11 +278,11 @@ class Utils {
         });
     }
 
-    BBOToWei(web3, value) {
+    tokenToWei(web3, value) {
         return Number(web3.toWei(value, 'ether'));
     }
 
-    WeiToBBO(web3, value) {
+    weiToToken(web3, value) {
         return Number(web3.fromWei(value, 'ether'));
     }
 
@@ -378,6 +378,19 @@ class Utils {
         return arr.reduce(function(l, e) {
             return e[key] > l[key] ? e : l;
         });
+    };
+
+    strimHTML = html => {
+        const temporalDivElement = document.createElement('div');
+        temporalDivElement.innerHTML = html;
+        return temporalDivElement.textContent || temporalDivElement.innerText || '';
+    };
+
+    getConvertRate = (exchangeRates, from, to) => {
+        const fromKey = `eth_${from}`;
+        const toEthRate = exchangeRates[fromKey].rate.pow(-1);
+        const toTokenRate = exchangeRates[to].rate;
+        return toEthRate && toTokenRate && toEthRate.times(toTokenRate);
     };
 }
 

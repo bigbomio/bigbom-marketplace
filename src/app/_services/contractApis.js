@@ -5,7 +5,69 @@ import Utils from '../_utils/utils';
 import abiConfig, { fromBlock } from '../_services/abiConfig';
 import services from './services';
 
-const getAllowance = async (web3, ctName) => {
+const minABI = [
+    {
+        constant: true,
+        inputs: [],
+        name: 'name',
+        outputs: [
+            {
+                name: '',
+                type: 'string',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+    {
+        constant: true,
+        inputs: [],
+        name: 'decimals',
+        outputs: [
+            {
+                name: '',
+                type: 'uint8',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+    {
+        constant: true,
+        inputs: [
+            {
+                name: '_owner',
+                type: 'address',
+            },
+        ],
+        name: 'balanceOf',
+        outputs: [
+            {
+                name: 'balance',
+                type: 'uint256',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+    {
+        constant: true,
+        inputs: [],
+        name: 'symbol',
+        outputs: [
+            {
+                name: '',
+                type: 'string',
+            },
+        ],
+        payable: false,
+        type: 'function',
+    },
+];
+
+const web3 = global.web3;
+
+const getAllowance = async ctName => {
     try {
         const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, ctName);
@@ -20,7 +82,7 @@ const getAllowance = async (web3, ctName) => {
     }
 };
 
-const approve = async (web3, ctName, value) => {
+const approve = async (ctName, value) => {
     try {
         const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, ctName);
@@ -39,7 +101,7 @@ const approve = async (web3, ctName, value) => {
     }
 };
 
-const checkPayment = async (web3, jobID) => {
+const checkPayment = async jobID => {
     try {
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const now = Date.now();
@@ -67,7 +129,7 @@ const checkPayment = async (web3, jobID) => {
     }
 };
 
-const getBlock = async (web3, blockNumber) => {
+const getBlock = async blockNumber => {
     try {
         const [err, blockLogs] = await Utils.callMethod(web3.eth.getBlock)(blockNumber);
         if (err) {
@@ -79,7 +141,7 @@ const getBlock = async (web3, blockNumber) => {
     }
 };
 
-const getBidCancalled = async (web3, filter, mergeData) => {
+const getBidCancalled = async (filter, mergeData) => {
     try {
         const bidInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerBid');
         const bidEvent = await bidInstance.instance.BidAccepted(filter, {
@@ -105,7 +167,7 @@ const getBidCancalled = async (web3, filter, mergeData) => {
     }
 };
 
-const mergeBidToJob = async (web3, type, event, filter, mergeData) => {
+const mergeBidToJob = async (type, event, filter, mergeData) => {
     try {
         const contractInstance = await abiConfig.contractInstanceGenerator(web3, type);
         const ctEvent = await contractInstance.instance[event](filter, {
@@ -124,13 +186,17 @@ const mergeBidToJob = async (web3, type, event, filter, mergeData) => {
             };
             if (userInfoFetch) {
                 user = {
-                    fullName: userInfoFetch.userInfo.firstName + ' ' + userInfoFetch.userInfo.lastName,
+                    fullName: userInfoFetch.userInfo.firstName
+                        ? userInfoFetch.userInfo.firstName + ' '
+                        : 'N/A ' + userInfoFetch.userInfo.lastName
+                        ? userInfoFetch.userInfo.lastName
+                        : null,
                     walletAddress: event.args.owner,
                 };
             }
             const bidTpl = {
                 address: event.args.owner,
-                award: Utils.WeiToBBO(web3, event.args.bid.toString()),
+                award: Utils.weiToToken(web3, event.args.bid.toString()),
                 timeDone: event.args.bidTime.toString(),
                 id: event.args.jobHash,
                 jobHash: mergeData.jobHash,
@@ -151,14 +217,14 @@ const mergeBidToJob = async (web3, type, event, filter, mergeData) => {
         }
         results.data = mergeData;
         results.status = { err: false, text: 'get events log success!' };
-        const bidsCalled = await getBidCancalled(web3, filter, results.data);
+        const bidsCalled = await getBidCancalled(filter, results.data);
         return bidsCalled;
     } catch (error) {
         console.log('error: ', error);
     }
 };
 
-const jobStarted = async (web3, jobData) => {
+const jobStarted = async jobData => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const jobEvent = await ctInstance.instance.JobStarted(
@@ -171,7 +237,7 @@ const jobStarted = async (web3, jobData) => {
         const jobLogs = await Utils.WaitAllContractEventGet(jobEvent);
         for (let jobLog of jobLogs) {
             if (jobData.jobID === jobLog.args.jobID.toString()) {
-                const blockLog = await getBlock(web3, jobLog.blockNumber);
+                const blockLog = await getBlock(jobLog.blockNumber);
                 const result = {
                     created: blockLog.timestamp,
                 };
@@ -186,7 +252,7 @@ const jobStarted = async (web3, jobData) => {
     }
 };
 
-const getPastSingleEvent = async (web3, type, event, filter) => {
+const getPastSingleEvent = async (type, event, filter) => {
     try {
         const contractInstance = await abiConfig.contractInstanceGenerator(web3, type);
         let results = [];
@@ -204,7 +270,7 @@ const getPastSingleEvent = async (web3, type, event, filter) => {
     }
 };
 
-const getBidAccepted = async (web3, filter, jobData) => {
+const getBidAccepted = async (filter, jobData) => {
     let results = {
         data: {},
     };
@@ -236,7 +302,7 @@ const getBidAccepted = async (web3, filter, jobData) => {
     }
 };
 
-const checkAllowRating = async (web3, ratingOwner, ratingFor, jobID) => {
+const checkAllowRating = async (ratingOwner, ratingFor, jobID) => {
     try {
         const ratingInstance = await abiConfig.contractInstanceGenerator(web3, 'BBRating');
         const [, allow] = await Utils.callMethod(ratingInstance.instance.allowRating)(ratingOwner, ratingFor, jobID, {
@@ -249,7 +315,7 @@ const checkAllowRating = async (web3, ratingOwner, ratingFor, jobID) => {
     }
 };
 
-const getVotingParams = async web3 => {
+const getVotingParams = async () => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBParams');
         const [, params] = await Utils.callMethod(ctInstance.instance.getVotingParams)();
@@ -268,7 +334,7 @@ const getVotingParams = async web3 => {
     }
 };
 
-const getDisputeFinalized = async (web3, jobID) => {
+const getDisputeFinalized = async jobID => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const ctEvent = await ctInstance.instance.DisputeFinalized(
@@ -351,7 +417,7 @@ const getRatingLog = async payload => {
     }
 };
 
-const getDisputeFinalizedDisputeContract = async (web3, jobID) => {
+const getDisputeFinalizedDisputeContract = async jobID => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const ctEvent = await ctInstance.instance.DisputeFinalized(
@@ -374,7 +440,7 @@ const getDisputeFinalizedDisputeContract = async (web3, jobID) => {
     }
 };
 
-const getTimeDurations = async (web3, result) => {
+const getTimeDurations = async result => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
         const [timmingErr, timmingResult] = await Utils.callMethod(ctInstance.instance.getPollStage)(result.pollID, {
@@ -396,7 +462,7 @@ const getTimeDurations = async (web3, result) => {
     }
 };
 
-const getEventsPollStarted = async (web3, jobID, optionID) => {
+const getEventsPollStarted = async (jobID, optionID) => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const helperInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
@@ -409,7 +475,7 @@ const getEventsPollStarted = async (web3, jobID, optionID) => {
         );
         const logs = await Utils.WaitAllContractEventGet(ctEvent);
         for (let log of logs) {
-            const blockLog = await getBlock(web3, log.blockNumber);
+            const blockLog = await getBlock(log.blockNumber);
             const [, pollOption] = await Utils.callMethod(helperInstance.instance.getPollOption)(log.args.pollID.toString(), optionID);
             const result = {
                 jobID,
@@ -420,7 +486,7 @@ const getEventsPollStarted = async (web3, jobID, optionID) => {
                 started: true,
                 proofHash: Utils.toAscii(pollOption),
             };
-            const timeDurations = await getTimeDurations(web3, result);
+            const timeDurations = await getTimeDurations(result);
             return timeDurations;
         }
     } catch (e) {
@@ -428,7 +494,7 @@ const getEventsPollStarted = async (web3, jobID, optionID) => {
     }
 };
 
-const getReasonPaymentRejected = async (web3, jobID) => {
+const getReasonPaymentRejected = async jobID => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
         const ctEvent = await ctInstance.instance.PaymentRejected(
@@ -451,7 +517,7 @@ const getReasonPaymentRejected = async (web3, jobID) => {
     }
 };
 
-const getEventsPollAgainsted = async (web3, jobID) => {
+const getEventsPollAgainsted = async jobID => {
     try {
         const helperInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
@@ -467,7 +533,7 @@ const getEventsPollAgainsted = async (web3, jobID) => {
         const pollID = DisputeAgainstedlogs[0].args.pollID.toString();
         const [, freelancerProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 1); // get freelancer proofhash
         const [, clientProofHash] = await Utils.callMethod(helperInstance.instance.getPollOption)(pollID, 2); // get client proofhash
-        const blockLog = await getBlock(web3, DisputeAgainstedlogs[0].blockNumber);
+        const blockLog = await getBlock(DisputeAgainstedlogs[0].blockNumber);
         const result = {
             created: blockLog.timestamp,
             responded: true,
@@ -486,14 +552,14 @@ const getEventsPollAgainsted = async (web3, jobID) => {
         const disputeStartedlogs = await Utils.WaitAllContractEventGet(disputeStartedEvent);
         result.freelancerProofHash = Utils.toAscii(freelancerProofHash);
         result.freelancer = disputeStartedlogs[0].args.creator;
-        const timeDurations = await getTimeDurations(web3, result);
+        const timeDurations = await getTimeDurations(result);
         return timeDurations;
     } catch (e) {
         console.log(e);
     }
 };
 
-const getJobCreatedByJobID = async (web3, datas) => {
+const getJobCreatedByJobID = async datas => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const ctEvent = await ctInstance.instance.JobCreated(
@@ -513,7 +579,7 @@ const getJobCreatedByJobID = async (web3, datas) => {
     }
 };
 
-const getAllAvailablePoll = async (web3, jobID) => {
+const getAllAvailablePoll = async jobID => {
     let disputeDatas = [];
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
@@ -565,14 +631,14 @@ const getAllAvailablePoll = async (web3, jobID) => {
                         revealEndDate: timmingResult[4].toString() * 1000,
                     },
                 };
-                const blockLog = await getBlock(web3, disputeAgaistedLog.blockNumber);
+                const blockLog = await getBlock(disputeAgaistedLog.blockNumber);
                 results.data.jobID = disputeAgaistedLog.args.jobID.toString();
                 results.data.pollID = disputeAgaistedLog.args.pollID.toString();
                 results.data.created = blockLog.timestamp;
                 results.data.started = true;
                 results.data.client = disputeAgaistedLog.args.creator;
             }
-            const disputeData = await getJobCreatedByJobID(web3, results);
+            const disputeData = await getJobCreatedByJobID(results);
             disputeDatas.push(disputeData);
         }
         return disputeDatas;
@@ -581,7 +647,7 @@ const getAllAvailablePoll = async (web3, jobID) => {
     }
 };
 
-const getMyVoting = async web3 => {
+const getMyVoting = async () => {
     let disputeDatas = [];
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
@@ -635,7 +701,7 @@ const getMyVoting = async web3 => {
                     );
                     const disputeAgaistedLogs = await Utils.WaitAllContractEventGet(disputeAgaistedEvent);
                     for (let disputeAgaistedLog of disputeAgaistedLogs) {
-                        const blockLog = await getBlock(web3, disputeAgaistedLog.blockNumber);
+                        const blockLog = await getBlock(disputeAgaistedLog.blockNumber);
                         results.data.jobID = disputeAgaistedLog.args.jobID.toString();
                         results.data.pollID = disputeAgaistedLog.args.pollID.toString();
                         results.data.created = blockLog.timestamp;
@@ -660,7 +726,7 @@ const getMyVoting = async web3 => {
                     }
                 }
             }
-            const disputeData = await getJobCreatedByJobID(web3, results);
+            const disputeData = await getJobCreatedByJobID(results);
             disputeDatas.push(disputeData);
         }
         return disputeDatas;
@@ -669,7 +735,7 @@ const getMyVoting = async web3 => {
     }
 };
 
-const getJobIDByPollID = async (web3, pollID) => {
+const getJobIDByPollID = async pollID => {
     try {
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
         const disputeStartedEvent = await ctInstance.instance.DisputeStarted(
@@ -682,6 +748,79 @@ const getJobIDByPollID = async (web3, pollID) => {
         const disputeStartedlogs = await Utils.WaitAllContractEventGet(disputeStartedEvent);
         if (disputeStartedlogs.length > 0) {
             return disputeStartedlogs[0].args.jobID.toString();
+        }
+    } catch (e) {
+        console.log(e);
+    }
+};
+
+const getToken = async (tokenAddress, userInfo, callback) => {
+    const walletAddress = web3.eth.defaultAccount;
+    const wallet = userInfo.wallets.filter(wallet => wallet.address === walletAddress);
+    try {
+        // Get ERC20 Token contract instance
+        const contract = web3.eth.contract(minABI).at(tokenAddress);
+        // Call balanceOf function
+        contract.balanceOf(walletAddress, (error, balance) => {
+            // Get decimals
+            contract.decimals((error, decimals) => {
+                // calculate a balance
+                contract.symbol((err, symbol) => {
+                    wallet[0].balances[symbol] = balance.div(10 ** decimals).toString();
+                    userInfo.wallets.map(walletMap => {
+                        if (walletMap.address === walletAddress) {
+                            walletMap = wallet;
+                        }
+                        return walletMap;
+                    });
+                    callback(userInfo);
+                });
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+const getBalanceToken = async (tokenAddressList, userInfo, callback) => {
+    for (let tokenLog of tokenAddressList) {
+        if (tokenLog.args.tokenAddress !== '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0') {
+            const tokenAddress = tokenLog.args.tokenAddress;
+            getToken(tokenAddress, userInfo, callback);
+        }
+    }
+};
+
+const tokenAddressSymbolMap = (tokensAddress, callback) => {
+    const tokenList = {};
+    for (let tokenLog of tokensAddress) {
+        if (tokenLog.args.tokenAddress !== '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0') {
+            try {
+                const contract = web3.eth.contract(minABI).at(tokenLog.args.tokenAddress);
+                contract.symbol((err, ctSymbol) => {
+                    tokenList[ctSymbol] = tokenLog.args.tokenAddress;
+                    callback(tokenList);
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    }
+};
+
+const getTokenAddress = async () => {
+    try {
+        const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerPayment');
+        const tokenAddressEvent = await ctInstance.instance.PaymentTokenAdded(
+            {},
+            {
+                fromBlock: fromBlock, // should use recent number
+                toBlock: 'latest',
+            }
+        );
+        const tokenAddressList = await Utils.WaitAllContractEventGet(tokenAddressEvent);
+        if (tokenAddressList.length > 0) {
+            return tokenAddressList;
         }
     } catch (e) {
         console.log(e);
@@ -711,4 +850,8 @@ export default {
     getJobCreatedByJobID,
     getMyVoting,
     getJobIDByPollID,
+    getTokenAddress,
+    getBalanceToken,
+    minABI,
+    tokenAddressSymbolMap,
 };

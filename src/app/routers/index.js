@@ -12,12 +12,12 @@ import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
 import WithrawToken from '../components/WithrawToken';
 
-import abiConfig from '../_services/abiConfig';
 import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccountInfo, setRegister } from '../actions/commonActions';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister, getTokensAddress, saveTokens } from '../actions/commonActions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../actions/homeActions';
+import contractApis from '../_services/contractApis';
 
 const Home = asyncComponent(() => import('../components/home'));
 
@@ -60,6 +60,7 @@ class Routers extends PureComponent {
                 console.log('Access denied!');
             }
         }
+        this.getNetwork();
     };
 
     getNetwork = async () => {
@@ -68,6 +69,7 @@ class Routers extends PureComponent {
         if (!err) {
             const yourNetwork = Utils.getNetwork(netId);
             setYourNetwork({ id: netId, name: yourNetwork });
+            this.setState({ yourNetwork });
         }
     };
 
@@ -79,15 +81,25 @@ class Routers extends PureComponent {
             lastName: '',
             wallets: [],
         };
-        logoutMetamask();
         LocalStorage.removeItem('userInfo');
         LocalStorage.removeItem('userToken');
         saveAccountInfo(accountInfo);
         setReload(false);
+        logoutMetamask();
+    };
+
+    updateBalanceTokens = userInfo => {
+        const { saveAccountInfo } = this.props;
+        saveAccountInfo(userInfo);
+    };
+
+    mapTokens = tokens => {
+        const { saveTokens } = this.props;
+        saveTokens(tokens);
     };
 
     updateBalance = async userInfo => {
-        const { web3, saveAccountInfo } = this.props;
+        const { web3, tokensAddress } = this.props;
         // if wallet has existed in current account's wallet list, login and get account info
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
@@ -95,26 +107,22 @@ class Routers extends PureComponent {
             let address = {
                 address: acc.address,
                 default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
-                balances: { ETH: 0, BBO: 0 },
+                balances: { ETH: 0, BBO: 0, DAI: 0, USDT: 0, USDC: 0 },
             };
 
             // get eth balance
             await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
+                const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
                 address.balances.ETH = ethBalance;
             });
-
-            // get bbo balance
-            const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
-            const [errBalance, balance] = await Utils.callMethod(BBOinstance.instance.balanceOf)(acc.address);
-            if (!errBalance) {
-                const BBOBalance = Utils.WeiToBBO(web3, balance).toFixed(3);
-                address.balances.BBO = BBOBalance;
-            }
             accounts.push(address);
         }
         userInfo.wallets = accounts;
-        saveAccountInfo(userInfo);
+        if (tokensAddress.length > 0) {
+            contractApis.tokenAddressSymbolMap(tokensAddress, this.mapTokens);
+        }
+        // get tokens balance
+        contractApis.getBalanceToken(tokensAddress, userInfo, this.updateBalanceTokens);
     };
 
     accountsInit = async (account, network) => {
@@ -126,7 +134,6 @@ class Routers extends PureComponent {
                 this.updateBalance(userInfo);
                 setAccount(account);
                 setNetwork(network);
-                this.getNetwork();
             } else {
                 // if wallet has not existed in current account's wallet list, logout current account
                 this.logout();
@@ -137,9 +144,10 @@ class Routers extends PureComponent {
     };
 
     checkMetamask = async () => {
-        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload } = this.props;
+        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload, getTokensAddress } = this.props;
         const { web3 } = this.state;
         if (isConnected) {
+            getTokensAddress();
             const userToken = LocalStorage.getItemJson('userToken');
             if (userToken) {
                 if (userToken.expired <= Date.now()) {
@@ -182,7 +190,7 @@ class Routers extends PureComponent {
 
     render() {
         const { history } = this.props;
-        const { routes } = this.state;
+        const { routes, yourNetwork } = this.state;
         if (isMobile) {
             return (
                 <div className="not-support-err">
@@ -202,7 +210,7 @@ class Routers extends PureComponent {
                         <Helmet titleTemplate="%s - Bigbom Marketplace" defaultTitle="Bigbom Marketplace">
                             <meta name="description" content="Bigbom Marketplace" />
                         </Helmet>
-                        <Header history={history} />
+                        <Header network={yourNetwork} history={history} />
                         <Switch>
                             <Route exact path="/" component={Home} />
                             <Route path="/withraw" component={WithrawToken} />
@@ -233,6 +241,13 @@ Routers.propTypes = {
     saveAccountInfo: PropTypes.func.isRequired,
     accountInfo: PropTypes.object.isRequired,
     setRegister: PropTypes.func.isRequired,
+    getTokensAddress: PropTypes.func.isRequired,
+    tokensAddress: PropTypes.array,
+    saveTokens: PropTypes.func.isRequired,
+};
+
+Routers.defaultProps = {
+    tokensAddress: [],
 };
 
 const mapStateToProps = state => {
@@ -242,6 +257,7 @@ const mapStateToProps = state => {
         defaultAccount: state.HomeReducer.defaultAccount,
         checkAccount: state.HomeReducer.checkAccount,
         accountInfo: state.CommonReducer.accountInfo,
+        tokensAddress: state.CommonReducer.tokensAddress,
     };
 };
 
@@ -256,6 +272,8 @@ const mapDispatchToProps = {
     setReload,
     saveAccountInfo,
     setRegister,
+    getTokensAddress,
+    saveTokens,
 };
 
 export default connect(

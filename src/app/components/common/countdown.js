@@ -38,7 +38,7 @@ class Countdown extends Component {
     }
 
     bidDuration = () => {
-        const { isSecond, reload, setReload } = this.props;
+        const { isSecond, onReload, setReload } = this.props;
         countdown = setInterval(() => {
             const { expiredTime } = this.state;
             let time = expiredTime;
@@ -57,7 +57,7 @@ class Countdown extends Component {
             if (this.mounted) {
                 if (distance <= 0) {
                     this.setState({ countDown: { exprired: true, days: 0, hours: 0, minutes: 0, seconds: 0 } });
-                    setReload(reload);
+                    setReload(onReload);
                     setTimeout(() => {
                         clearInterval(countdown);
                     }, 1000);
@@ -93,14 +93,14 @@ class Countdown extends Component {
 Countdown.propTypes = {
     name: PropTypes.string,
     isSecond: PropTypes.bool,
-    reload: PropTypes.bool,
+    onReload: PropTypes.bool,
     setReload: PropTypes.func.isRequired,
 };
 
 Countdown.defaultProps = {
     name: null,
     isSecond: false,
-    reload: false,
+    onReload: false,
 };
 
 const mapStateToProps = () => {

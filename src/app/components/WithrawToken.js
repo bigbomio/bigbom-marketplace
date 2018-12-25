@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -12,7 +12,7 @@ import abiConfig from '../_services/abiConfig';
 
 let currentAccount = '';
 
-class WithdrawToken extends Component {
+class WithdrawToken extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -50,14 +50,14 @@ class WithdrawToken extends Component {
         const votingInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVotingHelper');
         const [, tokenDeposit] = await Utils.callMethod(votingInstance.instance.checkStakeBalance)();
         if (tokenDeposit) {
-            this.setState({ tokenDeposit: Utils.WeiToBBO(web3, tokenDeposit) });
+            this.setState({ tokenDeposit: Utils.weiToToken(web3, tokenDeposit) });
         }
     };
 
     withdrawVotingRights = async () => {
         const { tokenWithdraw } = this.state;
         const { web3 } = this.props;
-        const tokenWithdrawSend = Utils.BBOToWei(web3, tokenWithdraw);
+        const tokenWithdrawSend = Utils.tokenToWei(web3, tokenWithdraw);
         const votingInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
         const [errWVR, txWVR] = await Utils.callMethod(votingInstance.instance.withdrawVotingRights)(tokenWithdrawSend);
         if (errWVR) {

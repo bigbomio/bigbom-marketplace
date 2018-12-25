@@ -14,7 +14,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import Utils from '../../_utils/utils';
-import settingsApi from '../../_services/settingsApi';
+import configs from '../../_services/configs';
 import abiConfig, { fromBlock } from '../../_services/abiConfig';
 
 import DisputesRendeManage from './DisputesRendeManage';
@@ -62,11 +62,10 @@ class Manage extends Component {
     }
 
     getDisputes = async () => {
-        const { web3 } = this.props;
         this.setState({ isLoading: true });
         disputes = [];
-        const disputeDatas = await contractApis.getMyVoting(web3);
-        if (disputeDatas.length > 0) {
+        const disputeDatas = await contractApis.getMyVoting();
+        if (disputeDatas && disputeDatas.length > 0) {
             for (let dpData of disputeDatas) {
                 this.disputeCreatedInit(dpData);
             }
@@ -222,7 +221,7 @@ class Manage extends Component {
         const { selectedCategory, anchorEl, isLoading, stt, finalDisputes } = this.state;
         const { disputes } = this.props;
         const filteredDisputes = disputes.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS));
-        const categories = settingsApi.getCategories();
+        const categories = configs.getCategories();
         return (
             <div id="freelancer" className="container-wrp">
                 <div className="container-wrp full-top-wrp">

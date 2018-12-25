@@ -6,10 +6,12 @@ import leftPad from 'left-pad';
 import Grid from '@material-ui/core/Grid';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
+import renderHTML from 'react-render-html';
+
 import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
-import api from '../../_services/settingsApi';
+import api from '../../_services/configs';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
 
@@ -59,17 +61,16 @@ class DisputeDetail extends Component {
     }
 
     getDispute = async () => {
-        const { web3, match } = this.props;
+        const { match } = this.props;
         const pollID = match.params.disputeId;
         this.setState({ isLoading: true, pollID });
-        const jobID = await contractApis.getJobIDByPollID(web3, pollID);
+        const jobID = await contractApis.getJobIDByPollID(pollID);
         this.getDisputeByJobID(jobID);
     };
 
     getDisputeByJobID = async jobID => {
-        const { web3 } = this.props;
         this.setState({ jobID });
-        const disputeDatas = await contractApis.getAllAvailablePoll(web3, jobID);
+        const disputeDatas = await contractApis.getAllAvailablePoll(jobID);
         if (disputeDatas.length > 0) {
             for (let dpData of disputeDatas) {
                 this.disputeDataInit(dpData);
@@ -118,8 +119,8 @@ class DisputeDetail extends Component {
             }
             // Returns (options[default, opt1, opt2], votes[default,clientVotes, freelancerVotes])
             voteResult = {
-                clientVotes: Utils.WeiToBBO(web3, Number(result[1][2].toString())),
-                freelancerVotes: Utils.WeiToBBO(web3, Number(result[1][1].toString())),
+                clientVotes: Utils.weiToToken(web3, Number(result[1][2].toString())),
+                freelancerVotes: Utils.weiToToken(web3, Number(result[1][1].toString())),
             };
             this.setState({
                 dialogLoading: false,
@@ -212,7 +213,7 @@ class DisputeDetail extends Component {
         console.log(result[0].toString());
         if (Number(result[0].toString()) > 0) {
             if (this.mounted) {
-                this.setState({ getRewardRight: true, reward: Utils.WeiToBBO(web3, Number(result[0].toString())) });
+                this.setState({ getRewardRight: true, reward: Utils.weiToToken(web3, Number(result[0].toString())) });
             }
         } else {
             if (this.mounted) {
@@ -236,9 +237,8 @@ class DisputeDetail extends Component {
     };
 
     disputeDataInit = async disputeData => {
-        const { web3 } = this.props;
         this.sttAtionInit();
-        const reason = await contractApis.getReasonPaymentRejected(web3, disputeData.data.jobID);
+        const reason = await contractApis.getReasonPaymentRejected(disputeData.data.jobID);
         if (this.mounted) {
             this.setState({ paymentRejectReason: reason });
         }
@@ -253,7 +253,7 @@ class DisputeDetail extends Component {
             }
         }
         if (disputeData.data.revealEndDate <= Date.now()) {
-            const disputeFinalized = await contractApis.getDisputeFinalized(web3, disputeData.data.jobID);
+            const disputeFinalized = await contractApis.getDisputeFinalized(disputeData.data.jobID);
             this.setFinalizedStt(disputeFinalized);
         }
         fetch(URl)
@@ -351,8 +351,9 @@ class DisputeDetail extends Component {
         const { web3, vote, setVoteInputDisable } = this.props;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBVoting');
         const secretHashString = this.keccak256(vote.choice, Number(vote.secretPhrase));
-        const token = Utils.BBOToWei(web3, vote.token);
+        const token = Utils.tokenToWei(web3, vote.token);
         setVoteInputDisable(true);
+        console.log(ctInstance.instance);
         const [err, tx] = await Utils.callMethod(ctInstance.instance.commitVote)(disputeData.pollID, secretHashString, token, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
@@ -418,7 +419,7 @@ class DisputeDetail extends Component {
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         this.setState({ dialogLoading: true });
         this.setActionBtnDisabled(true);
-        const allowance = await contractApis.getAllowance(web3, 'BBVoting');
+        const allowance = await contractApis.getAllowance('BBVoting');
 
         /// check balance
         if (defaultWallet[0].balances.ETH <= 0) {
@@ -432,7 +433,7 @@ class DisputeDetail extends Component {
                 },
             });
             return;
-        } else if (Utils.BBOToWei(web3, defaultWallet[0].balances.BBO) < vote.token) {
+        } else if (Utils.tokenToWei(web3, defaultWallet[0].balances.BBO) < vote.token) {
             this.setState({
                 dialogLoading: false,
                 actStt: {
@@ -450,16 +451,16 @@ class DisputeDetail extends Component {
         }
 
         if (Number(allowance.toString(10)) === 0) {
-            const apprv = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
+            const apprv = await contractApis.approve('BBVoting', Math.pow(2, 255));
             if (apprv) {
                 await this.finalVoting();
             }
-        } else if (Number(allowance.toString(10)) > Utils.BBOToWei(web3, vote.token)) {
+        } else if (Number(allowance.toString(10)) > Utils.tokenToWei(web3, vote.token)) {
             await this.finalVoting();
         } else {
-            const apprv = await contractApis.approve(web3, 'BBVoting', 0);
+            const apprv = await contractApis.approve('BBVoting', 0);
             if (apprv) {
-                const apprv2 = await contractApis.approve(web3, 'BBVoting', Math.pow(2, 255));
+                const apprv2 = await contractApis.approve('BBVoting', Math.pow(2, 255));
                 if (apprv2) {
                     await this.finalVoting();
                 }
@@ -590,7 +591,7 @@ class DisputeDetail extends Component {
                                     Job description
                                 </Grid>
                                 <Grid item xs={12} className="ct" id="des-ct">
-                                    {disputeData.jobDispute.description}
+                                    {renderHTML(disputeData.jobDispute.description)}
                                 </Grid>
                                 <Grid item xs={12} className="bottom-ct">
                                     <ButtonBase className="btn btn-small btn-white" onClick={this.viewFull}>
@@ -621,12 +622,12 @@ class DisputeDetail extends Component {
                                     <p>Remaining time</p>
                                     {!reveal ? (
                                         disputeData.evidenceEndDate > Date.now() ? (
-                                            <Countdown reload expiredTime={disputeData.evidenceEndDate} />
+                                            <Countdown onReload expiredTime={disputeData.evidenceEndDate} />
                                         ) : (
-                                            <Countdown reload expiredTime={disputeData.commitEndDate} />
+                                            <Countdown onReload expiredTime={disputeData.commitEndDate} />
                                         )
                                     ) : (
-                                        <Countdown reload={false} expiredTime={disputeData.revealEndDate} />
+                                        <Countdown onReload={false} expiredTime={disputeData.revealEndDate} />
                                     )}
                                 </Grid>
                                 <Grid item xs={12}>
