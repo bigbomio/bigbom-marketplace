@@ -74,3 +74,17 @@ export const setCurrentToken = currentToken => {
         currentToken,
     };
 };
+
+export const setDefautAddress = defaultAddress => {
+    return {
+        type: types.SET_DEFAULT_ADDRESS,
+        defaultAddress,
+    };
+};
+
+export const saveCurrencies = currencies => {
+    return {
+        type: types.SAVE_CURRENCIES,
+        currencies,
+    };
+};

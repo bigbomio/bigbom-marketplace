@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import ReactQuill from 'react-quill';
@@ -22,7 +22,6 @@ import { getExchangeRates, setCurrentToken } from '../../actions/commonActions';
 
 const ipfs = abiConfig.getIpfs();
 
-const currencies = configs.getCurrencies();
 const categories = configs.getCategories();
 const skills = configs.getSkills();
 const budgetsSource = configs.getBudgets();
@@ -42,7 +41,7 @@ let usdInputEl, tokenInputEl;
 
 const formats = ['header', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'align', 'list', 'bullet', 'indent', 'link'];
 
-class ClientPostJob extends Component {
+class ClientPostJob extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -52,7 +51,7 @@ class ClientPostJob extends Component {
             estimatedTimePrepare: 0,
             selectedSkill: [],
             selectedCategory: {},
-            selectedCurrency: currencies[0],
+            selectedCurrency: { value: null, label: null },
             budgets: budgetsSource,
             isCustomBudget: true,
             selectedBudget: {
@@ -533,7 +532,7 @@ class ClientPostJob extends Component {
                 estimatedTimePrepare: 0,
                 selectedSkill: [],
                 selectedCategory: {},
-                selectedCurrency: currencies[0],
+                selectedCurrency: { value: null, label: null },
                 selectedBudget: budgetsSource[2],
                 submitDisabled: true,
             });
@@ -573,7 +572,15 @@ class ClientPostJob extends Component {
             desPrepare,
         } = this.state;
 
-        const { rates } = this.props;
+        const { rates, currencies } = this.props;
+        let selectedCurrencyDefault = { value: null, label: null };
+        if (selectedCurrency.value !== null) {
+            selectedCurrencyDefault = selectedCurrency;
+        } else {
+            if (currencies.length > 0) {
+                selectedCurrencyDefault = currencies[0];
+            }
+        }
 
         return (
             <div className="container-wrp">
@@ -697,7 +704,9 @@ class ClientPostJob extends Component {
                             <Grid container className="mkp-form-row">
                                 <span className="mkp-form-row-label">What is your estimated budget?</span>
                                 <Grid item xs={3} className="left">
-                                    <Select value={selectedCurrency} onChange={this.handleChangeCurrency} options={currencies} />
+                                    {currencies.length > 0 ? (
+                                        <Select value={selectedCurrencyDefault} onChange={this.handleChangeCurrency} options={currencies} />
+                                    ) : null}
                                 </Grid>
                                 <Grid item xs={9}>
                                     {!isCustomBudget ? (
@@ -714,11 +723,11 @@ class ClientPostJob extends Component {
                                                             name="customBudget"
                                                             disabled={rates.length < 0}
                                                             placeholder="Enter your budget..."
-                                                            onChange={e => this.budgetHandleInput(e, selectedCurrency.label, rates, false)}
+                                                            onChange={e => this.budgetHandleInput(e, selectedCurrencyDefault.label, rates, false)}
                                                         />
                                                     </Grid>
                                                     <Grid item xs={2} className="currency">
-                                                        {selectedCurrency.label}
+                                                        {selectedCurrencyDefault.label}
                                                     </Grid>
                                                 </Grid>
                                             </Grid>
@@ -734,7 +743,7 @@ class ClientPostJob extends Component {
                                                             type="number"
                                                             name="customBudget"
                                                             disabled={rates.length < 0}
-                                                            onChange={e => this.budgetHandleInput(e, selectedCurrency.label, rates, true)}
+                                                            onChange={e => this.budgetHandleInput(e, selectedCurrencyDefault.label, rates, true)}
                                                         />
                                                     </Grid>
                                                     <Grid item xs={2} className="currency">
@@ -807,7 +816,8 @@ ClientPostJob.propTypes = {
     accountInfo: PropTypes.any.isRequired,
     getExchangeRates: PropTypes.func.isRequired,
     rates: PropTypes.array.isRequired,
-    tokens: PropTypes.object.isRequired,
+    tokens: PropTypes.object,
+    currencies: PropTypes.array.isRequired,
     setCurrentToken: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => {
@@ -816,6 +826,7 @@ const mapStateToProps = state => {
         accountInfo: state.CommonReducer.accountInfo,
         rates: state.CommonReducer.rates,
         tokens: state.CommonReducer.tokens,
+        currencies: state.CommonReducer.currencies,
     };
 };
 

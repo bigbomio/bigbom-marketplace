@@ -18,7 +18,7 @@ import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 
 import { loginMetamask, setWeb3, setCheckAcount } from '../../actions/homeActions';
-import { saveAccountInfo, setRegister, getTokensAddress, saveTokens } from '../../actions/commonActions';
+import { saveAccountInfo, setRegister, getTokensAddress } from '../../actions/commonActions';
 import contractApis from '../../_services/contractApis';
 
 const avatarColors = ['blue', 'red', 'pink', 'green', 'orange', 'yellow', 'dark'];
@@ -75,33 +75,26 @@ class LoginMetamask extends PureComponent {
         }
     };
 
-    mapTokens = tokens => {
-        const { saveTokens } = this.props;
-        saveTokens(tokens);
-    };
-
     accountsInit = async userInfo => {
-        const { web3, tokensAddress } = this.props;
+        const { web3, tokensAddress, tokens } = this.props;
         // wallets from current account
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
+        let balances = { ETH: 0 };
+        Object.keys(tokens).map(key => {
+            return (balances[key] = 0);
+        });
         for (let acc of userInfo.wallets) {
             let address = {
                 address: acc.address,
                 default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
-                balances: { ETH: 0, BBO: 0 },
+                balances: balances,
             };
-
-            //get eth balance
-            await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
-                address.balances.ETH = ethBalance;
-            });
             accounts.push(address);
         }
         userInfo.wallets = accounts;
         if (tokensAddress.length > 0) {
-            contractApis.tokenAddressSymbolMap(tokensAddress, this.mapTokens);
+            contractApis.tokenAddressSymbolMap(tokensAddress);
         }
         // get tokens balance
         if (userInfo) {
@@ -485,7 +478,7 @@ LoginMetamask.propTypes = {
     register: PropTypes.bool.isRequired,
     getTokensAddress: PropTypes.func.isRequired,
     tokensAddress: PropTypes.array,
-    saveTokens: PropTypes.func.isRequired,
+    tokens: PropTypes.object.isRequired,
 };
 
 LoginMetamask.defaultProps = {
@@ -498,6 +491,7 @@ const mapStateToProps = state => {
         isConnected: state.HomeReducer.isConnected,
         register: state.CommonReducer.register,
         tokensAddress: state.CommonReducer.tokensAddress,
+        tokens: state.CommonReducer.tokens,
     };
 };
 
@@ -508,7 +502,6 @@ const mapDispatchToProps = {
     saveAccountInfo,
     setRegister,
     getTokensAddress,
-    saveTokens,
 };
 
 export default connect(

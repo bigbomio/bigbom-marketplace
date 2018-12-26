@@ -155,15 +155,13 @@ class abiConfigs {
         //return 'https://rinkeby.etherscan.io/tx/'; //'RINKEBY';
     }
 
-    async contractInstanceGenerator(web3, type) {
+    async contractInstanceGenerator(web3, type, token) {
         try {
             const reducers = store.getState();
-            const currentTokenAddress = reducers.CommonReducer.currentToken.address;
             const defaultAccount = web3.eth.defaultAccount;
-            console.log(currentTokenAddress);
             let address = this.getContract(type).address;
-            if (currentTokenAddress !== defaultToken.address) {
-                address = currentTokenAddress;
+            if (token) {
+                address = reducers.CommonReducer.currentToken.address;
             }
             const abi = this.getContract(type).abi;
             const abiInstance = web3.eth.contract(abi);

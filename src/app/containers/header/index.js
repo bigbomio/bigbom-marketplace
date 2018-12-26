@@ -142,11 +142,7 @@ class Header extends PureComponent {
 
     render() {
         const { routes, anchorEl, avatarColor, checked } = this.state;
-        const { setRegister, accountInfo, isConnected, network } = this.props;
-        let defaultWallet;
-        if (accountInfo.wallets.length > 0) {
-            defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
-        }
+        const { setRegister, accountInfo, isConnected, network, defaultAddress } = this.props;
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
@@ -225,12 +221,12 @@ class Header extends PureComponent {
                                                                 </div>
                                                             )}
                                                         </li>
-                                                        {defaultWallet &&
-                                                            Object.keys(defaultWallet[0].balances).map(function(key, index) {
-                                                                if (defaultWallet[0].balances[key] > 0) {
+                                                        {defaultAddress &&
+                                                            Object.keys(defaultAddress.balances).map(function(key, index) {
+                                                                if (Number(defaultAddress.balances[key]) > 0) {
                                                                     return (
                                                                         <li key={index} className="user-info-item balance">
-                                                                            {Utils.currencyFormat(defaultWallet[0].balances[key])} <span>{key}</span>
+                                                                            {Utils.currencyFormat(defaultAddress.balances[key])} <span>{key}</span>
                                                                         </li>
                                                                     );
                                                                 }
@@ -293,6 +289,7 @@ Header.propTypes = {
     saveAccountInfo: PropTypes.func.isRequired,
     isConnected: PropTypes.bool.isRequired,
     network: PropTypes.string,
+    defaultAddress: PropTypes.object.isRequired,
 };
 
 Header.defaultProps = {
@@ -305,6 +302,7 @@ const mapStateToProps = state => {
         web3: state.HomeReducer.web3,
         view: state.CommonReducer.view,
         accountInfo: state.CommonReducer.accountInfo,
+        defaultAddress: state.CommonReducer.defaultAddress,
     };
 };
 
