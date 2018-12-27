@@ -17,8 +17,6 @@ import BBRating_dev from '../_services/abi_dev/BBRating.json';
 
 const env = process.env.REACT_APP_ENV;
 
-export const defaultToken = { symbol: 'BBO', address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b' };
-
 const rinkebyAbi = {
     BBFreelancerJob: {
         address: '0x7e568533c8d7aeb8e0e3dc4f985ebe7383335e9a',
@@ -76,7 +74,7 @@ const ropstenAbi = {
         abi: BBRating_dev,
     },
     BigbomTokenExtended: {
-        address: defaultToken.address,
+        address: '0x1d893910d30edc1281d97aecfe10aefeabe0c41b',
         abi: BigbomTokenExtended_dev,
     },
     BBVotingHelper: {
@@ -122,6 +120,8 @@ const txLinks = {
 };
 
 export const fromBlock = fromBlockList[env];
+
+export const currentToken = { symbol: 'BBO', address: abi[env].BigbomTokenExtended.address };
 
 class abiConfigs {
     getContract(type) {

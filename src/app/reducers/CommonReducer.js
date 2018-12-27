@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import * as types from '../constants/actionTypes';
+import { currentToken } from '../_services/abiConfig';
 
 const data = {
     balances: {
@@ -23,7 +24,7 @@ const data = {
     rates: [],
     tokensAddress: [],
     tokens: {},
-    currentToken: {},
+    currentToken: currentToken,
     defaultAddress: {},
     currencies: [],
 };

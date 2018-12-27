@@ -51,7 +51,7 @@ class ClientPostJob extends PureComponent {
             estimatedTimePrepare: 0,
             selectedSkill: [],
             selectedCategory: {},
-            selectedCurrency: { value: null, label: null },
+            selectedCurrency: { value: 1, label: 'ETH' },
             budgets: budgetsSource,
             isCustomBudget: true,
             selectedBudget: {
@@ -474,7 +474,6 @@ class ClientPostJob extends PureComponent {
     };
 
     budgetHandleInput = (e, currency, rates, convert) => {
-        console.log(rates);
         const currentC = rates.filter(rate => rate.symbol === currency);
         const val = Number(e.target.value);
         const min = postJobConfigs.minBudget / Number(currentC[0].price_usd);
@@ -533,9 +532,14 @@ class ClientPostJob extends PureComponent {
                 estimatedTimePrepare: 0,
                 selectedSkill: [],
                 selectedCategory: {},
-                selectedCurrency: { value: null, label: null },
+                selectedCurrency: { value: '1', label: 'ETH' },
                 selectedBudget: budgetsSource[2],
                 submitDisabled: true,
+                desErr: null,
+                nameErr: null,
+                categoryErr: null,
+                skillsErr: null,
+                estimatedTimeErr: null,
             });
             document.getElementById('name-ip').value = '';
             document.getElementById('des-ip').value = '';
@@ -574,14 +578,7 @@ class ClientPostJob extends PureComponent {
         } = this.state;
 
         const { rates, currencies } = this.props;
-        let selectedCurrencyDefault = { value: null, label: null };
-        if (selectedCurrency.value !== null) {
-            selectedCurrencyDefault = selectedCurrency;
-        } else {
-            if (currencies.length > 0) {
-                selectedCurrencyDefault = currencies[0];
-            }
-        }
+        let selectedCurrencyDefault = selectedCurrency;
 
         return (
             <div className="container-wrp">
