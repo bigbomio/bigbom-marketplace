@@ -15,7 +15,7 @@ import WithrawToken from '../components/WithrawToken';
 import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
-import { setYourNetwork, setReload, saveAccountInfo, setRegister, getTokensAddress, saveTokens } from '../actions/commonActions';
+import { setYourNetwork, setReload, saveAccountInfo, setRegister, getTokensAddress } from '../actions/commonActions';
 import { loginMetamask, logoutMetamask, setWeb3, setNetwork, setAccount, setCheckAcount } from '../actions/homeActions';
 import contractApis from '../_services/contractApis';
 
@@ -93,33 +93,29 @@ class Routers extends PureComponent {
         saveAccountInfo(userInfo);
     };
 
-    mapTokens = tokens => {
-        const { saveTokens } = this.props;
-        saveTokens(tokens);
-    };
-
     updateBalance = async userInfo => {
-        const { web3, tokensAddress } = this.props;
+        const { web3, tokensAddress, tokens } = this.props;
         // if wallet has existed in current account's wallet list, login and get account info
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
+        let balances = { ETH: 0 };
+        contractApis.currenciesInit(tokens);
+        Object.keys(tokens).map(key => {
+            return (balances[key] = 0);
+        });
         for (let acc of userInfo.wallets) {
             let address = {
                 address: acc.address,
                 default: defaultAddress.toLowerCase() === acc.address.toLowerCase(),
-                balances: { ETH: 0, BBO: 0, DAI: 0, USDT: 0, USDC: 0 },
+                balances: balances,
             };
-
-            // get eth balance
-            await web3.eth.getBalance(acc.address, (err, balance) => {
-                const ethBalance = Utils.weiToToken(web3, balance).toFixed(3);
-                address.balances.ETH = ethBalance;
-            });
             accounts.push(address);
         }
         userInfo.wallets = accounts;
-        if (tokensAddress.length > 0) {
-            contractApis.tokenAddressSymbolMap(tokensAddress, this.mapTokens);
+        if (Object.keys(tokens).length === 0) {
+            if (tokensAddress.length > 0) {
+                contractApis.tokenAddressSymbolMap(tokensAddress);
+            }
         }
         // get tokens balance
         contractApis.getBalanceToken(tokensAddress, userInfo, this.updateBalanceTokens);
@@ -144,10 +140,22 @@ class Routers extends PureComponent {
     };
 
     checkMetamask = async () => {
-        const { isConnected, defaultAccount, history, setCheckAcount, checkAccount, setRegister, setReload, getTokensAddress } = this.props;
+        const {
+            isConnected,
+            defaultAccount,
+            history,
+            setCheckAcount,
+            checkAccount,
+            setRegister,
+            setReload,
+            getTokensAddress,
+            tokensAddress,
+        } = this.props;
         const { web3 } = this.state;
         if (isConnected) {
-            getTokensAddress();
+            if (tokensAddress.length === 0) {
+                getTokensAddress();
+            }
             const userToken = LocalStorage.getItemJson('userToken');
             if (userToken) {
                 if (userToken.expired <= Date.now()) {
@@ -243,7 +251,7 @@ Routers.propTypes = {
     setRegister: PropTypes.func.isRequired,
     getTokensAddress: PropTypes.func.isRequired,
     tokensAddress: PropTypes.array,
-    saveTokens: PropTypes.func.isRequired,
+    tokens: PropTypes.object.isRequired,
 };
 
 Routers.defaultProps = {
@@ -258,6 +266,7 @@ const mapStateToProps = state => {
         checkAccount: state.HomeReducer.checkAccount,
         accountInfo: state.CommonReducer.accountInfo,
         tokensAddress: state.CommonReducer.tokensAddress,
+        tokens: state.CommonReducer.tokens,
     };
 };
 
@@ -273,7 +282,6 @@ const mapDispatchToProps = {
     saveAccountInfo,
     setRegister,
     getTokensAddress,
-    saveTokens,
 };
 
 export default connect(

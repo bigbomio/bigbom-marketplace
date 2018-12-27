@@ -1,9 +1,13 @@
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import omit from 'lodash.omit';
+import orderBy from 'lodash.orderby';
+import uniqBy from 'lodash.uniqby';
 import Utils from '../_utils/utils';
 import abiConfig, { fromBlock } from '../_services/abiConfig';
 import services from './services';
+import { store } from '../stores';
+import { saveTokens, setDefautAddress, saveCurrencies } from '../actions/commonActions';
 
 const minABI = [
     {
@@ -69,9 +73,10 @@ const web3 = global.web3;
 
 const getAllowance = async ctName => {
     try {
-        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended', true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, ctName);
-        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, ctInstance.address);
+        let address = ctInstance.address;
+        const [err, result] = await Utils.callMethod(BBOinstance.instance.allowance)(ctInstance.defaultAccount, address);
         if (err) {
             console.log('err allowance: ', err);
             return;
@@ -84,9 +89,10 @@ const getAllowance = async ctName => {
 
 const approve = async (ctName, value) => {
     try {
-        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended');
+        const BBOinstance = await abiConfig.contractInstanceGenerator(web3, 'BigbomTokenExtended', true);
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, ctName);
-        const [errApprove, tx] = await Utils.callMethod(BBOinstance.instance.approve)(ctInstance.address, value, {
+        let address = ctInstance.address;
+        const [errApprove, tx] = await Utils.callMethod(BBOinstance.instance.approve)(address, value, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
         });
@@ -773,7 +779,13 @@ const getToken = async (tokenAddress, userInfo, callback) => {
                         }
                         return walletMap;
                     });
-                    callback(userInfo);
+                    // get eth balance
+                    web3.eth.getBalance(walletAddress, (err, bl) => {
+                        const ethBalance = Utils.weiToToken(web3, bl).toFixed(3);
+                        wallet[0].balances.ETH = ethBalance;
+                        store.dispatch(setDefautAddress(wallet[0]));
+                        callback(userInfo);
+                    });
                 });
             });
         });
@@ -791,7 +803,17 @@ const getBalanceToken = async (tokenAddressList, userInfo, callback) => {
     }
 };
 
-const tokenAddressSymbolMap = (tokensAddress, callback) => {
+const currenciesInit = tokens => {
+    let value = 1;
+    let currencies = [{ value: 1, label: 'ETH' }];
+    Object.keys(tokens).forEach(key => {
+        value++;
+        currencies.push({ value, label: key });
+    });
+    store.dispatch(saveCurrencies(currencies));
+};
+
+const tokenAddressSymbolMap = tokensAddress => {
     const tokenList = {};
     for (let tokenLog of tokensAddress) {
         if (tokenLog.args.tokenAddress !== '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0') {
@@ -799,7 +821,7 @@ const tokenAddressSymbolMap = (tokensAddress, callback) => {
                 const contract = web3.eth.contract(minABI).at(tokenLog.args.tokenAddress);
                 contract.symbol((err, ctSymbol) => {
                     tokenList[ctSymbol] = tokenLog.args.tokenAddress;
-                    callback(tokenList);
+                    store.dispatch(saveTokens(tokenList));
                 });
             } catch (err) {
                 console.log(err);
@@ -820,7 +842,9 @@ const getTokenAddress = async () => {
         );
         const tokenAddressList = await Utils.WaitAllContractEventGet(tokenAddressEvent);
         if (tokenAddressList.length > 0) {
-            return tokenAddressList;
+            let orderByList = orderBy(tokenAddressList, ['blockNumber'], ['desc']);
+            orderByList = uniqBy(orderByList, 'args.tokenAddress');
+            return orderByList.filter(token => token.args.isAdded);
         }
     } catch (e) {
         console.log(e);
@@ -854,4 +878,5 @@ export default {
     getBalanceToken,
     minABI,
     tokenAddressSymbolMap,
+    currenciesInit,
 };

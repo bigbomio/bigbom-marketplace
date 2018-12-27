@@ -23,6 +23,9 @@ const data = {
     rates: [],
     tokensAddress: [],
     tokens: {},
+    currentToken: {},
+    defaultAddress: {},
+    currencies: [],
 };
 
 const initData = cloneDeep(data);
@@ -103,6 +106,21 @@ const CommonReducer = (state = initData, action) => {
             return {
                 ...state,
                 tokens: action.tokens,
+            };
+        case types.SAVE_CURRENCIES:
+            return {
+                ...state,
+                currencies: action.currencies,
+            };
+        case types.SET_CURRENT_TOKEN:
+            return {
+                ...state,
+                currentToken: action.currentToken,
+            };
+        case types.SET_DEFAULT_ADDRESS:
+            return {
+                ...state,
+                defaultAddress: action.defaultAddress,
             };
         default:
             return state;

@@ -23,7 +23,7 @@ import { saveVotingParams } from '../../actions/freelancerActions';
 import services from '../../_services/services';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
-import { getRatingLogs, setActionBtnDisabled, setReload } from '../../actions/commonActions';
+import { getRatingLogs, setActionBtnDisabled, setReload, setCurrentToken } from '../../actions/commonActions';
 import Loading from '../common/Loading';
 import CommonLoading from '../common/CommonLoading';
 
@@ -266,8 +266,8 @@ class JobDetailBid extends Component {
         const { isLoading } = this.state;
         if (!isLoading) {
             if (reload) {
-                setReload(false);
                 this.jobDataInit();
+                setReload(false);
             }
         }
     };
@@ -840,7 +840,14 @@ class JobDetailBid extends Component {
     };
 
     JobsInit = async jobData => {
-        const { web3, history, getRatingLogs } = this.props;
+        const { web3, history, getRatingLogs, setCurrentToken, tokens } = this.props;
+        if (jobData.data.currency.label !== 'ETH') {
+            const currentToken = {
+                symbol: jobData.data.currency.label,
+                address: tokens[jobData.data.currency.label],
+            };
+            setCurrentToken(currentToken);
+        }
         if (jobData.data.status.started) {
             const jobStartedData = await contractApis.jobStarted(jobData.data);
             this.jobStarted(jobStartedData);
@@ -1620,6 +1627,8 @@ JobDetailBid.propTypes = {
     saveVotingParams: PropTypes.func.isRequired,
     reload: PropTypes.bool.isRequired,
     setReload: PropTypes.func.isRequired,
+    setCurrentToken: PropTypes.func.isRequired,
+    tokens: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => {
     return {
@@ -1629,6 +1638,7 @@ const mapStateToProps = state => {
         jobs: state.ClientReducer.jobs,
         setActionBtnDisabled: state.CommonReducer.setActionBtnDisabled,
         disputeCreated: state.FreelancerReducer.disputeCreated,
+        tokens: state.CommonReducer.tokens,
     };
 };
 
@@ -1637,6 +1647,7 @@ const mapDispatchToProps = {
     saveVotingParams,
     setReload,
     getRatingLogs,
+    setCurrentToken,
 };
 
 export default connect(
