@@ -111,7 +111,7 @@ const abi = {
 
 const fromBlockList = {
     dev: 4552643, // ropsten
-    aut: 3483605, // rinkeby
+    uat: 3483605, // rinkeby
     production: 3483605, // rinkeby
 };
 
