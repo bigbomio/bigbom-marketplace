@@ -115,6 +115,12 @@ const fromBlockList = {
     production: 3483605, // rinkeby
 };
 
+const txLinks = {
+    dev: 'https://ropsten.etherscan.io/tx/', // ropsten
+    uat: 'https://rinkeby.etherscan.io/tx/', // rinkeby
+    production: 'https://rinkeby.etherscan.io/tx/', // rinkeby
+};
+
 export const fromBlock = fromBlockList[env];
 
 class abiConfigs {
@@ -132,8 +138,7 @@ class abiConfigs {
     }
 
     getTXlink() {
-        return 'https://ropsten.etherscan.io/tx/';
-        //return 'https://rinkeby.etherscan.io/tx/'; //'RINKEBY';
+        return txLinks[env];
     }
 
     async contractInstanceGenerator(web3, type, token) {

@@ -474,6 +474,7 @@ class ClientPostJob extends PureComponent {
     };
 
     budgetHandleInput = (e, currency, rates, convert) => {
+        console.log(rates);
         const currentC = rates.filter(rate => rate.symbol === currency);
         const val = Number(e.target.value);
         const min = postJobConfigs.minBudget / Number(currentC[0].price_usd);

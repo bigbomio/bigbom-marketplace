@@ -201,7 +201,7 @@ async function getUserByWallet(wallet) {
 }
 
 async function getRates() {
-    const tokenListId = ['ethereum', 'dai', 'usd-coin', 'tether', 'bigbom'];
+    const tokenListId = ['ethereum', 'dai', 'usd-coin', 'tether', 'trueusd', 'bigbom'];
     let tokenData = [];
     // https://api.coinmarketcap.com/v1/ticker/?limit=0 get all
     // https://api.coinmarketcap.com/v1/ticker/bigbom/?convert=EUR get bigbom convert to euro
