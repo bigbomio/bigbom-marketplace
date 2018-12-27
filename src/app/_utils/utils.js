@@ -1,3 +1,5 @@
+import { ignoreNetworkList, whiteNetwork } from '../_services/configs';
+
 class Utils {
     getNetwork(netId) {
         switch (netId) {
@@ -167,7 +169,7 @@ class Utils {
         }
     };
 
-    async connectMetaMask(web3, ignoreNetwork = ['MAINNET']) {
+    async connectMetaMask(web3, ignoreNetwork = ignoreNetworkList) {
         if (!web3) {
             throw new Error(
                 JSON.stringify({
@@ -188,7 +190,7 @@ class Utils {
                 throw new Error(
                     JSON.stringify({
                         code: 'CONNECT_NETWORK',
-                        message: 'Please choose TESTNET',
+                        message: 'Please choose ' + whiteNetwork,
                     })
                 );
             } else {

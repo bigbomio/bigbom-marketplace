@@ -1,6 +1,8 @@
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import omit from 'lodash.omit';
+import orderBy from 'lodash.orderby';
+import uniqBy from 'lodash.uniqby';
 import Utils from '../_utils/utils';
 import abiConfig, { fromBlock } from '../_services/abiConfig';
 import services from './services';
@@ -840,7 +842,9 @@ const getTokenAddress = async () => {
         );
         const tokenAddressList = await Utils.WaitAllContractEventGet(tokenAddressEvent);
         if (tokenAddressList.length > 0) {
-            return tokenAddressList;
+            let orderByList = orderBy(tokenAddressList, ['blockNumber'], ['desc']);
+            orderByList = uniqBy(orderByList, 'args.tokenAddress');
+            return orderByList.filter(token => token.args.isAdded);
         }
     } catch (e) {
         console.log(e);

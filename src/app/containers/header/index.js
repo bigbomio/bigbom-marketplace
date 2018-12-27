@@ -18,6 +18,7 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Utils from '../../_utils/utils';
 import LocalStorage from '../../_utils/localStorage';
 import RoutersAuthen from '../../routers/RoutersAuthen';
+import { BBOTestNetURL } from '../../_services/configs';
 
 import { logoutMetamask } from '../../actions/homeActions';
 import { setRegister, saveAccountInfo } from '../../actions/commonActions';
@@ -52,7 +53,7 @@ class Header extends PureComponent {
     }
 
     getBBO = () => {
-        window.open('https://bigbomio.github.io/bbo-faucet-testnet/', '_blank');
+        window.open(BBOTestNetURL, '_blank');
     };
 
     getNameAvatar = () => {
