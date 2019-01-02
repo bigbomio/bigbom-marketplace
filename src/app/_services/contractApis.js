@@ -195,8 +195,8 @@ const mergeBidToJob = async (type, event, filter, mergeData) => {
                     fullName: userInfoFetch.userInfo.firstName
                         ? userInfoFetch.userInfo.firstName + ' '
                         : 'N/A ' + userInfoFetch.userInfo.lastName
-                        ? userInfoFetch.userInfo.lastName
-                        : null,
+                            ? userInfoFetch.userInfo.lastName
+                            : null,
                     walletAddress: event.args.owner,
                 };
             }

@@ -12,6 +12,7 @@ import abiConfig from '../../_services/abiConfig';
 import { setSttRespondedDispute } from '../../actions/clientActions';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
+import { BBOTestNetURL } from '../../_services/configs';
 
 const ipfs = abiConfig.getIpfs();
 
@@ -44,6 +45,7 @@ class ResponseDispute extends Component {
         const { web3, jobID, setSttRespondedDispute } = this.props;
         const defaultAccount = await web3.eth.defaultAccount;
         const ctInstance = await abiConfig.contractInstanceGenerator(web3, 'BBDispute');
+        console.log(ctInstance);
         const [err, tx] = await Utils.callMethod(ctInstance.instance.againstDispute)(jobID, proofHash, {
             from: ctInstance.defaultAccount,
             gasPrice: +ctInstance.gasPrice.toString(10),
@@ -103,7 +105,7 @@ class ResponseDispute extends Component {
                     err: true,
                     text: 'Sorry, you have insufficient funds! You can not create a job if your BBO balance less than stake deposit.',
                     link: (
-                        <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
+                        <a href={BBOTestNetURL} target="_blank" rel="noopener noreferrer">
                             Get free BBO
                         </a>
                     ),
@@ -126,19 +128,18 @@ class ResponseDispute extends Component {
             if (err) {
                 return console.log(err);
             }
-
             // check allowance
             if (Number(allowance.toString(10)) === 0) {
-                const apprv = await contractApis.approve( 'BBDispute', Math.pow(2, 255));
+                const apprv = await contractApis.approve('BBDispute', Math.pow(2, 255));
                 if (apprv) {
                     await this.responseDispute(proofHash);
                 }
             } else if (Number(allowance.toString(10)) > Number(votingParams.stakeDeposit)) {
                 await this.responseDispute(proofHash);
             } else {
-                const apprv = await contractApis.approve( 'BBDispute', 0);
+                const apprv = await contractApis.approve('BBDispute', 0);
                 if (apprv) {
-                    const apprv2 = await contractApis.approve( 'BBDispute', Math.pow(2, 255));
+                    const apprv2 = await contractApis.approve('BBDispute', Math.pow(2, 255));
                     if (apprv2) {
                         await this.responseDispute(proofHash);
                     }

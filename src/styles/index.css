@@ -868,6 +868,8 @@ body {
                 float: right; }
     #header header .top-login {
       margin-left: 20px; }
+  #header .no-name {
+    font-size: 10px; }
 
 #footer {
   background: #fff;

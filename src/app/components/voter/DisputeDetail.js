@@ -11,7 +11,7 @@ import renderHTML from 'react-render-html';
 import Utils from '../../_utils/utils';
 import { setActionBtnDisabled, setReload } from '../../actions/commonActions';
 import abiConfig from '../../_services/abiConfig';
-import api from '../../_services/configs';
+import api, { BBOTestNetURL } from '../../_services/configs';
 import LocalStorage from '../../_utils/localStorage';
 import contractApis from '../../_services/contractApis';
 
@@ -441,7 +441,7 @@ class DisputeDetail extends Component {
                     err: true,
                     text: 'Sorry, you have insufficient funds! You can not vote if your BBO balance less than stake deposit.',
                     link: (
-                        <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
+                        <a href={BBOTestNetURL} target="_blank" rel="noopener noreferrer">
                             Get free BBO
                         </a>
                     ),
@@ -579,10 +579,10 @@ class DisputeDetail extends Component {
                                     {disputeData.evidenceEndDate > Date.now()
                                         ? 'Evidence'
                                         : disputeData.commitEndDate > Date.now()
-                                            ? 'Commit Vote'
-                                            : !isFinal
-                                                ? 'Reveal Vote'
-                                                : 'Dispute finalized'}
+                                        ? 'Commit Vote'
+                                        : !isFinal
+                                        ? 'Reveal Vote'
+                                        : 'Dispute finalized'}
                                 </div>
                             </div>
 
@@ -615,8 +615,8 @@ class DisputeDetail extends Component {
                                         !reveal
                                             ? 'commit-duration'
                                             : disputeData.revealEndDate > Date.now()
-                                                ? 'commit-duration orange'
-                                                : 'commit-duration blue'
+                                            ? 'commit-duration orange'
+                                            : 'commit-duration blue'
                                     }
                                 >
                                     <p>Remaining time</p>

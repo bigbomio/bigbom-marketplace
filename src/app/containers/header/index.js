@@ -59,7 +59,7 @@ class Header extends PureComponent {
     getNameAvatar = () => {
         const { accountInfo } = this.props;
         if (accountInfo) {
-            return accountInfo.firstName.charAt(0).toUpperCase();
+            return accountInfo.firstName ? accountInfo.firstName.charAt(0).toUpperCase() : <i className="fas fa-user" />;
         }
         return null;
     };

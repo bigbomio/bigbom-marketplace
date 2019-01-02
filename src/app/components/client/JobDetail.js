@@ -10,6 +10,7 @@ import abiConfig, { fromBlock } from '../../_services/abiConfig';
 import services from '../../_services/services';
 import Countdown from '../common/countdown';
 import DialogPopup from '../common/dialog';
+import { BBOTestNetURL } from '../../_services/configs';
 
 import Reasons from '../client/Reasons';
 import { saveVotingParams } from '../../actions/freelancerActions';
@@ -582,7 +583,7 @@ class JobDetail extends Component {
                     text: `Sorry, you have insufficient funds! You can not create a job if your ${currency} balance less than fee.`,
                     link:
                         currency === 'BBO' ? (
-                            <a href="https://faucet.ropsten.bigbom.net/" target="_blank" rel="noopener noreferrer">
+                            <a href={BBOTestNetURL} target="_blank" rel="noopener noreferrer">
                                 Get free BBO
                             </a>
                         ) : null,
