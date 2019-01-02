@@ -35,4 +35,10 @@ export default [
         value: 'Flash',
         label: 'Flash',
     },
+    {
+        id: 8,
+        value: 'Marketing',
+        label: 'Marketing',
+
+    },
 ];
