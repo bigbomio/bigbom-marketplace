@@ -80,7 +80,7 @@ class LoginMetamask extends PureComponent {
         // wallets from current account
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
-        let balances = { ETH: 0 };
+        let balances = {};
         Object.keys(tokens).map(key => {
             return (balances[key] = 0);
         });

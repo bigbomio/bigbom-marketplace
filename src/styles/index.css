@@ -787,6 +787,11 @@ body {
                 border: 1px solid #ccc;
                 font-size: 14px;
                 color: #888; }
+            #header header .nav li .user-info .user-info-item a.withdrawFund {
+              cursor: pointer;
+              color: #0ca1f9;
+              font-weight: normal;
+              text-decoration: underline; }
             #header header .nav li .user-info .user-info-item .avatar-left {
               float: left; }
             #header header .nav li .user-info .user-info-item .avatar-right {

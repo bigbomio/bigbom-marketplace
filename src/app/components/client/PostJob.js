@@ -107,10 +107,10 @@ class ClientPostJob extends PureComponent {
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
-        let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
-        if (selectedCurrency.label !== 'ETH') {
-            tokenAddress = tokens[selectedCurrency.label];
-        }
+        //let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
+        //if (selectedCurrency.label !== 'ETH') {
+        let   tokenAddress = tokens[selectedCurrency.label];
+        //}
         const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
@@ -449,13 +449,13 @@ class ClientPostJob extends PureComponent {
         usdInputEl.value = null;
         tokenInputEl.value = null;
         this.setState({ selectedCurrency: selectedOption, budgets: budgets, customBudgetErr: null });
-        if (selectedOption.label !== 'ETH') {
-            const currentToken = {
-                symbol: selectedOption.label,
-                address: tokens[selectedOption.label],
-            };
-            setCurrentToken(currentToken);
-        }
+        //if (selectedOption.label !== 'ETH') {
+        const currentToken = {
+            symbol: selectedOption.label,
+            address: tokens[selectedOption.label],
+        };
+        setCurrentToken(currentToken);
+        //}
     };
 
     handleChangeBudget = selectedOption => {

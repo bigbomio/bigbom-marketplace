@@ -779,13 +779,16 @@ const getToken = async (tokenAddress, userInfo, callback) => {
                         }
                         return walletMap;
                     });
-                    // get eth balance
+                    // get eth balance 
+                    // this maybe have an issue, need time to invoke
                     web3.eth.getBalance(walletAddress, (err, bl) => {
-                        const ethBalance = Utils.weiToToken(web3, bl).toFixed(3);
-                        wallet[0].balances.ETH = ethBalance;
-                        store.dispatch(setDefautAddress(wallet[0]));
+                        //const ethBalance = Utils.weiToToken(web3, bl).toFixed(3);
+                        //wallet[0].balances.ETH = ethBalance;
+                         store.dispatch(setDefautAddress(wallet[0]));
                         callback(userInfo);
                     });
+
+                   
                 });
             });
         });
@@ -805,7 +808,8 @@ const getBalanceToken = async (tokenAddressList, userInfo, callback) => {
 
 const currenciesInit = tokens => {
     let value = 1;
-    let currencies = [{ value: 1, label: 'ETH' }];
+   // let currencies = [{ value: 1, label: 'ETH' }];
+    let currencies = [];
     Object.keys(tokens).forEach(key => {
         value++;
         currencies.push({ value, label: key });
