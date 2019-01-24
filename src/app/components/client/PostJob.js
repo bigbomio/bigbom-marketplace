@@ -107,10 +107,10 @@ class ClientPostJob extends PureComponent {
         const jobInstance = await abiConfig.contractInstanceGenerator(web3, 'BBFreelancerJob');
         const expiredTime = parseInt(Date.now() / 1000, 10) + expiredTimePrepare * 24 * 3600;
         const estimatedTime = estimatedTimePrepare * 60 * 60;
-        let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
-        if (selectedCurrency.label !== 'ETH') {
-            tokenAddress = tokens[selectedCurrency.label];
-        }
+        //let tokenAddress = '0x00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebb0';
+        //if (selectedCurrency.label !== 'ETH') {
+        let   tokenAddress = tokens[selectedCurrency.label];
+        //}
         const [err, jobTx] = await Utils.callMethod(jobInstance.instance.createJob)(
             jobHash,
             expiredTime,
@@ -167,18 +167,18 @@ class ClientPostJob extends PureComponent {
     creatJob = () => {
         const { accountInfo } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
-        if (defaultWallet[0].balances.ETH <= 0) {
-            this.setState({
-                open: true,
-                status: {
-                    title: 'Error: ',
-                    err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
-                    link: '',
-                },
-            });
-            return;
-        }
+        // if (defaultWallet[0].balances.ETH <= 0) {
+        //     this.setState({
+        //         open: true,
+        //         status: {
+        //             title: 'Error: ',
+        //             err: true,
+        //             text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+        //             link: '',
+        //         },
+        //     });
+        //     return;
+        // }
 
         const {
             namePrepare,
@@ -449,13 +449,13 @@ class ClientPostJob extends PureComponent {
         usdInputEl.value = null;
         tokenInputEl.value = null;
         this.setState({ selectedCurrency: selectedOption, budgets: budgets, customBudgetErr: null });
-        if (selectedOption.label !== 'ETH') {
-            const currentToken = {
-                symbol: selectedOption.label,
-                address: tokens[selectedOption.label],
-            };
-            setCurrentToken(currentToken);
-        }
+        //if (selectedOption.label !== 'ETH') {
+        const currentToken = {
+            symbol: selectedOption.label,
+            address: tokens[selectedOption.label],
+        };
+        setCurrentToken(currentToken);
+        //}
     };
 
     handleChangeBudget = selectedOption => {

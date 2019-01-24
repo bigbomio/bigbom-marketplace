@@ -841,13 +841,13 @@ class JobDetailBid extends Component {
 
     JobsInit = async jobData => {
         const { web3, history, getRatingLogs, setCurrentToken, tokens } = this.props;
-        if (jobData.data.currency.label !== 'ETH') {
+        //if (jobData.data.currency.label !== 'ETH') {
             const currentToken = {
                 symbol: jobData.data.currency.label,
                 address: tokens[jobData.data.currency.label],
             };
             setCurrentToken(currentToken);
-        }
+        //}
         if (jobData.data.status.started) {
             const jobStartedData = await contractApis.jobStarted(jobData.data);
             this.jobStarted(jobStartedData);

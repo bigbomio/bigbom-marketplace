@@ -119,6 +119,14 @@
                                 color: #888;
                             }
                         }
+                        a.withdrawFund{
+                            cursor: pointer;
+                            color: #0ca1f9;
+                            font-weight:normal;
+                            text-decoration: underline;
+                            position: absolute;
+                            right: 0px;
+                        }
                         .avatar-left {
                             float: left;
                         }

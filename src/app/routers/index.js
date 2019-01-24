@@ -11,7 +11,7 @@ import Footer from '../containers/footer';
 import NotFound from '../components/NotFound';
 import RoutersAuthen from './RoutersAuthen';
 import WithrawToken from '../components/WithrawToken';
-
+import WithdrawFund from '../components/WithdrawFund';
 import services from '../_services/services';
 import Utils from '../_utils/utils';
 import LocalStorage from '../_utils/localStorage';
@@ -98,7 +98,7 @@ class Routers extends PureComponent {
         // if wallet has existed in current account's wallet list, login and get account info
         const defaultAddress = web3.eth.defaultAccount || userInfo.wallets[0].address;
         let accounts = [];
-        let balances = { ETH: 0 };
+        let balances = {};
         contractApis.currenciesInit(tokens);
         Object.keys(tokens).map(key => {
             return (balances[key] = 0);
@@ -222,6 +222,7 @@ class Routers extends PureComponent {
                         <Switch>
                             <Route exact path="/" component={Home} />
                             <Route path="/withraw" component={WithrawToken} />
+                            <Route path="/withdrawFund/:currency" component={WithdrawFund} />
                             {routes.length && routes.map((route, key) => <Route key={key} {...route} />)}
                             <Route component={NotFound} />
                         </Switch>

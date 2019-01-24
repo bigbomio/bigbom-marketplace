@@ -83,19 +83,20 @@ class CreateDispute extends Component {
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await contractApis.getAllowance('BBDispute');
         /// check balance
-        if (defaultWallet[0].balances.ETH <= 0) {
-            this.setState({
-                isDone: true,
-                isLoading: false,
-                actStt: {
-                    title: 'Error: ',
-                    err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
-                    link: '',
-                },
-            });
-            return;
-        } else if (Utils.tokenToWei(web3, defaultWallet[0].balances.BBO) < Number(votingParams.stakeDeposit)) {
+        // if (defaultWallet[0].balances.ETH <= 0) {
+        //     this.setState({
+        //         isDone: true,
+        //         isLoading: false,
+        //         actStt: {
+        //             title: 'Error: ',
+        //             err: true,
+        //             text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+        //             link: '',
+        //         },
+        //     });
+        //     return;
+        // } else 
+        if (Utils.tokenToWei(web3, defaultWallet[0].balances.BBO) < Number(votingParams.stakeDeposit)) {
             this.setState({
                 isDone: true,
                 isLoading: false,

@@ -325,7 +325,7 @@ class JobDetail extends Component {
             dialogLoading: false,
         });
     };
-
+    
     disputeSttInit = async () => {
         const { match, web3 } = this.props;
         const jobID = match.params.jobId;
@@ -489,13 +489,13 @@ class JobDetail extends Component {
         //console.log('JobsInit', jobData);
         this.setActionBtnStt('acceptDone', false);
         const { web3, getRatingLogs, setCurrentToken, tokens } = this.props;
-        if (jobData.data.currency.label !== 'ETH') {
-            const currentToken = {
-                symbol: jobData.data.currency.label,
-                address: tokens[jobData.data.currency.label],
-            };
-            setCurrentToken(currentToken);
-        }
+        //if (jobData.data.currency.label !== 'ETH') {
+        const currentToken = {
+            symbol: jobData.data.currency.label,
+            address: tokens[jobData.data.currency.label],
+        };
+        setCurrentToken(currentToken);
+        //}
         if (jobData.data.status.started) {
             const jobStartedData = await contractApis.jobStarted(jobData.data);
             this.jobStarted(jobStartedData);
@@ -523,9 +523,9 @@ class JobDetail extends Component {
             from: BidInstance.defaultAccount,
             gasPrice: +BidInstance.gasPrice.toString(10),
         };
-        if (currency === 'ETH') {
-            msgParam.value = bidValue;
-        }
+        // if (currency === 'ETH') {
+        //     msgParam.value = bidValue;
+        // }
         const [errAccept, tx] = await Utils.callMethod(BidInstance.instance.acceptBid)(jobID, bidAddress, msgParam);
         if (errAccept) {
             this.setActionBtnStt('acceptDone', false);
@@ -562,42 +562,61 @@ class JobDetail extends Component {
         const { web3, accountInfo } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
         const allowance = await contractApis.getAllowance('BBFreelancerBid');
-        if (Number(defaultWallet[0].balances.ETH) <= 0) {
+        const dialogContent = () => {
+        
+            return (
+                <div className="dialog-note">
+                    <i className="fas fa-exclamation-circle" />
+                    <p>
+                        Please <span className="bold">send</span> &nbsp;
+                        <span className="bold">
+                            {Utils.currencyFormat(bidValue/1e18)} {jobData.currency.label}
+                        </span>{' '}<br/>
+                        to our escrow contract address:<br/>
+                        <span className="bold">0x989b371d7a936ed32bf2d92e6f5131171f8dbd0a</span>
+                        <br/> 
+
+                        from your address <span className="bold">{defaultWallet[0].address}</span> <br/><br/>
+                        
+                        <br/> <br/>
+                        Please make sure you understand what you&#39;re doing.
+                    </p>
+                    
+                </div>
+            );
+        };
+        // if (Number(defaultWallet[0].balances.ETH) <= 0) {
+        //     this.setActionBtnDisabled(true);
+        //     this.setState({
+        //         actStt: {
+        //             title: 'Error: ',
+        //             err: true,
+        //             text: 'Sorry, you have insufficient funds in our network! Please deposit to our escrow contract before make an accept Bid.',
+        //             link: '',
+        //         },
+        //         dialogContent: dialogContent('ETH'),
+        //     });
+        //     return;
+        // } else
+         if (Utils.tokenToWei(web3, defaultWallet[0].balances[currency]) < Number(bidValue)) {
             this.setActionBtnDisabled(true);
             this.setState({
                 actStt: {
                     title: 'Error: ',
                     err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your ETH balance less than fee.',
-                    link: '',
+                    text: `Sorry, you have insufficient funds in our network! Please deposit to our escrow contract before make an accept Bid.`,
+                    link: null,
                 },
-                dialogContent: null,
-            });
-            return;
-        } else if (Utils.tokenToWei(web3, defaultWallet[0].balances[currency]) < Number(bidValue)) {
-            this.setActionBtnDisabled(true);
-            this.setState({
-                actStt: {
-                    title: 'Error: ',
-                    err: true,
-                    text: `Sorry, you have insufficient funds! You can not create a job if your ${currency} balance less than fee.`,
-                    link:
-                        currency === 'BBO' ? (
-                            <a href={BBOTestNetURL} target="_blank" rel="noopener noreferrer">
-                                Get free BBO
-                            </a>
-                        ) : null,
-                },
-                dialogContent: null,
+                dialogContent: dialogContent(currency),
             });
             return;
         }
         this.setActionBtnDisabled(true);
         this.setState({ dialogLoading: true });
 
-        if (currency === 'ETH') {
-            await this.acceptBid();
-        } else {
+        // if (currency === 'ETH') {
+        //     await this.acceptBid();
+        // } else {
             if (Number(allowance.toString(10)) === 0) {
                 const apprv = await contractApis.approve('BBFreelancerBid', Math.pow(2, 255));
                 if (apprv) {
@@ -614,7 +633,7 @@ class JobDetail extends Component {
                     }
                 }
             }
-        }
+        //}
     };
 
     cancelJob = async () => {

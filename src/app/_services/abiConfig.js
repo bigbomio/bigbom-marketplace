@@ -14,10 +14,16 @@ import BBDispute_dev from '../_services/abi_dev/BBDispute.json';
 import BBVoting_dev from '../_services/abi_dev/BBVoting.json';
 import BBParams_dev from '../_services/abi_dev/BBParams.json';
 import BBRating_dev from '../_services/abi_dev/BBRating.json';
+import BBWrap_dev from '../_services/abi_dev/BBWrap.json';
+
 
 const env = process.env.REACT_APP_ENV;
 
 const rinkebyAbi = {
+    BBWrap: {
+        address: '0xfe01e2c1ee0014c36a87d08f5951c8ea1a8e4b92',
+        abi: BBWrap_dev,
+    },
     BBFreelancerJob: {
         address: '0x7e568533c8d7aeb8e0e3dc4f985ebe7383335e9a',
         abi: BBFreelancerJob_dev,
@@ -124,7 +130,9 @@ export const fromBlock = fromBlockList[env];
 export const currentToken = { symbol: 'BBO', address: abi[env].BigbomTokenExtended.address };
 
 class abiConfigs {
-    getContract(type) {
+    getContract(type, _env) {
+        if(_env)
+            return abi[_env][type];
         return abi[env][type];
     }
 
@@ -141,15 +149,15 @@ class abiConfigs {
         return txLinks[env];
     }
 
-    async contractInstanceGenerator(web3, type, token) {
+    async contractInstanceGenerator(web3, type, token, _env) {
         try {
             const defaultAccount = web3.eth.defaultAccount;
-            let address = this.getContract(type).address;
+            let address = this.getContract(type, _env).address;
             const reducers = store.getState();
             if (token) {
                 address = reducers.CommonReducer.currentToken.address;
             }
-            const abi = this.getContract(type).abi;
+            const abi = this.getContract(type , _env).abi;
             const abiInstance = web3.eth.contract(abi);
             const instance = await abiInstance.at(address);
             const gasPrice = await Utils.callMethodWithReject(web3.eth.getGasPrice)();

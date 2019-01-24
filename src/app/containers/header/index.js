@@ -140,10 +140,16 @@ class Header extends PureComponent {
         const { history } = this.props;
         history.push('/withraw');
     };
-
+    withdrawFund = (key) => {
+        console.log('key', key)
+        const { history } = this.props;
+        history.push('/withdrawFund/'+key);
+    }
     render() {
+        let that = this;
         const { routes, anchorEl, avatarColor, checked } = this.state;
         const { setRegister, accountInfo, isConnected, network, defaultAddress } = this.props;
+      //  console.log('defaultAddress', defaultAddress)
         return (
             <div id="header" className="container-wrp">
                 <div className="container">
@@ -224,15 +230,20 @@ class Header extends PureComponent {
                                                         </li>
                                                         {defaultAddress &&
                                                             Object.keys(defaultAddress.balances).map(function(key, index) {
-                                                                if (Number(defaultAddress.balances[key]) > 0) {
+                                                                //if (Number(defaultAddress.balances[key]) > 0) {
                                                                     return (
                                                                         <li key={index} className="user-info-item balance">
                                                                             {Utils.currencyFormat(defaultAddress.balances[key])} <span>{key}</span>
+
+                                                                             <a onClick={ () => that.withdrawFund(key)} className="withdrawFund">
+                                                                                Withdraw
+                                                                            </a>
                                                                         </li>
                                                                     );
-                                                                }
-                                                                return null;
+                                                                //}
+                                                                //return null;
                                                             })}
+                                                        
                                                         <li className="user-info-item addresses">
                                                             {accountInfo.wallets.map(wallet => {
                                                                 return (
@@ -249,6 +260,7 @@ class Header extends PureComponent {
                                                                 );
                                                             })}
                                                         </li>
+
                                                         <li className="logout">
                                                             <span onClick={this.withraw} className="withraw">
                                                                 Withdraw voting rights
