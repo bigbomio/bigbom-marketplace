@@ -167,18 +167,18 @@ class ClientPostJob extends PureComponent {
     creatJob = () => {
         const { accountInfo } = this.props;
         const defaultWallet = accountInfo.wallets.filter(wallet => wallet.default);
-        if (defaultWallet[0].balances.ETH <= 0) {
-            this.setState({
-                open: true,
-                status: {
-                    title: 'Error: ',
-                    err: true,
-                    text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
-                    link: '',
-                },
-            });
-            return;
-        }
+        // if (defaultWallet[0].balances.ETH <= 0) {
+        //     this.setState({
+        //         open: true,
+        //         status: {
+        //             title: 'Error: ',
+        //             err: true,
+        //             text: 'Sorry, you have insufficient funds! You can not create a job if your balance less than fee.',
+        //             link: '',
+        //         },
+        //     });
+        //     return;
+        // }
 
         const {
             namePrepare,
